@@ -4,7 +4,7 @@
     {
       "slug": "alif-bank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-14T18:56:02.852Z",
+      "updatedAt": "2026-08-14T19:54:40.930Z",
       "usdBuy": 9.22,
       "usdSell": 9.28,
       "rubBuy": 0.09,
@@ -15,7 +15,7 @@
     {
       "slug": "orienbank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-14T18:56:02.869Z",
+      "updatedAt": "2026-08-14T19:54:40.946Z",
       "usdBuy": 9.2,
       "usdSell": 9.28,
       "rubBuy": 0.08,
@@ -26,7 +26,7 @@
     {
       "slug": "amonatbank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-14T18:56:02.861Z",
+      "updatedAt": "2026-08-14T19:54:40.938Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.098,
@@ -37,7 +37,7 @@
     {
       "slug": "eskhata-bank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-14T18:56:02.866Z",
+      "updatedAt": "2026-08-14T19:54:40.942Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.103,
@@ -47,19 +47,19 @@
     },
     {
       "slug": "spitamen-bank",
-      "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-14T18:56:02.872Z",
-      "usdBuy": 9.15,
-      "usdSell": 9.4,
-      "rubBuy": 0.111,
-      "rubSell": 0.114,
-      "eurBuy": 10,
-      "eurSell": 10.82
+      "sourceLabel": "Сайт банка (spitamenbank.tj)",
+      "updatedAt": "2026-08-14T19:54:45.305Z",
+      "usdBuy": 9.2,
+      "usdSell": 9.28,
+      "rubBuy": 0.095,
+      "rubSell": 0.11,
+      "eurBuy": 10.3,
+      "eurSell": 10.6
     },
     {
       "slug": "dushanbe-city-bank",
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-14T18:56:03.703Z",
+      "updatedAt": "2026-08-14T19:54:43.490Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1093,
@@ -420,6 +420,17 @@
       "rubSell": 0.1113,
       "eurBuy": 10.51,
       "eurSell": 10.71
+    },
+    {
+      "slug": "spitamen-bank",
+      "sourceLabel": "Сайт банка (spitamenbank.tj)",
+      "recordedAt": "2026-08-14T19:54:45.305Z",
+      "usdBuy": 9.2,
+      "usdSell": 9.28,
+      "rubBuy": 0.095,
+      "rubSell": 0.11,
+      "eurBuy": 10.3,
+      "eurSell": 10.6
     }
   ]
 }
