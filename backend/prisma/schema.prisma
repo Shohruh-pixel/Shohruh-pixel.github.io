@@ -17,9 +17,42 @@ model Bank {
   logo             String?
   isActive         Boolean           @default(true)
   exchangeRate     ExchangeRate?
+  rates            Rate[]
   withdrawalLimits WithdrawalLimit[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+}
+
+// Every rate a bank publishes, one row per currency per kind of operation.
+//
+// Banks do not have "a rate". Alif pays 0.0900 for a rouble at the counter and 0.1086 by transfer —
+// 20% apart, both published, both true for different people. Dushanbe City and Arvand differ the
+// same way. A single buy/sell pair per currency, which is what ExchangeRate holds, therefore has to
+// be wrong for somebody no matter which figure is chosen; this table is what makes it possible to
+// be right for everybody.
+//
+// ExchangeRate is kept as the headline shown on a card and in comparisons, now labelled with the
+// type it came from, so the existing pages, sitemap and converter keep working while the full
+// picture lives here.
+model Rate {
+  id          Int      @id @default(autoincrement())
+  bankId      Int
+  bank        Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  currency    String
+  // cash | transfer | card | noncash | legal | loan | nbt — see RATE_TYPES in rate-types.js, which
+  // is the single place the vocabulary is defined and where each bank's own naming is mapped onto
+  // it. Stored as text rather than an enum because SQLite has none and a new type must not need a
+  // migration to appear.
+  type        String
+  buy         Float
+  // Null only for the NBT reference, which publishes one figure rather than a spread.
+  sell        Float?
+  sourceLabel String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([bankId, currency, type])
+  @@index([bankId, type])
 }
 
 model ExchangeRate {
@@ -33,6 +66,11 @@ model ExchangeRate {
   eurBuy      Float
   eurSell     Float
   sourceLabel String
+  // Which of the bank's published rates this headline was taken from. Showing a number without
+  // saying whether it is the counter rate or the transfer rate is the flaw this whole change
+  // exists to remove — a person holding cash and a person sending a transfer are quoted different
+  // figures, and an unlabelled one silently serves the wrong half of them.
+  rateType    String   @default("transfer")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -47,6 +85,11 @@ model RateHistory {
   eurBuy      Float
   eurSell     Float
   sourceLabel String
+  // Recorded so a movement is never derived across two different kinds of rate. When a bank starts
+  // publishing an API and the headline moves from the counter figure to the transfer figure, the
+  // numbers jump for a reason that has nothing to do with the market — comparing them would print
+  // a confident arrow describing an event that did not happen.
+  rateType    String   @default("transfer")
   recordedAt  DateTime @default(now())
 
   @@index([bankId, recordedAt])

@@ -114,6 +114,15 @@ async function getTrendsByBankId() {
       continue;
     }
 
+    // Comparing a counter rate against a transfer rate measures the difference between two kinds of
+    // transaction, not a movement in the market. That happens for real: when a bank's own API
+    // replaces the National Bank's table as the source, the headline can switch type and the
+    // figures jump by a fifth. Saying nothing is the only honest output.
+    if ((current.rateType || null) !== (previous.rateType || null)) {
+      trends[bankId] = null;
+      continue;
+    }
+
     if (Date.now() - new Date(current.recordedAt).getTime() > TREND_FRESHNESS_MS) {
       trends[bankId] = null;
       continue;

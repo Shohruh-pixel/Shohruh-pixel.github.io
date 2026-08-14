@@ -1,6 +1,48 @@
 const prisma = require("../config/prisma");
 const notify = require("./notify.service");
 const analytics = require("./analytics.service");
+const bankApis = require("./bank-apis");
+const { RATE_TYPES } = require("./rate-types");
+const { buildHeadline, storeTypedRates } = require("./typed-rates.service");
+
+// Banks that publish their rates as JSON. Preferred over every HTML parser here: named fields
+// cannot be moved by a redesign, and a renamed one fails loudly instead of quietly writing the
+// wrong column. Each entry says where to fetch and how to turn the payload into our vocabulary;
+// nothing else in this file needs to know a bank's private naming.
+const API_SOURCES = [
+  {
+    slug: "alif-bank",
+    label: "API банка (alif.tj)",
+    requests: [{ url: "https://alif.tj/api/rates" }],
+    parse: ([payload]) => bankApis.parseAlif(payload)
+  },
+  {
+    slug: "dushanbe-city-bank",
+    label: "API банка (dc.tj)",
+    // One request per tab. Replaces parsing a homepage that takes 25s+ and ships its unrendered
+    // client template, which forced every value there to be treated as suspect.
+    requests: Object.keys(bankApis.DC_TYPE_MAP).map((type) => ({
+      url: `https://dc.tj/kurs_nbt_tab.php?type=${type}`,
+      type
+    })),
+    parse: (payloads, requests) =>
+      payloads.reduce((acc, payload, i) => {
+        const parsed = bankApis.parseDcTab(payload, bankApis.DC_TYPE_MAP[requests[i].type]);
+        for (const [currency, perType] of Object.entries(parsed)) {
+          acc[currency] = { ...(acc[currency] || {}), ...perType };
+        }
+        return acc;
+      }, {})
+  },
+  {
+    slug: "amonatbank",
+    label: "API банка (amonatbonk.tj)",
+    requests: [
+      { url: "https://www.amonatbonk.tj/bitrix/templates/amonatbonk/ajax/ambApi.php" }
+    ],
+    parse: ([payload]) => bankApis.parseAmonat(payload)
+  }
+];
 
 const CURRENCIES = ["USD", "RUB", "EUR"];
 
@@ -266,6 +308,41 @@ async function scrapeSpitamen() {
   };
 }
 
+// Fetches one API source, translates it, and stores every type the bank published. Returns the
+// headline — the single buy/sell set the cards and comparison show — or null when nothing usable
+// came back, which leaves whatever the previous source wrote untouched.
+async function collectFromApi(source) {
+  const payloads = [];
+
+  for (const request of source.requests) {
+    const body = await fetchWithRetry(request.url, `${source.slug} API`);
+
+    try {
+      payloads.push(JSON.parse(body));
+    } catch (error) {
+      throw new Error(`${request.url} did not return JSON: ${error.message}`);
+    }
+  }
+
+  const byCurrency = source.parse(payloads, source.requests);
+  const currencies = Object.keys(byCurrency);
+
+  if (!currencies.length) {
+    throw new Error("no usable currency in the payload");
+  }
+
+  const bank = await prisma.bank.findUnique({ where: { slug: source.slug }, select: { id: true } });
+
+  if (!bank) {
+    throw new Error(`no bank with slug "${source.slug}"`);
+  }
+
+  const stored = await storeTypedRates(bank.id, byCurrency, source.label);
+  const headline = buildHeadline(byCurrency);
+
+  return { headline, stored, currencies };
+}
+
 function findBankRate(rows, matchText) {
   const row = rows.find((cells) => cells[0].includes(matchText));
 
@@ -393,9 +470,16 @@ async function performScrape() {
   // Shared by both sources: take whatever validated, keep the stored value for the rest, and note
   // any currency that had to be carried over so a quietly-frozen figure is visible rather than
   // indistinguishable from a fresh one.
-  async function applyFromSource(slug, perCurrency, sourceLabel) {
+  async function applyFromSource(slug, perCurrency, sourceLabel, rateType = RATE_TYPES.TRANSFER) {
     const existing = await prisma.exchangeRate.findFirst({ where: { bank: { slug } } });
     const built = buildRateData(existing, perCurrency, sourceLabel);
+
+    if (built) {
+      // Which of the bank's published rates this headline is. Without it a card shows a number and
+      // leaves the reader to assume it applies to them, when the counter and transfer figures can
+      // be 20% apart.
+      built.data.rateType = rateType;
+    }
 
     if (!built) {
       skipped.push({
@@ -435,11 +519,52 @@ async function performScrape() {
     }
   }
 
-  try {
-    const dcData = await scrapeDushanbeCity();
-    await applyFromSource(DC_SLUG, { USD: dcData.USD, RUB: dcData.RUB, EUR: dcData.EUR }, dcData.sourceLabel);
-  } catch (error) {
-    skipped.push({ slug: DC_SLUG, reason: `dc.tj: ${error.message}` });
+  // APIs run after NBT and overwrite it: a bank's own published figure is the one a person is
+  // actually quoted, and these endpoints also carry every rate type, which NBT's table does not.
+  const coveredByApi = new Set();
+
+  for (const source of API_SOURCES) {
+    try {
+      const { headline, stored } = await collectFromApi(source);
+
+      if (!headline) {
+        // Types were stored and are visible on the bank's page, but no single type covered all
+        // three headline currencies. NBT's figures stay on the card rather than a partial set.
+        partial.push({ slug: source.slug, keptPrevious: ["headline"], refreshed: [`${stored} typed rates`] });
+        coveredByApi.add(source.slug);
+        continue;
+      }
+
+      await applyFromSource(
+        source.slug,
+        {
+          USD: { buy: headline.usdBuy, sell: headline.usdSell },
+          RUB: { buy: headline.rubBuy, sell: headline.rubSell },
+          EUR: { buy: headline.eurBuy, sell: headline.eurSell }
+        },
+        source.label,
+        headline.rateType
+      );
+      coveredByApi.add(source.slug);
+    } catch (error) {
+      skipped.push({ slug: source.slug, reason: `${source.label}: ${error.message}` });
+    }
+  }
+
+  // Only as a fallback now. The API gives the same bank every rate type in one fast request, so
+  // this parse of a slow page that ships its own unrendered template runs solely when that failed.
+  if (!coveredByApi.has(DC_SLUG)) {
+    try {
+      const dcData = await scrapeDushanbeCity();
+      await applyFromSource(
+        DC_SLUG,
+        { USD: dcData.USD, RUB: dcData.RUB, EUR: dcData.EUR },
+        dcData.sourceLabel,
+        RATE_TYPES.TRANSFER
+      );
+    } catch (error) {
+      skipped.push({ slug: DC_SLUG, reason: `dc.tj: ${error.message}` });
+    }
   }
 
   // Deliberately after the NBT loop, which has already written this bank's official figures: the
@@ -447,10 +572,13 @@ async function performScrape() {
   // remains rather than nothing, and the source label on the card says which one is showing.
   try {
     const spitamenData = await scrapeSpitamen();
+    // Spitamen publishes exactly two sets, NBT and cash, so the headline here is the counter rate
+    // rather than the transfer rate the other banks lead with. Labelling it honestly is the point.
     await applyFromSource(
       SPITAMEN_SLUG,
       { USD: spitamenData.USD, RUB: spitamenData.RUB, EUR: spitamenData.EUR },
-      spitamenData.sourceLabel
+      spitamenData.sourceLabel,
+      RATE_TYPES.CASH
     );
   } catch (error) {
     // Not counted as a skip when NBT already covered this bank in the same run — the card has a
