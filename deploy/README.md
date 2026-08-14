@@ -117,6 +117,17 @@ real domain; a bare IP cannot get a certificate.
 Without a domain the site still works over plain HTTP at `http://YOUR_PUBLIC_IP`, which is fine
 for a first look but not for launch — search engines and Telegram both treat HTTP as a downgrade.
 
+### Running before the domain exists
+
+`deploy.sh` detects the machine's public IP on first run and writes it into `PUBLIC_URL` and
+`CLIENT_URL`, so the site is self-consistent immediately — no placeholder domain in canonical
+links or the sitemap. Use `deploy/nginx-ip.conf` instead of `nginx.conf` in step 6 and skip
+certbot entirely.
+
+Treat this as staging, not launch. Do **not** submit the IP to Google or Yandex: everything
+indexed against it becomes a broken link the day the domain arrives. When it does, edit both URLs
+in `/opt/bankrate/app.env`, re-run `deploy.sh`, then switch to `nginx.conf` and run certbot.
+
 ## 5. Start the app
 
 ```bash

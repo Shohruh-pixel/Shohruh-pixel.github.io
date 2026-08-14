@@ -34,6 +34,28 @@ echo "==> Creating $APP_DIR"
 sudo mkdir -p "$DATA_DIR"
 sudo chown -R "$USER:$USER" "$APP_DIR"
 
+# The Always Free AMD shape (VM.Standard.E2.1.Micro) has 1 GB of RAM and Oracle's images ship with
+# no swap at all. Running the app there is fine; *building* it is not — the Vite bundle step inside
+# `docker build` peaks well above what is left after the kernel and Docker, and the OOM killer takes
+# the build down with a message that looks like a broken toolchain rather than exhausted memory.
+# 2 GB of swap costs nothing on the 50 GB boot volume and turns a hard failure into a slow build.
+TOTAL_RAM_MB=$(free -m | awk '/^Mem:/ {print $2}')
+SWAP_MB=$(free -m | awk '/^Swap:/ {print $2}')
+
+if [ "$TOTAL_RAM_MB" -lt 2048 ] && [ "$SWAP_MB" -lt 512 ]; then
+  echo "==> ${TOTAL_RAM_MB}MB RAM and no swap: creating a 2GB swapfile"
+  sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+  # Without the fstab entry the swap disappears on the next reboot, and the *second* deploy fails
+  # while the first succeeded — the most confusing possible version of this bug.
+  grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab >/dev/null
+  echo "    swap active: $(free -m | awk '/^Swap:/ {print $2}')MB"
+else
+  echo "==> Memory is sufficient (${TOTAL_RAM_MB}MB RAM, ${SWAP_MB}MB swap), skipping swapfile"
+fi
+
 # Oracle Cloud is the classic "I opened the port and it still does not work" case, because there
 # are TWO firewalls in front of the instance and both must allow traffic:
 #   1. the VCN Security List / Network Security Group, edited in the web console (see deploy/README.md)
