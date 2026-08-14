@@ -1,0 +1,22 @@
+# This project is written on Windows and runs on Linux, and git on the Windows side has
+# core.autocrlf=true — so without these rules a fresh clone rewrites every file with CRLF.
+#
+# For source that is only ever read by a parser it makes no difference. For anything the kernel
+# executes it is fatal and the error does not say so: `#!/usr/bin/env bash\r` fails as
+# "bad interpreter: /usr/bin/env bash^M: no such file or directory", and a CRLF
+# docker-entrypoint.sh puts the container into a restart loop that looks like a broken image.
+#
+# Pinning these to LF costs nothing on Windows — the editors here all handle LF — and removes a
+# whole class of deploy failure.
+
+*.sh            text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+*.toml          text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+
+# The SQLite database is ignored, but say it plainly: line-ending translation on a binary file
+# corrupts it, and that is not obvious from the extension.
+*.db            binary
