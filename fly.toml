@@ -1,0 +1,40 @@
+app = "bankrate-tj"
+primary_region = "fra"
+
+[build]
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+  # SQLite on the mounted volume, so rate history survives deploys.
+  DATABASE_URL = "file:/data/bankrate.db"
+  # Same-origin frontend, so CORS has nothing to allow beyond the site itself.
+  CLIENT_URL = "https://bankrate-tj.fly.dev"
+  PUBLIC_URL = "https://bankrate-tj.fly.dev"
+  SCRAPE_INTERVAL_MINUTES = "15"
+
+[[mounts]]
+  source = "bankrate_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Zero-budget setup: the machine sleeps when nobody is on the site and wakes on the next
+  # request. Two trade-offs to know about: the in-process 15-minute timer only runs while the
+  # machine is awake, and a cold start adds a second or two to the first request.
+  # Rates still stay current because a wake-up re-checks them when the last run is older than the
+  # interval. To guarantee freshness during quiet hours, point any free cron/uptime service at
+  #   GET /api/rates/refresh-if-stale
+  # which needs no key and no-ops when the data is already fresh.
+  # For always-on instead: auto_stop_machines = false and min_machines_running = 1.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # 512 rather than 256: Prisma's query engine is memory-hungry, and the boot sequence runs a
+  # migration before the server starts. Running out of memory there is a crash loop that looks
+  # like a broken deploy, and the machine sleeps when idle anyway, so the headroom is nearly free.
+  memory = "512mb"

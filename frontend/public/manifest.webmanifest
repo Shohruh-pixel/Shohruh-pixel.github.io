@@ -1,0 +1,26 @@
+{
+  "name": "BankRate TJ — курсы валют банков Таджикистана",
+  "short_name": "BankRate TJ",
+  "description": "Курсы доллара, рубля и евро в банках Таджикистана, конвертер и лимиты снятия наличных.",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06111f",
+  "theme_color": "#06111f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

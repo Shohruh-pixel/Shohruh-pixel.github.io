@@ -1,0 +1,578 @@
+const prisma = require("../config/prisma");
+const notify = require("./notify.service");
+const analytics = require("./analytics.service");
+
+const CURRENCIES = ["USD", "RUB", "EUR"];
+
+const SOURCE_LABEL = "НБТ (курсы коммерческих банков)";
+const DC_SOURCE_LABEL = "Сайт банка (dc.tj)";
+const DC_SLUG = "dushanbe-city-bank";
+const DC_URL = "https://dc.tj/";
+
+// NBT publishes each bank under its full legal name, which differs from our display
+// names (they spell Orienbank "Ориёнбонк", for example), so match on a stable substring.
+// Dushanbe City Bank is absent from that feed entirely, so it is covered by a second source
+// below — its own website, which publishes the same buy/sell pairs.
+const BANK_MAP = [
+  { slug: "alif-bank", match: "Алиф Банк" },
+  { slug: "amonatbank", match: "Амонатбанк" },
+  { slug: "eskhata-bank", match: "Эсхата" },
+  { slug: "orienbank", match: "Ориён" },
+  { slug: "spitamen-bank", match: "Спитамен" }
+];
+
+const RATE_FIELDS = ["usdBuy", "usdSell", "rubBuy", "rubSell", "eurBuy", "eurSell"];
+
+// This machine's network drops connections unpredictably, and an unattended job that
+// hangs forever on a half-open socket is indistinguishable from one that died. A hard
+// timeout plus a couple of retries turns a transient blip into a non-event.
+const FETCH_TIMEOUT_MS = 20000;
+// dc.tj consistently takes 25s or more to answer, so it gets its own budget — the shared one
+// would time it out on every single attempt and permanently "fail" a source that actually works.
+const DC_FETCH_TIMEOUT_MS = 60000;
+const MAX_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = 2000;
+
+// Only one scrape may be in flight. If a run outlives its interval (slow network), the
+// next tick must not pile a second run on top of it and double-write the same rows.
+let inFlight = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function stripTags(cell) {
+  return cell.replace(/<[^>]+>/g, "").trim();
+}
+
+function parseTable(html) {
+  const tableMatch = html.match(/<table>[\s\S]*?<\/table>/);
+
+  if (!tableMatch) {
+    return [];
+  }
+
+  const rows = [...tableMatch[0].matchAll(/<tr>([\s\S]*?)<\/tr>/g)];
+
+  return rows
+    .map((row) =>
+      [...row[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((cell) =>
+        stripTags(cell[1].replace(/&quot;/g, '"'))
+      )
+    )
+    .filter((cells) => cells.length >= 5);
+}
+
+async function fetchWithRetry(url, label, timeoutMs = FETCH_TIMEOUT_MS) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; BankRateTJ-Bot/1.0; +internal rate-comparison tool)"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.text();
+    } catch (error) {
+      lastError = error;
+      const reason = error.name === "AbortError" ? `timed out after ${timeoutMs}ms` : error.message;
+      console.warn(`[scraper] ${label} attempt ${attempt}/${MAX_ATTEMPTS} failed: ${reason}`);
+
+      if (attempt < MAX_ATTEMPTS) {
+        await sleep(RETRY_BASE_DELAY_MS * attempt);
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  throw new Error(`${label}: all ${MAX_ATTEMPTS} attempts failed (${lastError?.message || "unknown"})`);
+}
+
+async function fetchCurrencyRows(currency) {
+  const url = `https://nbt.tj/ru/kurs/kurs_kommer_bank.php?currency=${currency}`;
+  return parseTable(await fetchWithRetry(url, `NBT ${currency}`));
+}
+
+function stripMarkup(value) {
+  return value
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Dushanbe City Bank lists each currency as one block holding the code and a buy/sell pair.
+// The page also ships its client-side template literally (rows containing "${r.code}"), so every
+// candidate is validated rather than trusted — a template row silently stored as a rate would be
+// a fabricated number on a page whose entire purpose is telling people what a bank really pays.
+function parseDushanbeCity(html) {
+  const blocks = html.split('kurspublish_leftside__body_items"').slice(1);
+  const result = {};
+
+  for (const block of blocks) {
+    const codeMatch = block.match(/_info-code">([\s\S]{0,120}?)<\/span>\s*<\/div>/);
+    if (!codeMatch) {
+      continue;
+    }
+
+    const code = stripMarkup(codeMatch[1]).replace(/[()]/g, "").trim();
+    if (!/^[A-Z]{3}$/.test(code)) {
+      continue;
+    }
+
+    const readValue = (suffix) => {
+      const match = block.match(new RegExp(`_items-${suffix}[^>]*>([\\s\\S]{0,200}?)</span>`));
+      if (!match) {
+        return null;
+      }
+      const number = Number(stripMarkup(match[1]).replace(/[^\d.]/g, ""));
+      return Number.isFinite(number) && number > 0 ? number : null;
+    };
+
+    const buy = readValue("buy");
+    const sell = readValue("sell");
+
+    // A bank never sells a currency cheaper than it buys it. If that ordering is broken we have
+    // parsed the wrong elements, so drop the pair instead of publishing a nonsensical spread.
+    if (buy === null || sell === null || sell < buy) {
+      continue;
+    }
+
+    result[code] = { buy, sell };
+  }
+
+  return result;
+}
+
+async function scrapeDushanbeCity() {
+  const html = await fetchWithRetry(DC_URL, "Dushanbe City Bank", DC_FETCH_TIMEOUT_MS);
+  const parsed = parseDushanbeCity(html);
+
+  if (!parsed.USD && !parsed.RUB && !parsed.EUR) {
+    throw new Error(
+      `dc.tj yielded no usable currency (got: ${Object.keys(parsed).join(", ") || "nothing"})`
+    );
+  }
+
+  // Returned per currency rather than as one all-or-nothing block. Observed in practice: the bank
+  // published a euro row where the sell price was *below* the buy price, which cannot be real and
+  // is rejected — but insisting on a complete set meant that one bad row also froze the dollar and
+  // rouble figures, which were fine and are the ones this audience actually needs.
+  return {
+    USD: parsed.USD || null,
+    RUB: parsed.RUB || null,
+    EUR: parsed.EUR || null,
+    sourceLabel: DC_SOURCE_LABEL
+  };
+}
+
+function findBankRate(rows, matchText) {
+  const row = rows.find((cells) => cells[0].includes(matchText));
+
+  if (!row) {
+    return null;
+  }
+
+  // Columns 3/4 are the cash ("Наличные") buy/sell pair — the rate a walk-in customer
+  // actually gets, which is what this product is about. NBT zero-fills services a bank
+  // does not offer, so a zero here means "no data", not "free".
+  const buy = Number(row[3]);
+  const sell = Number(row[4]);
+
+  if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell <= 0) {
+    return null;
+  }
+
+  return { buy, sell };
+}
+
+function ratesDiffer(existing, next) {
+  if (!existing) {
+    return true;
+  }
+
+  return RATE_FIELDS.some((field) => Number(existing[field]) !== Number(next[field]));
+}
+
+const CURRENCY_FIELDS = {
+  USD: { buy: "usdBuy", sell: "usdSell" },
+  RUB: { buy: "rubBuy", sell: "rubSell" },
+  EUR: { buy: "eurBuy", sell: "eurSell" }
+};
+
+/**
+ * Build the row to store from whichever currencies came back trustworthy, keeping the last known
+ * good figure for any that did not.
+ *
+ * A source can be right about two currencies and wrong about a third — that has already happened
+ * here — and refusing the whole update in that case leaves everything stale to protect one field.
+ * Returns null only when nothing usable arrived, so a bank is never written from thin air.
+ */
+function buildRateData(existing, perCurrency, sourceLabel) {
+  const data = {};
+  const kept = [];
+  const fresh = [];
+
+  for (const [code, fields] of Object.entries(CURRENCY_FIELDS)) {
+    const value = perCurrency[code];
+
+    if (value) {
+      data[fields.buy] = value.buy;
+      data[fields.sell] = value.sell;
+      fresh.push(code);
+    } else if (existing) {
+      data[fields.buy] = existing[fields.buy];
+      data[fields.sell] = existing[fields.sell];
+      kept.push(code);
+    } else {
+      // No fresh value and nothing stored to fall back on — there is no honest number to write.
+      return null;
+    }
+  }
+
+  if (!fresh.length) {
+    return null;
+  }
+
+  return { data: { ...data, sourceLabel }, fresh, kept };
+}
+
+// NBT refreshes roughly once per business day, but we poll every few minutes to catch it
+// quickly. Writing a history row on every poll would bury the handful of real moves under
+// hundreds of identical rows, so history only records actual changes.
+async function applyBankRates(slug, data) {
+  const dbBank = await prisma.bank.findUnique({
+    where: { slug },
+    include: { exchangeRate: true }
+  });
+
+  if (!dbBank) {
+    return { applied: false, reason: "not in database" };
+  }
+
+  const isChanged = ratesDiffer(dbBank.exchangeRate, data);
+
+  const writes = [
+    prisma.exchangeRate.upsert({
+      where: { bankId: dbBank.id },
+      create: { bankId: dbBank.id, ...data },
+      update: data
+    })
+  ];
+
+  if (isChanged) {
+    writes.push(prisma.rateHistory.create({ data: { bankId: dbBank.id, ...data } }));
+  }
+
+  await prisma.$transaction(writes);
+
+  return { applied: true, changed: isChanged };
+}
+
+async function performScrape() {
+  const updated = [];
+  const changed = [];
+  const skipped = [];
+  const coveredBanks = [...BANK_MAP.map((bank) => bank.slug), DC_SLUG];
+
+  // The two sources are independent: NBT covers five banks, dc.tj covers the sixth. Failing to
+  // reach one must not discard the other's data, so each is attempted and reported separately.
+  let nbtRows = null;
+  try {
+    const rowsByCurrency = {};
+    for (const currency of CURRENCIES) {
+      rowsByCurrency[currency] = await fetchCurrencyRows(currency);
+    }
+    nbtRows = rowsByCurrency;
+  } catch (error) {
+    BANK_MAP.forEach((bank) => skipped.push({ slug: bank.slug, reason: `NBT unreachable: ${error.message}` }));
+  }
+
+  const partial = [];
+
+  // Shared by both sources: take whatever validated, keep the stored value for the rest, and note
+  // any currency that had to be carried over so a quietly-frozen figure is visible rather than
+  // indistinguishable from a fresh one.
+  async function applyFromSource(slug, perCurrency, sourceLabel) {
+    const existing = await prisma.exchangeRate.findFirst({ where: { bank: { slug } } });
+    const built = buildRateData(existing, perCurrency, sourceLabel);
+
+    if (!built) {
+      skipped.push({
+        slug,
+        reason: `no usable currency this run (got: ${Object.keys(perCurrency).filter((c) => perCurrency[c]).join(", ") || "nothing"})`
+      });
+      return;
+    }
+
+    const outcome = await applyBankRates(slug, built.data);
+
+    if (!outcome.applied) {
+      skipped.push({ slug, reason: outcome.reason });
+      return;
+    }
+
+    updated.push(slug);
+    if (outcome.changed) {
+      changed.push(slug);
+    }
+    if (built.kept.length) {
+      partial.push({ slug, keptPrevious: built.kept, refreshed: built.fresh });
+    }
+  }
+
+  if (nbtRows) {
+    for (const bank of BANK_MAP) {
+      await applyFromSource(
+        bank.slug,
+        {
+          USD: findBankRate(nbtRows.USD, bank.match),
+          RUB: findBankRate(nbtRows.RUB, bank.match),
+          EUR: findBankRate(nbtRows.EUR, bank.match)
+        },
+        SOURCE_LABEL
+      );
+    }
+  }
+
+  try {
+    const dcData = await scrapeDushanbeCity();
+    await applyFromSource(DC_SLUG, { USD: dcData.USD, RUB: dcData.RUB, EUR: dcData.EUR }, dcData.sourceLabel);
+  } catch (error) {
+    skipped.push({ slug: DC_SLUG, reason: `dc.tj: ${error.message}` });
+  }
+
+  return { updated, changed, skipped, partial, coveredBanks };
+}
+
+// Alerting is driven by a *streak*, not by a single bad run: these sites go briefly unreachable
+// often enough that reacting to every blip would train the reader to ignore the channel. Three
+// consecutive failures at a 15-minute cadence means roughly 45 minutes of stale rates, which is
+// the point at which a person should actually look.
+const FAILURE_STREAK_BEFORE_ALERT = 3;
+
+async function announceHealthChange(status, result) {
+  try {
+    const recent = await prisma.scraperRun.findMany({
+      where: { status: { in: ["success", "partial", "failed"] } },
+      orderBy: { startedAt: "desc" },
+      take: FAILURE_STREAK_BEFORE_ALERT
+    });
+
+    if (status === "failed") {
+      const failures = recent.filter((r) => r.status === "failed").length + 1;
+      if (failures >= FAILURE_STREAK_BEFORE_ALERT) {
+        const reasons = result.skipped.map((s) => s.reason).join("; ");
+        notify.alertScraperFailing(failures, reasons);
+      }
+      return;
+    }
+
+    // Recovery is only worth announcing if something was actually broken — otherwise every
+    // successful run after a single hiccup would send an all-clear nobody asked for.
+    const wasFailing = recent.length && recent[0].status === "failed";
+    if (wasFailing) {
+      const lastGood = await prisma.scraperRun.findFirst({
+        where: { status: { in: ["success", "partial"] } },
+        orderBy: { startedAt: "desc" },
+        skip: 1
+      });
+      const downtimeMinutes = lastGood
+        ? Math.round((Date.now() - new Date(lastGood.startedAt).getTime()) / 60000)
+        : 0;
+      notify.alertScraperRecovered(downtimeMinutes);
+    }
+  } catch (error) {
+    console.error(`[scraper] could not evaluate alert state: ${error.message}`);
+  }
+}
+
+// Deliberately not an `async function`: the guard only works if the check above and the
+// assignment below happen in one synchronous tick. An `await` between them (creating the
+// ScraperRun row, say) hands control back to the event loop, and simultaneous callers all
+// sail past the check before anyone sets the flag — which is exactly the double-run bug this
+// shape prevents.
+function scrapeNbtRates(trigger = "manual") {
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = (async () => {
+    const run = await prisma.scraperRun.create({
+      data: { trigger, status: "running" }
+    });
+
+    const startedAt = Date.now();
+
+    try {
+      const result = await performScrape();
+      const durationMs = Date.now() - startedAt;
+
+      // Since sources fail independently, a run where every source was unreachable completes
+      // without throwing. Calling that "partial" would be a lie the health panel then repeats:
+      // the amber badge implies something got through, and the failure streak would sit at zero
+      // through a total outage. Nothing updated means failed, whatever the mechanism.
+      // A run that had to carry a currency over is not a clean success: some figure on the site is
+      // older than it looks, and that should be visible in the health panel rather than hidden
+      // behind a green badge.
+      const status =
+        result.updated.length === 0
+          ? "failed"
+          : result.skipped.length || (result.partial && result.partial.length)
+            ? "partial"
+            : "success";
+
+      await announceHealthChange(status, result);
+
+      if (result.changed.length) {
+        analytics.bump(analytics.METRICS.rateChange, "", result.changed.length);
+      }
+
+      await prisma.scraperRun.update({
+        where: { id: run.id },
+        data: {
+          status,
+          finishedAt: new Date(),
+          durationMs,
+          banksUpdated: result.updated.length,
+          banksChanged: result.changed.length,
+          banksSkipped: result.skipped.length,
+          error:
+            status === "failed"
+              ? `no bank could be updated: ${result.skipped.map((s) => s.reason).join("; ")}`.slice(0, 500)
+              : result.partial && result.partial.length
+                ? result.partial
+                    .map((p) => `${p.slug}: ${p.keptPrevious.join("/")} — источник дал неправдоподобные значения, оставлены прежние`)
+                    .join("; ")
+                    .slice(0, 500)
+                : null
+        }
+      });
+
+      return { ...result, runId: run.id, durationMs };
+    } catch (error) {
+      await prisma.scraperRun.update({
+        where: { id: run.id },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          durationMs: Date.now() - startedAt,
+          error: String(error.message).slice(0, 500)
+        }
+      });
+
+      throw error;
+    } finally {
+      inFlight = null;
+    }
+  })();
+
+  return inFlight;
+}
+
+async function getScraperStatus() {
+  const [recentRuns, lastSuccess, lastChange] = await Promise.all([
+    prisma.scraperRun.findMany({ orderBy: { startedAt: "desc" }, take: 10 }),
+    prisma.scraperRun.findFirst({
+      where: { status: { in: ["success", "partial"] } },
+      orderBy: { startedAt: "desc" }
+    }),
+    prisma.rateHistory.findFirst({
+      where: { sourceLabel: SOURCE_LABEL },
+      orderBy: { recordedAt: "desc" }
+    })
+  ]);
+
+  // Count failures since the last good run — a couple of blips are noise, a growing
+  // streak is the signal that the automation needs a human. Runs that are still going, or
+  // that were cut short by a restart, carry no verdict either way, so they neither count as
+  // failures nor reset the streak.
+  const INCONCLUSIVE = ["running", "interrupted"];
+  let consecutiveFailures = 0;
+  for (const item of recentRuns) {
+    if (item.status === "failed") {
+      consecutiveFailures += 1;
+    } else if (!INCONCLUSIVE.includes(item.status)) {
+      break;
+    }
+  }
+
+  return {
+    running: Boolean(inFlight),
+    lastSuccessAt: lastSuccess?.startedAt ?? null,
+    lastChangeAt: lastChange?.recordedAt ?? null,
+    consecutiveFailures,
+    coveredBanks: BANK_MAP.map((bank) => bank.slug),
+    recentRuns: recentRuns.map((item) => ({
+      id: item.id,
+      trigger: item.trigger,
+      status: item.status,
+      startedAt: item.startedAt,
+      durationMs: item.durationMs,
+      banksUpdated: item.banksUpdated,
+      banksChanged: item.banksChanged,
+      banksSkipped: item.banksSkipped,
+      error: item.error
+    }))
+  };
+}
+
+// A run row is marked "running" while it works and updated when it finishes — but a process
+// killed mid-scrape (crash, reboot, power cut) never gets to write that ending. Left alone
+// those rows sit in the history as permanently "in progress" and slowly turn the health panel
+// into a liar, so reconcile them once at startup: nothing can still be running from a previous
+// process lifetime.
+async function reconcileInterruptedRuns() {
+  const { count } = await prisma.scraperRun.updateMany({
+    where: { status: "running" },
+    data: {
+      status: "interrupted",
+      finishedAt: new Date(),
+      error: "Process exited before this run finished"
+    }
+  });
+
+  if (count > 0) {
+    console.log(`[scraper] marked ${count} interrupted run(s) from a previous process`);
+  }
+
+  return count;
+}
+
+async function millisSinceLastSuccess() {
+  const lastSuccess = await prisma.scraperRun.findFirst({
+    where: { status: { in: ["success", "partial"] } },
+    orderBy: { startedAt: "desc" }
+  });
+
+  if (!lastSuccess) {
+    return null;
+  }
+
+  return Date.now() - new Date(lastSuccess.startedAt).getTime();
+}
+
+module.exports = {
+  scrapeNbtRates,
+  getScraperStatus,
+  millisSinceLastSuccess,
+  reconcileInterruptedRuns,
+  SOURCE_LABEL,
+  // Exported for tests: the parsers are the part most likely to break silently when an upstream
+  // site changes its markup, and they can be exercised on fixed HTML without touching network or
+  // database — so they are worth testing directly rather than only through a full scrape.
+  parseTable,
+  parseDushanbeCity,
+  findBankRate,
+  buildRateData
+};
