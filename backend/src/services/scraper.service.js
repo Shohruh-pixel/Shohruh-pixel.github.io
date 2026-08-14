@@ -41,6 +41,18 @@ const API_SOURCES = [
       { url: "https://www.amonatbonk.tj/bitrix/templates/amonatbonk/ajax/ambApi.php" }
     ],
     parse: ([payload]) => bankApis.parseAmonat(payload)
+  },
+  {
+    slug: "imon-international",
+    label: "API банка (imon.tj)",
+    requests: [{ url: "https://imon.tj/api/exchange-rates" }],
+    parse: ([payload]) => bankApis.parseImon(payload)
+  },
+  {
+    slug: "arvand",
+    label: "API банка (arvand.tj)",
+    requests: [{ url: "https://arvand.tj/api/currencies/" }],
+    parse: ([payload]) => bankApis.parseArvand(payload)
   }
 ];
 
@@ -308,6 +320,66 @@ async function scrapeSpitamen() {
   };
 }
 
+const HUMO_SOURCE_LABEL = "Сайт банка (humo.tj)";
+const HUMO_SLUG = "humo";
+const HUMO_URL = "https://humo.tj/ru";
+
+// Humo prints its table with **sell before buy** — the reverse of every other source here, and of
+// the National Bank's own layout. A parser written by analogy with the others would swap the two
+// columns and be wrong in the direction that costs a reader money, while looking entirely normal on
+// screen. So the header is read rather than assumed, and the parse refuses to proceed without it.
+function parseHumo(html) {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ");
+
+  const header = text.match(/Валюта\s+(Продажа|Покупка)\s+(Продажа|Покупка)/i);
+
+  if (!header || header[1].toLowerCase() === header[2].toLowerCase()) {
+    return {};
+  }
+
+  const sellFirst = header[1].toLowerCase() === "продажа";
+  const result = {};
+
+  // Only the rows that follow the header, so figures printed elsewhere on a marketing page cannot
+  // be mistaken for the table.
+  const table = text.slice(header.index + header[0].length);
+
+  for (const match of table.matchAll(/\b([A-Z]{3})\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)/g)) {
+    const [, code, firstRaw, secondRaw] = match;
+    const first = Number(firstRaw.replace(",", "."));
+    const second = Number(secondRaw.replace(",", "."));
+
+    const buy = sellFirst ? second : first;
+    const sell = sellFirst ? first : second;
+
+    if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell < buy) {
+      continue;
+    }
+
+    result[code] = { buy, sell };
+  }
+
+  return result;
+}
+
+async function scrapeHumo() {
+  const html = await fetchWithRetry(HUMO_URL, "Humo");
+  const parsed = parseHumo(html);
+
+  if (!parsed.USD && !parsed.RUB && !parsed.EUR) {
+    throw new Error(
+      `humo.tj yielded no usable currency (got: ${Object.keys(parsed).join(", ") || "nothing"})`
+    );
+  }
+
+  return { USD: parsed.USD || null, RUB: parsed.RUB || null, EUR: parsed.EUR || null };
+}
+
 // Fetches one API source, translates it, and stores every type the bank published. Returns the
 // headline — the single buy/sell set the cards and comparison show — or null when nothing usable
 // came back, which leaves whatever the previous source wrote untouched.
@@ -450,7 +522,11 @@ async function performScrape() {
   const updated = [];
   const changed = [];
   const skipped = [];
-  const coveredBanks = [...BANK_MAP.map((bank) => bank.slug), DC_SLUG];
+  // Every bank this run is expected to touch, from any source. Used to report coverage, so a bank
+  // added without a working source would show up as uncovered rather than quietly missing.
+  const coveredBanks = [
+    ...new Set([...BANK_MAP.map((bank) => bank.slug), DC_SLUG, HUMO_SLUG, ...API_SOURCES.map((s) => s.slug)])
+  ];
 
   // The two sources are independent: NBT covers five banks, dc.tj covers the sixth. Failing to
   // reach one must not discard the other's data, so each is attempted and reported separately.
@@ -549,6 +625,19 @@ async function performScrape() {
     } catch (error) {
       skipped.push({ slug: source.slug, reason: `${source.label}: ${error.message}` });
     }
+  }
+
+  // Humo publishes only its transfer rate, on the homepage, in plain markup.
+  try {
+    const humoData = await scrapeHumo();
+    await applyFromSource(
+      HUMO_SLUG,
+      { USD: humoData.USD, RUB: humoData.RUB, EUR: humoData.EUR },
+      HUMO_SOURCE_LABEL,
+      RATE_TYPES.TRANSFER
+    );
+  } catch (error) {
+    skipped.push({ slug: HUMO_SLUG, reason: `humo.tj: ${error.message}` });
   }
 
   // Only as a fallback now. The API gives the same bank every rate type in one fast request, so
@@ -822,6 +911,7 @@ module.exports = {
   parseTable,
   parseDushanbeCity,
   parseSpitamen,
+  parseHumo,
   findBankRate,
   buildRateData
 };

@@ -301,6 +301,45 @@ const banks = [
   }
 ];
 
+// Added after the original six, once their own published rates were located. Each has a working
+// source, so none of them needs a seeded rate — the scraper writes real figures on the first run.
+// Withdrawal limits are absent because nobody has collected the real ones; the limits page simply
+// does not list these banks until somebody does.
+const laterBanks = [
+  {
+    slug: "humo",
+    nameRu: "Хумо",
+    nameTj: "Ҳумо",
+    nameUz: "Humo",
+    shortName: "HUM",
+    logo: "H",
+    isActive: true
+  },
+  {
+    slug: "imon-international",
+    nameRu: "Имон Интернешнл",
+    nameTj: "Имон Интернешнл",
+    nameUz: "Imon International",
+    shortName: "IMN",
+    logo: "I",
+    isActive: true
+  },
+  {
+    slug: "arvand",
+    nameRu: "Банк Арванд",
+    nameTj: "Бонки Арванд",
+    nameUz: "Arvand Bank",
+    shortName: "ARV",
+    logo: "AR",
+    isActive: true
+  }
+  // Tawhidbank is deliberately not here yet. Its site is an Angular app and its own rate endpoint
+  // has not been found, so adding it would create a bank page with no rate — which answers 404 and
+  // fails the static build outright. It joins the list the day it has a source.
+];
+
+banks.push(...laterBanks);
+
 async function seedDatabase(prisma, options = {}) {
   const { reset = false } = options;
 
@@ -319,28 +358,25 @@ async function seedDatabase(prisma, options = {}) {
       create: bankData
     });
 
-    await prisma.exchangeRate.upsert({
-      where: { bankId: bank.id },
-      update: {
-        ...rate,
-        bankId: bank.id
-      },
-      create: {
-        ...rate,
-        bankId: bank.id
-      }
-    });
+    // Banks added later carry no seed rate and no limits, and that is deliberate rather than
+    // unfinished: the scraper fills their rates from the bank's own API within seconds of boot, and
+    // nobody here has their real withdrawal limits. Inventing either to make the card look complete
+    // would put a number on the site that no bank ever published — the one failure this product
+    // cannot have. An empty section is honest; a plausible fabrication is not.
+    if (rate) {
+      await prisma.exchangeRate.upsert({
+        where: { bankId: bank.id },
+        update: { ...rate, bankId: bank.id },
+        create: { ...rate, bankId: bank.id }
+      });
+    }
 
-    await prisma.withdrawalLimit.deleteMany({
-      where: { bankId: bank.id }
-    });
-
-    await prisma.withdrawalLimit.createMany({
-      data: limits.map((limit) => ({
-        ...limit,
-        bankId: bank.id
-      }))
-    });
+    if (limits && limits.length) {
+      await prisma.withdrawalLimit.deleteMany({ where: { bankId: bank.id } });
+      await prisma.withdrawalLimit.createMany({
+        data: limits.map((limit) => ({ ...limit, bankId: bank.id }))
+      });
+    }
   }
 
   return prisma.bank.count();

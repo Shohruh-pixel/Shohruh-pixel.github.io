@@ -5,6 +5,7 @@ const {
   parseTable,
   parseDushanbeCity,
   parseSpitamen,
+  parseHumo,
   findBankRate
 } = require("../src/services/scraper.service");
 
@@ -264,4 +265,35 @@ test("selling below buying is discarded as mis-parsed", () => {
 
 test("a redesigned Spitamen page yields nothing instead of guessing", () => {
   assert.deepEqual(parseSpitamen("<html><body><p>Курсы валют</p></body></html>"), {});
+});
+
+// Humo prints sell before buy — the reverse of the National Bank's layout and of every other source
+// here. Swapping the two is invisible on screen (both are plausible numbers a few kopeks apart) and
+// sends a reader to the wrong side of the spread, so the header is read rather than assumed.
+const HUMO_HTML = `<div><table>
+  <tr><th>Валюта</th><th>Продажа</th><th>Покупка</th></tr>
+  <tr><td>USD</td><td>9.27</td><td>9.2</td></tr>
+  <tr><td>RUB</td><td>0.1104</td><td>0.1093</td></tr>
+  <tr><td>EUR</td><td>10.7</td><td>10.6</td></tr>
+</table></div>`;
+
+test("Humo's reversed columns are read from the header, not assumed", () => {
+  const parsed = parseHumo(HUMO_HTML);
+
+  assert.deepEqual(parsed.USD, { buy: 9.2, sell: 9.27 });
+  assert.deepEqual(parsed.RUB, { buy: 0.1093, sell: 0.1104 });
+  assert.deepEqual(parsed.EUR, { buy: 10.6, sell: 10.7 });
+});
+
+test("if Humo ever reorders its columns the header decides, not the parser", () => {
+  // The header and the values are swapped together, which is what a redesign would actually look
+  // like. Reading the header means the same buy/sell pair comes out; ignoring it would invert them.
+  const reordered = HUMO_HTML.replace("<th>Продажа</th><th>Покупка</th>", "<th>Покупка</th><th>Продажа</th>")
+    .replace("<td>9.27</td><td>9.2</td>", "<td>9.2</td><td>9.27</td>");
+
+  assert.deepEqual(parseHumo(reordered).USD, { buy: 9.2, sell: 9.27 });
+});
+
+test("Humo without a recognisable header yields nothing rather than guessing an order", () => {
+  assert.deepEqual(parseHumo(HUMO_HTML.replace(/<th>[^<]*<\/th>/g, "<th>—</th>")), {});
 });

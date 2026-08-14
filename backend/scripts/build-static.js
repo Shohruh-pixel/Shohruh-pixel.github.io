@@ -123,7 +123,13 @@ async function main() {
 
     // One page per bank, taken from the live list rather than a hardcoded array, so adding or
     // deactivating a bank changes the built site without anyone remembering to edit this file.
-    const banks = await prisma.bank.findMany({ where: { isActive: true }, select: { slug: true } });
+    // Only banks that actually have a rate. A bank added before its source works answers 404 on its
+    // own page — correct behaviour, since there is nothing to show — but publishing that page would
+    // put a dead link in the sitemap, so it is left out until the scraper fills it in.
+    const banks = await prisma.bank.findMany({
+      where: { isActive: true, exchangeRate: { isNot: null } },
+      select: { slug: true }
+    });
     const routes = [...STATIC_ROUTES, ...banks.map((b) => `/bank/${b.slug}`)];
 
     for (const route of routes) {
