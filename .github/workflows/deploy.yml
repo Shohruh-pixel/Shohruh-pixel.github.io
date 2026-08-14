@@ -54,10 +54,16 @@ jobs:
         # /<repo>/ instead, and would need a base path threaded through Vite and the router — so
         # rather than publish a site with broken links, this stops and says what to do.
         run: |
+          # Lowercased: GitHub serves the site from the lowercase host regardless of how the
+          # account name is capitalised. A canonical link or sitemap entry carrying the mixed-case
+          # form resolves, but hands a crawler a second spelling of every URL for no reason.
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+
           if [ -n "${{ vars.PUBLIC_URL }}" ]; then
             echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> "$GITHUB_ENV"
-          elif [ "${{ github.event.repository.name }}" = "${{ github.repository_owner }}.github.io" ]; then
-            echo "PUBLIC_URL=https://${{ github.repository_owner }}.github.io" >> "$GITHUB_ENV"
+          elif [ "$REPO" = "$OWNER.github.io" ]; then
+            echo "PUBLIC_URL=https://$OWNER.github.io" >> "$GITHUB_ENV"
           else
             echo "::error::This repository is '${{ github.event.repository.name }}', which GitHub serves from a subpath (/${{ github.event.repository.name }}/). The app is built for a site at the domain root. Either rename the repository to '${{ github.repository_owner }}.github.io', or set a repository variable PUBLIC_URL to your custom domain."
             exit 1
