@@ -1,7 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { parseTable, parseDushanbeCity, findBankRate } = require("../src/services/scraper.service");
+const {
+  parseTable,
+  parseDushanbeCity,
+  parseSpitamen,
+  findBankRate
+} = require("../src/services/scraper.service");
 
 // Parsers are the part of this system most likely to break without anyone noticing: an upstream
 // site quietly changes its markup and the scraper keeps "succeeding" while writing nothing, or
@@ -188,4 +193,75 @@ test("a complete fresh set carries nothing over", () => {
   assert.deepEqual(built.kept, []);
   assert.deepEqual(built.fresh, ["USD", "RUB", "EUR"]);
   assert.equal(built.data.sourceLabel, "test source");
+});
+
+// Spitamen ships every rate set it publishes in one list and switches between them with a select.
+// The first set is the National Bank's reference figure, where buy and sell are the same number.
+// Reading that one instead of the bank's own would put the official rate on the card under the
+// bank's name — a wrong number that looks completely ordinary, which is the dangerous kind.
+function spitamenRow(code, buy, sell) {
+  return `
+    <div class="conversation__row currency-values">
+      <div class="conversation__td" c-val="${code}"><b>${code}</b></div>
+      <div class="conversation__td" c-val="${buy}"></div>
+      <div class="conversation__td" c-val="${sell}"><span>${sell}</span></div>
+    </div>`;
+}
+
+function spitamenHtml({ cashLabel = "Наличные", cashRows, extraOption = "" } = {}) {
+  const rows =
+    cashRows ??
+    [spitamenRow("USD", "9.2000", "9.2800"), spitamenRow("EUR", "10.3000", "10.6000"), spitamenRow("RUB", "0.0950", "0.1100")].join("");
+
+  return `<div id="currency-rate">
+    <select class="page-select" id="currency-select">
+      <option value="0" selected>НБТ</option>
+      <option value="1">${cashLabel}</option>
+      ${extraOption}
+    </select>
+    <ul class="conversation__list" id="currency-list">
+      <li c_index="0" class="conversation__item conversation__item-active">
+        ${spitamenRow("USD", "9.2628", "9.2628")}
+        ${spitamenRow("EUR", "10.6883", "10.6883")}
+        ${spitamenRow("RUB", "0.1099", "0.1099")}
+      </li>
+      <li c_index="1" class="conversation__item">
+        ${rows}
+      </li>
+    </ul>
+  </div>`;
+}
+
+test("Spitamen's own cash rates are read, not the NBT reference sitting above them", () => {
+  const parsed = parseSpitamen(spitamenHtml());
+
+  assert.deepEqual(parsed.USD, { buy: 9.2, sell: 9.28 });
+  assert.deepEqual(parsed.EUR, { buy: 10.3, sell: 10.6 });
+  assert.deepEqual(parsed.RUB, { buy: 0.095, sell: 0.11 });
+});
+
+test("the NBT block's equal buy and sell is never mistaken for a bank quote", () => {
+  // Forcing the cash block to hold reference-shaped values: a bank that genuinely bought and sold
+  // at one price would be remarkable, so equality is treated as "this is not a bank rate".
+  const parsed = parseSpitamen(spitamenHtml({ cashRows: spitamenRow("USD", "9.2628", "9.2628") }));
+
+  assert.equal(parsed.USD, undefined);
+});
+
+test("a renamed cash tab yields nothing rather than guessing at another block", () => {
+  // Guessing would mean falling back to index 0, which is the official rate — the precise mistake
+  // this parser exists to avoid. Nothing at all leaves NBT's figures in place, correctly labelled.
+  const parsed = parseSpitamen(spitamenHtml({ cashLabel: "Безналичные" }));
+
+  assert.deepEqual(parsed, {});
+});
+
+test("selling below buying is discarded as mis-parsed", () => {
+  const parsed = parseSpitamen(spitamenHtml({ cashRows: spitamenRow("USD", "9.4000", "9.1000") }));
+
+  assert.equal(parsed.USD, undefined);
+});
+
+test("a redesigned Spitamen page yields nothing instead of guessing", () => {
+  assert.deepEqual(parseSpitamen("<html><body><p>Курсы валют</p></body></html>"), {});
 });

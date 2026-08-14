@@ -9,6 +9,18 @@ const DC_SOURCE_LABEL = "Сайт банка (dc.tj)";
 const DC_SLUG = "dushanbe-city-bank";
 const DC_URL = "https://dc.tj/";
 
+// Spitamen publishes its own rates, and they do not agree with what NBT's table says about it —
+// observed on 15.08.2026: NBT listed 9.15/9.40 while the bank's own page showed 9.20/9.28. A
+// person walking into a branch gets the bank's number, so that is the one this site has to show.
+// NBT still runs first and stays as the fallback: if the bank's page breaks, a slightly stale
+// official figure beats an empty card.
+const SPITAMEN_SOURCE_LABEL = "Сайт банка (spitamenbank.tj)";
+const SPITAMEN_SLUG = "spitamen-bank";
+const SPITAMEN_URL = "https://www.spitamenbank.tj/ru/personal/";
+// The page carries several rate sets in one list — the NBT reference alongside the bank's own —
+// and picks between them with a <select>. The cash set is the one a walk-in customer is quoted.
+const SPITAMEN_CASH_LABEL = "Наличные";
+
 // NBT publishes each bank under its full legal name, which differs from our display
 // names (they spell Orienbank "Ориёнбонк", for example), so match on a stable substring.
 // Dushanbe City Bank is absent from that feed entirely, so it is covered by a second source
@@ -173,6 +185,84 @@ async function scrapeDushanbeCity() {
     RUB: parsed.RUB || null,
     EUR: parsed.EUR || null,
     sourceLabel: DC_SOURCE_LABEL
+  };
+}
+
+// Spitamen renders every rate set it publishes into the same list, one <li c_index="N"> per set,
+// and a <select> whose options name them. The index of the cash set is read from that select rather
+// than hardcoded: the first block is the NBT reference, where buy and sell are the same number, and
+// silently taking it would put the official rate on the card under the bank's name — wrong in a way
+// that looks entirely plausible.
+function parseSpitamen(html) {
+  const select = html.match(/<select[^>]*id="currency-select"[\s\S]*?<\/select>/);
+  if (!select) {
+    return {};
+  }
+
+  const options = [...select[0].matchAll(/<option value="(\d+)"[^>]*>([^<]*)</g)].map((m) => ({
+    index: m[1],
+    label: m[2].trim()
+  }));
+
+  const cash = options.find((o) => o.label.toLowerCase() === SPITAMEN_CASH_LABEL.toLowerCase());
+  if (!cash) {
+    // The set was renamed or removed. Returning nothing lets the caller keep NBT's figures rather
+    // than guess which of the remaining blocks is the bank's own.
+    return {};
+  }
+
+  const block = html.match(
+    new RegExp(`<li c_index="${cash.index}"[\\s\\S]*?(?=<li c_index="|</ul>)`)
+  );
+  if (!block) {
+    return {};
+  }
+
+  const result = {};
+
+  for (const row of block[0].split("currency-values").slice(1)) {
+    // Three c-val attributes per row, in order: the currency code, then buy, then sell.
+    const values = [...row.matchAll(/c-val="([^"]*)"/g)].slice(0, 3).map((m) => m[1]);
+    if (values.length < 3) {
+      continue;
+    }
+
+    const [code, buyRaw, sellRaw] = values;
+    if (!/^[A-Z]{3}$/.test(code)) {
+      continue;
+    }
+
+    const buy = Number(buyRaw);
+    const sell = Number(sellRaw);
+
+    // Same guard as dc.tj: a bank never sells a currency for less than it pays for it, so a broken
+    // ordering means the wrong cells were read. Equal values are rejected too — that is the shape
+    // of the NBT reference row, not of a bank's own quote.
+    if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell <= buy) {
+      continue;
+    }
+
+    result[code] = { buy, sell };
+  }
+
+  return result;
+}
+
+async function scrapeSpitamen() {
+  const html = await fetchWithRetry(SPITAMEN_URL, "Spitamen Bank");
+  const parsed = parseSpitamen(html);
+
+  if (!parsed.USD && !parsed.RUB && !parsed.EUR) {
+    throw new Error(
+      `spitamenbank.tj yielded no usable currency (got: ${Object.keys(parsed).join(", ") || "nothing"})`
+    );
+  }
+
+  return {
+    USD: parsed.USD || null,
+    RUB: parsed.RUB || null,
+    EUR: parsed.EUR || null,
+    sourceLabel: SPITAMEN_SOURCE_LABEL
   };
 }
 
@@ -352,7 +442,37 @@ async function performScrape() {
     skipped.push({ slug: DC_SLUG, reason: `dc.tj: ${error.message}` });
   }
 
-  return { updated, changed, skipped, partial, coveredBanks };
+  // Deliberately after the NBT loop, which has already written this bank's official figures: the
+  // bank's own page is the better answer and overwrites them. If it fails, NBT's numbers are what
+  // remains rather than nothing, and the source label on the card says which one is showing.
+  try {
+    const spitamenData = await scrapeSpitamen();
+    await applyFromSource(
+      SPITAMEN_SLUG,
+      { USD: spitamenData.USD, RUB: spitamenData.RUB, EUR: spitamenData.EUR },
+      spitamenData.sourceLabel
+    );
+  } catch (error) {
+    // Not counted as a skip when NBT already covered this bank in the same run — the card has a
+    // rate, and reporting it as skipped would make a healthy run look degraded.
+    const reason = `spitamenbank.tj: ${error.message}`;
+    if (updated.includes(SPITAMEN_SLUG)) {
+      partial.push({ slug: SPITAMEN_SLUG, keptPrevious: ["own-site"], refreshed: ["nbt"], reason });
+    } else {
+      skipped.push({ slug: SPITAMEN_SLUG, reason });
+    }
+  }
+
+  // Deduplicated because a bank can be written twice in one run: NBT covers Spitamen, then the
+  // bank's own page overwrites it. Counting both made a healthy run report "7/6 banks updated",
+  // which reads as a bug in the very number that is supposed to prove the scrape was sound.
+  return {
+    updated: [...new Set(updated)],
+    changed: [...new Set(changed)],
+    skipped,
+    partial,
+    coveredBanks
+  };
 }
 
 // Alerting is driven by a *streak*, not by a single bad run: these sites go briefly unreachable
@@ -573,6 +693,7 @@ module.exports = {
   // database — so they are worth testing directly rather than only through a full scrape.
   parseTable,
   parseDushanbeCity,
+  parseSpitamen,
   findBankRate,
   buildRateData
 };
