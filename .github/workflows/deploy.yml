@@ -33,7 +33,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NODE_ENV: production
+      # NODE_ENV is deliberately NOT set to production for the whole job: `npm ci` reads it and
+      # omits devDependencies, which is where Vite lives. The frontend build would then fail on a
+      # missing binary, in a step far from the line that caused it. It is set per-step instead.
+      #
       # Written to a path outside the repository so a stray `git add -A` can never commit a
       # database file; the snapshot JSON is the only thing that persists between runs.
       DATABASE_URL: file:/tmp/bankrate-build.db
@@ -93,6 +96,13 @@ jobs:
         # leaving whatever is already live. The scraper records its own failure either way.
         run: npm run scrape --prefix backend || echo "::warning::Scrape failed; publishing the previous snapshot."
 
+      - name: Build the app shell
+        # Must precede the tests. Express serves pages only when frontend/dist/index.html exists —
+        # without it the catch-all route is never registered, and the six tests covering the
+        # server-rendered pages and the 404 fail for a reason that has nothing to do with the code
+        # they are testing.
+        run: npm run build:static --prefix frontend
+
       - name: Run tests
         # After the scrape, so a source that changed its markup in a way the parser mishandles is
         # caught before the numbers reach the site rather than after.
@@ -101,10 +111,10 @@ jobs:
       - name: Save rates and history
         run: npm run snapshot:export --prefix backend
 
-      - name: Build the site
-        run: |
-          npm run build:static --prefix frontend
-          npm run build:static --prefix backend
+      - name: Prerender the site
+        env:
+          NODE_ENV: production
+        run: npm run build:static --prefix backend
 
       - name: Commit the snapshot
         # Pushes made with GITHUB_TOKEN do not trigger workflows, so this cannot loop back into
