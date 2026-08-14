@@ -222,7 +222,7 @@ All routes below require the header `X-Admin-Key: <ADMIN_KEY>` (see `backend/.en
 npm test --prefix backend
 ```
 
-69 checks run on Node's built-in test runner. **No test framework is installed on purpose** —
+97 checks run on Node's built-in test runner. **No test framework is installed on purpose** —
 `node --test` ships with Node, and on this machine every npm install is a gamble (see the network
 notes in the project memory), so adding vitest or jest would have introduced the one risk the
 suite exists to reduce.
