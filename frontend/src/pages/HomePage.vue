@@ -54,25 +54,12 @@
       />
     </div>
 
-    <SectionHeader
-      :eyebrow="t('common.quickAccess')"
-      :title="t('home.quickTitle')"
-      :description="t('home.quickSubtitle')"
-    />
-
-    <div class="quick-grid">
-      <RouterLink v-for="action in quickActions" :key="action.to" :to="action.to" class="quick-card glass-panel">
-        <component :is="action.icon" :size="20" />
-        <span>{{ action.label }}</span>
-      </RouterLink>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted } from "vue";
 import { RouterLink } from "vue-router";
-import { ArrowLeftRight, Heart, Landmark, TrendingUp } from "lucide-vue-next";
 import BestRateBanner from "../components/BestRateBanner.vue";
 import LoadingSkeleton from "../components/LoadingSkeleton.vue";
 import SectionHeader from "../components/SectionHeader.vue";
@@ -89,13 +76,6 @@ const banksStore = useBanksStore();
 const ratesStore = useRatesStore();
 const { highlightBank, summaryItems, lastUpdatedAt } = useBestRates();
 const { favoritesCount } = useFavorites();
-
-const quickActions = computed(() => [
-  { to: "/rates", label: t("home.ratesAction"), icon: TrendingUp },
-  { to: "/converter", label: t("home.converterAction"), icon: ArrowLeftRight },
-  { to: "/limits", label: t("home.limitsAction"), icon: Landmark },
-  { to: "/favorites", label: t("home.favoritesAction"), icon: Heart }
-]);
 
 const lastUpdatedLabel = computed(() => formatRelativeTime(lastUpdatedAt.value));
 
