@@ -34,15 +34,38 @@
       </template>
 
       <SectionHeader :title="t('bank.othersTitle')" :description="t('bank.othersSubtitle')" />
-      <div class="quick-grid">
+      <!-- One dollar figure per bank was not enough to compare on: someone here has already chosen
+           a bank and is checking whether another is better, and the answer depends on which
+           currency they hold and on which side of the spread they are. All three currencies, both
+           sides, so the comparison can be made without opening six pages. -->
+      <div class="others-grid">
         <RouterLink
           v-for="other in otherBanks"
           :key="other.bank.slug"
           :to="`/bank/${other.bank.slug}`"
-          class="quick-card glass-panel"
+          class="others-card glass-panel"
         >
-          <span>{{ getBankName(other.bank) }}</span>
-          <strong>{{ formatRate(other.usdBuy, locale) }}</strong>
+          <div class="others-head">
+            <span class="others-name">{{ getBankName(other.bank) }}</span>
+            <span class="others-short">{{ other.bank.shortName }}</span>
+          </div>
+
+          <table class="others-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>{{ t("common.buy") }}</th>
+                <th>{{ t("common.sell") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in currencyRows(other)" :key="row.code">
+                <td class="others-code">{{ row.code }}</td>
+                <td>{{ formatRate(row.buy, locale) }}</td>
+                <td>{{ formatRate(row.sell, locale) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </RouterLink>
       </div>
     </template>
@@ -78,6 +101,16 @@ const best = computed(() => ratesStore.bestPayload?.best || {});
 
 const bankLimits = computed(() => limitsStore.items.filter((limit) => limit.bank.slug === slug.value));
 const otherBanks = computed(() => ratesStore.items.filter((item) => item.bank.slug !== slug.value));
+
+// The three currencies this site covers, in the order the rest of the app uses them, pulled off the
+// flat rate record so the template stays a table rather than nine repeated cells.
+function currencyRows(item) {
+  return [
+    { code: "USD", buy: item.usdBuy, sell: item.usdSell },
+    { code: "RUB", buy: item.rubBuy, sell: item.rubSell },
+    { code: "EUR", buy: item.eurBuy, sell: item.eurSell }
+  ];
+}
 
 async function load() {
   await Promise.allSettled([ratesStore.fetchAll(), limitsStore.fetchLimits()]);

@@ -1153,3 +1153,70 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
     padding: 20px;
   }
 }
+
+/* Other banks on a bank page. A full comparison table per bank rather than a single figure: the
+   person reading has already picked one bank and is checking whether another is better, and that
+   depends on which currency they hold and which side of the spread they are on. */
+.others-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.others-card {
+  display: block;
+  padding: 16px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.others-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.others-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.others-name {
+  font-weight: 600;
+}
+
+.others-short {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+.others-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.others-table th {
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-align: right;
+  opacity: 0.6;
+  padding-bottom: 6px;
+}
+
+.others-table td {
+  text-align: right;
+  padding: 3px 0;
+  font-size: 0.9rem;
+}
+
+.others-table .others-code {
+  text-align: left;
+  opacity: 0.75;
+  font-size: 0.8rem;
+}
