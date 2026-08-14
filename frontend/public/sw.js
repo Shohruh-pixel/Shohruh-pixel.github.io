@@ -9,12 +9,30 @@
 // rates are a fallback for when the network fails, never a shortcut taken while it works — showing
 // yesterday's numbers as though they were today's would be worse than showing nothing at all.
 
-const VERSION = "v1";
+// Bumped to v2 when the static build arrived: a device still holding v1 caches would keep serving
+// the old entries, and activate() only clears caches whose name does not end in the current
+// version. Without the bump, offline visitors would sit on data that no longer has a source.
+const VERSION = "v2";
 const ASSET_CACHE = `bankrate-assets-${VERSION}`;
 const PAGE_CACHE = `bankrate-pages-${VERSION}`;
 const DATA_CACHE = `bankrate-data-${VERSION}`;
 
-const CACHEABLE_API = ["/api/rates", "/api/rates/best", "/api/limits", "/api/banks"];
+// Both shapes the same app can run in, listed together because one service worker serves both and
+// a device cannot know which build it was given:
+//   /api/*  — an Express process answers live (the server deployment)
+//   /data/* — the same JSON, written to files at build time (the static deployment)
+// Leaving the /data entries out is invisible while online and only surfaces with the network gone,
+// which is exactly when this file is the only thing standing between a visitor and a blank page.
+const CACHEABLE_API = [
+  "/api/rates",
+  "/api/rates/best",
+  "/api/limits",
+  "/api/banks",
+  "/data/rates.json",
+  "/data/rates-best.json",
+  "/data/limits.json",
+  "/data/banks.json"
+];
 
 self.addEventListener("install", (event) => {
   // Take over as soon as possible: a half-updated app is more confusing than a brief reload.

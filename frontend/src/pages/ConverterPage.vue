@@ -22,13 +22,17 @@
       />
 
       <p class="supporting-copy">{{ t("converter.rateSnapshot") }}</p>
-      <p class="supporting-copy subtle">{{ t("converter.apiSync") }}</p>
+      <!-- Only true where an API is actually running. In the static build there is no server to
+           check against, and the arithmetic here is the final answer — promising a verification
+           that cannot happen would undermine the one number the visitor came for. -->
+      <p v-if="!STATIC_DATA" class="supporting-copy subtle">{{ t("converter.apiSync") }}</p>
     </template>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
+import { STATIC_DATA } from "../api/http";
 import ConverterCard from "../components/ConverterCard.vue";
 import EmptyState from "../components/EmptyState.vue";
 import LoadingSkeleton from "../components/LoadingSkeleton.vue";

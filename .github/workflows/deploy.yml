@@ -1,0 +1,132 @@
+# Builds the site and publishes it to GitHub Pages.
+#
+# This replaces the always-on server: instead of a process that scrapes every 15 minutes and
+# answers requests, a job scrapes on a schedule and writes the answers to files. The application
+# code is unchanged — the build starts the real Express app on a throwaway port and saves what it
+# returns, so the rates, the best-rate picks and the per-route titles all come from the code that
+# the test suite already covers.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every three hours. The National Bank publishes roughly once per business day and dc.tj is
+    # similar, so this is already several times more often than the sources actually move; going
+    # tighter would spend minutes to re-publish identical numbers.
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+# Pages deployment needs id-token; committing the rate snapshot back needs contents: write.
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# A scheduled run and a push can overlap. Letting both publish would mean the older build can land
+# last and put stale rates on the site, so the newer run wins and the older is cancelled.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      # Written to a path outside the repository so a stray `git add -A` can never commit a
+      # database file; the snapshot JSON is the only thing that persists between runs.
+      DATABASE_URL: file:/tmp/bankrate-build.db
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Resolve the public URL
+        # Canonical links, Open Graph tags and every sitemap entry are absolute, so this value ends
+        # up published. Getting it wrong is invisible in a browser and wrong for every crawler.
+        #
+        # A user site (<owner>.github.io) is served from the root, which is what the app assumes:
+        # its routes and asset links are absolute paths. A project repository is served from
+        # /<repo>/ instead, and would need a base path threaded through Vite and the router — so
+        # rather than publish a site with broken links, this stops and says what to do.
+        run: |
+          if [ -n "${{ vars.PUBLIC_URL }}" ]; then
+            echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> "$GITHUB_ENV"
+          elif [ "${{ github.event.repository.name }}" = "${{ github.repository_owner }}.github.io" ]; then
+            echo "PUBLIC_URL=https://${{ github.repository_owner }}.github.io" >> "$GITHUB_ENV"
+          else
+            echo "::error::This repository is '${{ github.event.repository.name }}', which GitHub serves from a subpath (/${{ github.event.repository.name }}/). The app is built for a site at the domain root. Either rename the repository to '${{ github.repository_owner }}.github.io', or set a repository variable PUBLIC_URL to your custom domain."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
+
+      - name: Prepare the database
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          node prisma/seed.js
+        working-directory: backend
+
+      - name: Restore rates and history
+        # The database is created fresh every run. Rate movement is derived from RateHistory, so
+        # without this restore there would never be a second recorded value to compare against and
+        # the site could never show whether a rate rose or fell.
+        run: npm run snapshot:import --prefix backend
+
+      - name: Fetch current rates
+        # A failure here is not fatal on purpose: the restored snapshot still holds the last known
+        # good rates, and publishing those with an honest timestamp beats failing the deploy and
+        # leaving whatever is already live. The scraper records its own failure either way.
+        run: npm run scrape --prefix backend || echo "::warning::Scrape failed; publishing the previous snapshot."
+
+      - name: Run tests
+        # After the scrape, so a source that changed its markup in a way the parser mishandles is
+        # caught before the numbers reach the site rather than after.
+        run: npm test --prefix backend
+
+      - name: Save rates and history
+        run: npm run snapshot:export --prefix backend
+
+      - name: Build the site
+        run: |
+          npm run build:static --prefix frontend
+          npm run build:static --prefix backend
+
+      - name: Commit the snapshot
+        # Pushes made with GITHUB_TOKEN do not trigger workflows, so this cannot loop back into
+        # another run. The rate history therefore lives in git: a published figure cannot be
+        # quietly changed later, because changing it shows up as a diff.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot.json
+          if git diff --staged --quiet; then
+            echo "No rate changes to record."
+          else
+            git commit -m "chore: record rates $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            git push
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          # dist-static, not dist: the prerenderer reads Vite's output as its shell and writes the
+          # finished pages beside it, so only this directory holds the complete site.
+          path: frontend/dist-static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
