@@ -26,6 +26,8 @@ export default {
     nbt: "Қурби БМТ"
   },
   common: {
+    favoriteAdd: "Ба баргузидаҳо илова кардан",
+    favoriteRemove: "Аз баргузидаҳо гирифтан",
     searchBank: "Ҷустуҷӯи бонк",
     lastUpdated: "Навсозии охирин",
     updated: "Нав шуд",

@@ -13,9 +13,13 @@
       </RouterLink>
 
       <div class="rate-card-actions">
+        <!-- Icon-only, so without a name a screen reader announces an unlabelled button — and this
+             is the one control that changes what the site remembers about you. -->
         <button
           type="button"
           class="favorite-toggle"
+          :aria-label="isFavorite ? t('common.favoriteRemove') : t('common.favoriteAdd')"
+          :aria-pressed="isFavorite"
           :class="{ active: isFavorite }"
           @click="$emit('toggle-favorite', rate.bankId)"
         >

@@ -1283,3 +1283,16 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
     font-size: 0.8rem;
   }
 }
+
+/* The readable-size floor belongs at every width, not only on phones. The first pass scoped it to
+   max-width 768px, which left 24 elements under 12px on a desktop screen — the same navigation
+   labels and captions, just on a different device. Touch-target sizing stays phone-only above,
+   since 44px is a fingertip rule rather than a pointer one. */
+.brand-subtitle,
+.bottom-nav span,
+nav span,
+.others-table th,
+.section-eyebrow,
+.others-short {
+  font-size: 0.8rem;
+}

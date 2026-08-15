@@ -26,6 +26,8 @@ export default {
     nbt: "MBT kursi"
   },
   common: {
+    favoriteAdd: "Saralanganlarga qo'shish",
+    favoriteRemove: "Saralanganlardan olib tashlash",
     searchBank: "Bank qidirish",
     lastUpdated: "So'nggi yangilanish",
     updated: "Yangilandi",

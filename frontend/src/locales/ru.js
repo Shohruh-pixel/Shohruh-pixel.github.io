@@ -26,6 +26,8 @@ export default {
     nbt: "Курс НБТ"
   },
   common: {
+    favoriteAdd: "Добавить в избранное",
+    favoriteRemove: "Убрать из избранного",
     searchBank: "Поиск банка",
     lastUpdated: "Последнее обновление",
     updated: "Обновлено",
