@@ -37,7 +37,8 @@ const DATA_FILES = [
   { route: "/api/banks", file: "data/banks.json" },
   { route: "/api/rates", file: "data/rates.json" },
   { route: "/api/rates/best", file: "data/rates-best.json" },
-  { route: "/api/limits", file: "data/limits.json" }
+  { route: "/api/limits", file: "data/limits.json" },
+  { route: "/api/rates/typed", file: "data/rates-typed.json" }
 ];
 
 // /admin is deliberately absent: it talks to endpoints that no longer exist in a static build, and

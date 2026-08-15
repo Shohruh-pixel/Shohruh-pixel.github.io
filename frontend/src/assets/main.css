@@ -1220,3 +1220,31 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
   opacity: 0.75;
   font-size: 0.8rem;
 }
+
+/* Rate type switcher on a bank page. */
+.type-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.35);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.type-chip:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.type-chip.active {
+  border-color: rgba(56, 189, 248, 0.85);
+  background: rgba(56, 189, 248, 0.16);
+}

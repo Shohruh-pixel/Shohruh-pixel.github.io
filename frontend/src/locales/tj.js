@@ -15,6 +15,16 @@ export default {
     limits: "Лимитҳо",
     favorites: "Баргузида"
   },
+  rateType: {
+    title: "Қурб аз рӯи намуди амалиёт",
+    cash: "Дар касса",
+    transfer: "Интиқолҳо",
+    card: "Бо корт",
+    noncash: "Ғайринақдӣ",
+    legal: "Шахсони ҳуқуқӣ",
+    loan: "Пардохти қарз",
+    nbt: "Қурби БМТ"
+  },
   common: {
     searchBank: "Ҷустуҷӯи бонк",
     lastUpdated: "Навсозии охирин",

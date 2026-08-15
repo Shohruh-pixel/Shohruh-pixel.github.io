@@ -8,3 +8,7 @@ export function getBestRates() {
   return request("/rates/best");
 }
 
+
+export function getTypedRates() {
+  return request("/rates/typed");
+}

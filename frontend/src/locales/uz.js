@@ -15,6 +15,16 @@ export default {
     limits: "Limitlar",
     favorites: "Saralangan"
   },
+  rateType: {
+    title: "Amaliyot turi bo'yicha kurs",
+    cash: "Kassada",
+    transfer: "O'tkazmalar",
+    card: "Karta bilan",
+    noncash: "Naqdsiz",
+    legal: "Yuridik shaxslar",
+    loan: "Kredit to'lovi",
+    nbt: "MBT kursi"
+  },
   common: {
     searchBank: "Bank qidirish",
     lastUpdated: "So'nggi yangilanish",

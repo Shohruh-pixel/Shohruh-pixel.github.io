@@ -23,7 +23,8 @@ const STATIC_FILES = {
   "/banks": "/data/banks.json",
   "/rates": "/data/rates.json",
   "/rates/best": "/data/rates-best.json",
-  "/limits": "/data/limits.json"
+  "/limits": "/data/limits.json",
+  "/rates/typed": "/data/rates-typed.json"
 };
 
 function staticUrlFor(path) {

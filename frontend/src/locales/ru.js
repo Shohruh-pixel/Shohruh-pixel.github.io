@@ -15,6 +15,16 @@ export default {
     limits: "Лимиты",
     favorites: "Избранное"
   },
+  rateType: {
+    title: "Курс по типу операции",
+    cash: "В кассе",
+    transfer: "Переводы",
+    card: "Картой",
+    noncash: "Безналичными",
+    legal: "Юрлицам",
+    loan: "Погашение кредита",
+    nbt: "Курс НБТ"
+  },
   common: {
     searchBank: "Поиск банка",
     lastUpdated: "Последнее обновление",

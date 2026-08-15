@@ -57,9 +57,21 @@ async function refreshIfStale(req, res, next) {
   }
 }
 
+// Every rate each bank publishes, grouped by bank and currency. The cards and the comparison show
+// one headline figure; this is what lets a bank's own page say what that figure is and offer the
+// others, because a counter rate and a transfer rate can be twenty percent apart.
+async function getTypedRates(req, res, next) {
+  try {
+    res.json({ success: true, data: await rateService.getTypedRates() });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getRates,
   getBestRates,
+  getTypedRates,
   refreshIfStale
 };
 

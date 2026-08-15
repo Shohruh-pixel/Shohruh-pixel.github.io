@@ -170,7 +170,34 @@ async function getBestRates() {
   return buildBestRatePayload(rates);
 }
 
+// Grouped by bank slug, then currency, then type — the shape a bank page needs to offer a
+// switcher without regrouping in the browser. Banks with no typed rates yet simply do not appear,
+// which the page reads as "this bank publishes one figure" rather than as an error.
+async function getTypedRates() {
+  const rows = await prisma.rate.findMany({
+    include: { bank: { select: { slug: true } } },
+    orderBy: [{ currency: "asc" }, { type: "asc" }]
+  });
+
+  const byBank = {};
+
+  for (const row of rows) {
+    const slug = row.bank.slug;
+    byBank[slug] = byBank[slug] || {};
+    byBank[slug][row.currency] = byBank[slug][row.currency] || {};
+    byBank[slug][row.currency][row.type] = {
+      buy: row.buy,
+      sell: row.sell,
+      sourceLabel: row.sourceLabel,
+      updatedAt: row.updatedAt
+    };
+  }
+
+  return byBank;
+}
+
 module.exports = {
+  getTypedRates,
   getRates,
   getBestRates,
   buildBestRatePayload,
