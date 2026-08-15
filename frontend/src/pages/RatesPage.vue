@@ -1,6 +1,7 @@
 <template>
   <div class="page-stack">
-    <SectionHeader :title="t('rates.title')" :description="t('rates.subtitle')">
+    <SectionHeader
+        primary :title="t('rates.title')" :description="t('rates.subtitle')">
       <template #action>
         <div class="view-switch glass-panel">
           <button

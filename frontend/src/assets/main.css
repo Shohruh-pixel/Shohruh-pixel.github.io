@@ -1248,3 +1248,27 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
   border-color: rgba(56, 189, 248, 0.85);
   background: rgba(56, 189, 248, 0.16);
 }
+
+/* Touch targets. Measured on a 375px screen: the language buttons came out at 36px and the
+   card/table toggles at 43px, both under the 44px a fingertip reliably hits. The people this site
+   is for are often reading it on the move, so a missed tap is the common case, not the edge one. */
+@media (max-width: 768px) {
+  button,
+  select,
+  .button-link,
+  .language-button {
+    min-height: 44px;
+  }
+
+  .language-button {
+    min-width: 44px;
+  }
+
+  /* Six elements measured below 12px, which is where text stops being comfortably readable on a
+     phone held at arm's length. */
+  .others-table th,
+  .section-eyebrow,
+  .others-short {
+    font-size: 0.8rem;
+  }
+}

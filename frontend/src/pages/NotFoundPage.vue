@@ -1,6 +1,6 @@
 <template>
   <div class="page-stack">
-    <EmptyState :title="t('notFound.title')" :description="t('notFound.description')">
+    <EmptyState primary :title="t('notFound.title')" :description="t('notFound.description')">
       <RouterLink class="button-link primary" to="/">{{ t("nav.home") }}</RouterLink>
       <RouterLink class="button-link secondary" to="/rates">{{ t("nav.rates") }}</RouterLink>
     </EmptyState>

@@ -1,6 +1,6 @@
 <template>
   <div class="page-stack">
-    <SectionHeader :title="t('favorites.title')" :description="t('favorites.subtitle')" />
+    <SectionHeader primary :title="t('favorites.title')" :description="t('favorites.subtitle')" />
 
     <EmptyState
       v-if="!favoriteRates.length"

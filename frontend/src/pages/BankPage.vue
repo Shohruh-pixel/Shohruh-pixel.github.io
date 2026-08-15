@@ -2,7 +2,7 @@
   <div class="page-stack">
     <LoadingSkeleton v-if="loading" :count="2" />
 
-    <EmptyState
+    <EmptyState primary
       v-else-if="!rate"
       :title="t('bank.notFoundTitle')"
       :description="t('bank.notFoundDescription')"
@@ -12,6 +12,7 @@
 
     <template v-else>
       <SectionHeader
+        primary
         :title="t('bank.title', { bank: bankName })"
         :description="t('bank.subtitle', { bank: bankName })"
       />

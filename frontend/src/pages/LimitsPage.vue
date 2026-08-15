@@ -1,6 +1,11 @@
 <template>
   <div class="page-stack">
-    <SectionHeader :title="t('limits.title')" :description="t('limits.subtitle')" />
+    <SectionHeader
+        primary :title="t('limits.title')" :description="t('limits.subtitle')" />
+
+    <!-- The list only covers banks whose limits somebody has actually collected. Without saying so,
+         a reader cannot tell whether a missing bank has no limits or simply no data here. -->
+    <p class="supporting-copy subtle">{{ t("limits.missingNote") }}</p>
 
     <article class="notice-card glass-panel">
       <h3>{{ t("limits.disclaimerTitle") }}</h3>

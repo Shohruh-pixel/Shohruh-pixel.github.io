@@ -1,6 +1,7 @@
 <template>
   <div class="page-stack">
-    <SectionHeader :title="t('converter.title')" :description="t('converter.subtitle')" />
+    <SectionHeader
+        primary :title="t('converter.title')" :description="t('converter.subtitle')" />
 
     <LoadingSkeleton v-if="ratesStore.loading" :count="1" variant="single" />
 

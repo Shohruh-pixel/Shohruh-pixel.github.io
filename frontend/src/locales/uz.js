@@ -135,6 +135,7 @@ export default {
     emptyDescription: "Backendni ishga tushiring va bank ma'lumotlarini yuklang."
   },
   limits: {
+    missingNote: "Limitlar ularni e'lon qiladigan banklar uchun ko'rsatilgan. Qolganlari uchun hozircha ma'lumot yo'q.",
     title: "Naqd yechish limitlari",
     subtitle: "Turli bank kartalari bo'yicha kunlik va oylik limitlarni solishtiring.",
     disclaimerTitle: "Muhim",
