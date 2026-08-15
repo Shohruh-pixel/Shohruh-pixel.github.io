@@ -41,6 +41,12 @@ const props = defineProps({
 
 const { locale } = useLocale();
 
+// Captured before anything can overwrite it. The server renders this title with today's date and a
+// live rate — the version worth keeping for a shared link — and it cannot be rebuilt in the browser
+// once replaced, so switching to Tajik and back has to restore it rather than leave a Tajik title
+// above a Russian page.
+const serverTitle = typeof document === "undefined" ? "" : document.title;
+
 // The tab title is server-rendered in Russian and carries live rates, which is worth keeping — it
 // is what a crawler indexes and what appears when the link is shared. But switching the interface
 // to Tajik or Uzbek used to leave that Russian title in place, so the tab and any shared link
@@ -56,10 +62,7 @@ watch(
     }
 
     document.documentElement.lang = current;
-
-    if (current !== "ru") {
-      document.title = `${title} — BankRate TJ`;
-    }
+    document.title = current === "ru" ? serverTitle : `${title} — BankRate TJ`;
   },
   { immediate: true }
 );

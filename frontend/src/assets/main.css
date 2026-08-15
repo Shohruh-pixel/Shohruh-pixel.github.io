@@ -1272,3 +1272,14 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
     font-size: 0.8rem;
   }
 }
+
+/* The two that survived the first pass, measured on the live site: the tagline under the logo at
+   11.84px and the bottom-navigation labels at 11.52px. Both sit on the busiest surfaces of the app,
+   and the nav labels are what a first-time visitor reads to find anything at all. */
+@media (max-width: 768px) {
+  .brand-subtitle,
+  .bottom-nav span,
+  nav span {
+    font-size: 0.8rem;
+  }
+}
