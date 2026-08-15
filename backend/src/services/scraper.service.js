@@ -320,6 +320,70 @@ async function scrapeSpitamen() {
   };
 }
 
+const ESKHATA_SOURCE_LABEL = "Сайт банка (eskhata.com)";
+const ESKHATA_SLUG = "eskhata-bank";
+const ESKHATA_URL = "https://www.eskhata.com/";
+
+// Eskhata puts four tabs on its homepage — private customers, corporate, transfers, gold — each
+// with its own table, and all of them are in the delivered markup at once. The tab labels sit
+// outside the tables, so which pane a given table belongs to cannot be read from the table itself.
+//
+// Only the first is taken, which is the private "buy and sell" pane: the counter rate a walk-in
+// customer is quoted. Guessing at the rest would mean filing a corporate or repayment figure under
+// the wrong heading — a number that looks ordinary and is wrong for whoever reads it. One rate
+// correctly labelled beats three placed by assumption.
+function parseEskhata(html) {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ");
+
+  const header = text.match(/Банк\s+покупает\s+Банк\s+продает/i);
+
+  if (!header) {
+    return {};
+  }
+
+  // Bounded to what follows the first header and stops at the second, so a later pane's rows can
+  // never be read as part of this one.
+  const after = text.slice(header.index + header[0].length);
+  const nextHeader = after.search(/Банк\s+покупает/i);
+  const block = nextHeader === -1 ? after : after.slice(0, nextHeader);
+
+  const result = {};
+
+  // Three numbers per row: buy, sell, and the National Bank reference. The third is deliberately
+  // ignored — it belongs to the state, not to this bank.
+  for (const match of block.matchAll(/\b([A-Z]{3})\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)/g)) {
+    const [, code, buyRaw, sellRaw] = match;
+    const buy = Number(buyRaw.replace(",", "."));
+    const sell = Number(sellRaw.replace(",", "."));
+
+    if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell < buy) {
+      continue;
+    }
+
+    result[code] = { buy, sell };
+  }
+
+  return result;
+}
+
+async function scrapeEskhata() {
+  const html = await fetchWithRetry(ESKHATA_URL, "Eskhata");
+  const parsed = parseEskhata(html);
+
+  if (!parsed.USD && !parsed.RUB && !parsed.EUR) {
+    throw new Error(
+      `eskhata.com yielded no usable currency (got: ${Object.keys(parsed).join(", ") || "nothing"})`
+    );
+  }
+
+  return { USD: parsed.USD || null, RUB: parsed.RUB || null, EUR: parsed.EUR || null };
+}
+
 const HUMO_SOURCE_LABEL = "Сайт банка (humo.tj)";
 const HUMO_SLUG = "humo";
 const HUMO_URL = "https://humo.tj/ru";
@@ -627,6 +691,19 @@ async function performScrape() {
     }
   }
 
+  // Eskhata's counter rate, taken from the first pane on its homepage.
+  try {
+    const eskhataData = await scrapeEskhata();
+    await applyFromSource(
+      ESKHATA_SLUG,
+      { USD: eskhataData.USD, RUB: eskhataData.RUB, EUR: eskhataData.EUR },
+      ESKHATA_SOURCE_LABEL,
+      RATE_TYPES.CASH
+    );
+  } catch (error) {
+    skipped.push({ slug: ESKHATA_SLUG, reason: `eskhata.com: ${error.message}` });
+  }
+
   // Humo publishes only its transfer rate, on the homepage, in plain markup.
   try {
     const humoData = await scrapeHumo();
@@ -912,6 +989,7 @@ module.exports = {
   parseDushanbeCity,
   parseSpitamen,
   parseHumo,
+  parseEskhata,
   findBankRate,
   buildRateData
 };

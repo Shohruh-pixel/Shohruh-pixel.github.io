@@ -6,6 +6,7 @@ const {
   parseDushanbeCity,
   parseSpitamen,
   parseHumo,
+  parseEskhata,
   findBankRate
 } = require("../src/services/scraper.service");
 
@@ -292,6 +293,35 @@ test("if Humo ever reorders its columns the header decides, not the parser", () 
     .replace("<td>9.27</td><td>9.2</td>", "<td>9.2</td><td>9.27</td>");
 
   assert.deepEqual(parseHumo(reordered).USD, { buy: 9.2, sell: 9.27 });
+});
+
+// Eskhata ships all four of its tab panes in the delivered markup at once, and the labels that say
+// which pane is which sit outside the tables. Only the first — the private counter rate — is read;
+// the boundary below is what stops a corporate or repayment row being filed under it.
+const ESKHATA_HTML = `
+  <div>Частным лицам Юридическим лицам Денежные переводы</div>
+  <table><tr><th>Валюта</th><th>Банк покупает</th><th>Банк продает</th><th>Курс НБТ</th></tr>
+    <tr><td>USD</td><td>9.1800</td><td>9.2700</td><td>9.2628</td></tr>
+    <tr><td>EUR</td><td>10.3500</td><td>10.5500</td><td>10.6883</td></tr>
+    <tr><td>RUB</td><td>0.1005</td><td>0.1025</td><td>0.1099</td></tr>
+  </table>
+  <table><tr><th>Валюта</th><th>Банк покупает</th><th>Банк продает</th><th>Курс НБТ</th></tr>
+    <tr><td>USD</td><td>9.1800</td><td>9.2700</td><td>9.2628</td></tr>
+    <tr><td>RUB</td><td>0.1093</td><td>0.1114</td><td>0.1099</td></tr>
+  </table>`;
+
+test("Eskhata: only the first pane is read, and the NBT column is left out of it", () => {
+  const parsed = parseEskhata(ESKHATA_HTML);
+
+  assert.deepEqual(parsed.USD, { buy: 9.18, sell: 9.27 });
+  assert.deepEqual(parsed.EUR, { buy: 10.35, sell: 10.55 });
+  // 0.1005/0.1025 is the first pane. 0.1093 belongs to the second and must not leak in — the two
+  // describe different transactions and differ by nearly nine percent.
+  assert.deepEqual(parsed.RUB, { buy: 0.1005, sell: 0.1025 });
+});
+
+test("Eskhata: a page without the expected header yields nothing", () => {
+  assert.deepEqual(parseEskhata("<html><body><p>Курсы валют</p></body></html>"), {});
 });
 
 test("Humo without a recognisable header yields nothing rather than guessing an order", () => {
