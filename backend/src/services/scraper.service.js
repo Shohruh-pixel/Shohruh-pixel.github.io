@@ -332,56 +332,85 @@ const ESKHATA_URL = "https://www.eskhata.com/";
 // customer is quoted. Guessing at the rest would mean filing a corporate or repayment figure under
 // the wrong heading — a number that looks ordinary and is wrong for whoever reads it. One rate
 // correctly labelled beats three placed by assumption.
+// The page names its panes: each button carries data-target="id" plus the visible label, and the
+// matching pane carries data-tab="id". That pairing is what makes the other tables usable — an
+// earlier version read the flattened text and could only take the first table, because once the
+// markup is gone there is nothing left tying a table to the words above it.
+const ESKHATA_TAB_TYPES = {
+  "покупка и продажа": RATE_TYPES.CASH,
+  "погашение кредита": RATE_TYPES.LOAN,
+  "юридическим лицам": RATE_TYPES.LEGAL,
+  "денежные переводы": RATE_TYPES.TRANSFER
+};
+
 function parseEskhata(html) {
-  const text = html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ");
-
-  const header = text.match(/Банк\s+покупает\s+Банк\s+продает/i);
-
-  if (!header) {
-    return {};
+  // id -> visible label, read from the buttons.
+  const labels = {};
+  for (const match of html.matchAll(/data-target="([^"]+)"[^>]*>([^<]+)</g)) {
+    labels[match[1]] = match[2].trim().toLowerCase();
   }
 
-  // Bounded to what follows the first header and stops at the second, so a later pane's rows can
-  // never be read as part of this one.
-  const after = text.slice(header.index + header[0].length);
-  const nextHeader = after.search(/Банк\s+покупает/i);
-  const block = nextHeader === -1 ? after : after.slice(0, nextHeader);
-
   const result = {};
+  // Each pane owns the markup up to the next pane. Nesting therefore resolves itself: the outer
+  // "Частным лицам" container ends where its first inner pane begins, so it holds no table of its
+  // own and cannot be double-counted with the inner one.
+  const chunks = [...html.matchAll(/data-tab="([^"]+)"([\s\S]*?)(?=data-tab="|$)/g)];
 
-  // Three numbers per row: buy, sell, and the National Bank reference. The third is deliberately
-  // ignored — it belongs to the state, not to this bank.
-  for (const match of block.matchAll(/\b([A-Z]{3})\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)/g)) {
-    const [, code, buyRaw, sellRaw] = match;
-    const buy = Number(buyRaw.replace(",", "."));
-    const sell = Number(sellRaw.replace(",", "."));
+  for (const [, id, chunk] of chunks) {
+    const type = ESKHATA_TAB_TYPES[labels[id]];
 
-    if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell < buy) {
+    // Unlabelled panes and the gold-bar tab are skipped rather than guessed at. Filing a corporate
+    // or repayment figure under the counter rate would look entirely ordinary and be wrong for
+    // whoever read it.
+    if (!type) {
       continue;
     }
 
-    result[code] = { buy, sell };
+    const table = chunk.match(/<table[\s\S]*?<\/table>/);
+    if (!table) {
+      continue;
+    }
+
+    const text = table[0]
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ");
+
+    // "Покупка и продажа" rows carry buy, sell and the National Bank reference; "Погашение кредита"
+    // carries a single price and that reference. Both shapes are read, and the reference column is
+    // ignored in each — it belongs to the state, not to this bank.
+    for (const row of text.matchAll(/\b([A-Z]{3})\s+(\d+[.,]\d+)(?:\s+(\d+[.,]\d+))?(?:\s+(\d+[.,]\d+))?/g)) {
+      const [, code, firstRaw, secondRaw, thirdRaw] = row;
+      const hasSpread = Boolean(secondRaw && thirdRaw);
+
+      const buy = Number(firstRaw.replace(",", "."));
+      const sell = hasSpread ? Number(secondRaw.replace(",", ".")) : null;
+
+      if (!Number.isFinite(buy) || buy <= 0) {
+        continue;
+      }
+      if (sell !== null && (!Number.isFinite(sell) || sell < buy)) {
+        continue;
+      }
+
+      result[code] = result[code] || {};
+      result[code][type] = { buy, sell };
+    }
   }
 
   return result;
 }
 
+// Returns the same per-currency-per-type shape the JSON adapters produce, so it feeds the same
+// storage and headline selection rather than needing a path of its own.
 async function scrapeEskhata() {
-  const html = await fetchWithRetry(ESKHATA_URL, "Eskhata");
-  const parsed = parseEskhata(html);
+  const parsed = parseEskhata(await fetchWithRetry(ESKHATA_URL, "Eskhata"));
 
-  if (!parsed.USD && !parsed.RUB && !parsed.EUR) {
-    throw new Error(
-      `eskhata.com yielded no usable currency (got: ${Object.keys(parsed).join(", ") || "nothing"})`
-    );
+  if (!Object.keys(parsed).length) {
+    throw new Error("eskhata.com yielded no usable currency");
   }
 
-  return { USD: parsed.USD || null, RUB: parsed.RUB || null, EUR: parsed.EUR || null };
+  return parsed;
 }
 
 const HUMO_SOURCE_LABEL = "Сайт банка (humo.tj)";
@@ -691,15 +720,30 @@ async function performScrape() {
     }
   }
 
-  // Eskhata's counter rate, taken from the first pane on its homepage.
+  // Eskhata publishes four panes and the markup names each one, so all four are stored and the
+  // headline is chosen by the same preference every other bank uses.
   try {
-    const eskhataData = await scrapeEskhata();
-    await applyFromSource(
-      ESKHATA_SLUG,
-      { USD: eskhataData.USD, RUB: eskhataData.RUB, EUR: eskhataData.EUR },
-      ESKHATA_SOURCE_LABEL,
-      RATE_TYPES.CASH
-    );
+    const byCurrency = await scrapeEskhata();
+    const bank = await prisma.bank.findUnique({ where: { slug: ESKHATA_SLUG }, select: { id: true } });
+
+    if (bank) {
+      await storeTypedRates(bank.id, byCurrency, ESKHATA_SOURCE_LABEL);
+    }
+
+    const headline = buildHeadline(byCurrency);
+
+    if (headline) {
+      await applyFromSource(
+        ESKHATA_SLUG,
+        {
+          USD: { buy: headline.usdBuy, sell: headline.usdSell },
+          RUB: { buy: headline.rubBuy, sell: headline.rubSell },
+          EUR: { buy: headline.eurBuy, sell: headline.eurSell }
+        },
+        ESKHATA_SOURCE_LABEL,
+        headline.rateType
+      );
+    }
   } catch (error) {
     skipped.push({ slug: ESKHATA_SLUG, reason: `eskhata.com: ${error.message}` });
   }

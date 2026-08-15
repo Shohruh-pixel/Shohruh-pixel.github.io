@@ -298,29 +298,57 @@ test("if Humo ever reorders its columns the header decides, not the parser", () 
 // Eskhata ships all four of its tab panes in the delivered markup at once, and the labels that say
 // which pane is which sit outside the tables. Only the first — the private counter rate — is read;
 // the boundary below is what stops a corporate or repayment row being filed under it.
-const ESKHATA_HTML = `
-  <div>Частным лицам Юридическим лицам Денежные переводы</div>
-  <table><tr><th>Валюта</th><th>Банк покупает</th><th>Банк продает</th><th>Курс НБТ</th></tr>
-    <tr><td>USD</td><td>9.1800</td><td>9.2700</td><td>9.2628</td></tr>
-    <tr><td>EUR</td><td>10.3500</td><td>10.5500</td><td>10.6883</td></tr>
-    <tr><td>RUB</td><td>0.1005</td><td>0.1025</td><td>0.1099</td></tr>
-  </table>
-  <table><tr><th>Валюта</th><th>Банк покупает</th><th>Банк продает</th><th>Курс НБТ</th></tr>
-    <tr><td>USD</td><td>9.1800</td><td>9.2700</td><td>9.2628</td></tr>
-    <tr><td>RUB</td><td>0.1093</td><td>0.1114</td><td>0.1099</td></tr>
-  </table>`;
+function eskhataTable(rows) {
+  return `<table><tr><th>Валюта</th><th>Банк покупает</th><th>Банк продает</th><th>Курс НБТ</th></tr>${rows}</table>`;
+}
 
-test("Eskhata: only the first pane is read, and the NBT column is left out of it", () => {
+const ESKHATA_HTML = `
+  <div class="tabs__list">
+    <button data-target="tabrates1">Частным лицам</button>
+    <button data-target="tabrates2">Юридическим лицам</button>
+    <button data-target="tabrates3">Денежные переводы</button>
+    <button data-target="tabrates4">Стоимость золотых слитков</button>
+    <button data-target="rates-tab1">Покупка и продажа</button>
+    <button data-target="rates-tab2">Погашение кредита</button>
+  </div>
+  <div data-tab="tabrates1">
+    <div data-tab="rates-tab1">${eskhataTable(
+      "<tr><td>USD</td><td>9.1800</td><td>9.2700</td><td>9.2628</td></tr>" +
+        "<tr><td>RUB</td><td>0.1005</td><td>0.1025</td><td>0.1099</td></tr>"
+    )}</div>
+    <div data-tab="rates-tab2">${eskhataTable("<tr><td>RUB</td><td>0.1111</td><td>0.1099</td></tr>")}</div>
+  </div>
+  <div data-tab="tabrates2">${eskhataTable("<tr><td>RUB</td><td>0.1093</td><td>0.1114</td><td>0.1099</td></tr>")}</div>
+  <div data-tab="tabrates3">${eskhataTable("<tr><td>RUB</td><td>0.1086</td><td>0.1106</td><td>0.1099</td></tr>")}</div>
+  <div data-tab="tabrates4">${eskhataTable("<tr><td>5 грамм</td><td>6597.23</td><td>6730.51</td><td>0</td></tr>")}</div>`;
+
+test("Eskhata: each pane's table is tied to the tab that names it", () => {
   const parsed = parseEskhata(ESKHATA_HTML);
 
-  assert.deepEqual(parsed.USD, { buy: 9.18, sell: 9.27 });
-  assert.deepEqual(parsed.EUR, { buy: 10.35, sell: 10.55 });
-  // 0.1005/0.1025 is the first pane. 0.1093 belongs to the second and must not leak in — the two
-  // describe different transactions and differ by nearly nine percent.
-  assert.deepEqual(parsed.RUB, { buy: 0.1005, sell: 0.1025 });
+  // The same currency at four prices, which is the whole reason the pairing has to be exact: the
+  // counter rate and the transfer rate are eight percent apart, and both are correct for somebody.
+  assert.deepEqual(parsed.RUB.cash, { buy: 0.1005, sell: 0.1025 });
+  assert.deepEqual(parsed.RUB.legal, { buy: 0.1093, sell: 0.1114 });
+  assert.deepEqual(parsed.RUB.transfer, { buy: 0.1086, sell: 0.1106 });
+  assert.deepEqual(parsed.USD.cash, { buy: 9.18, sell: 9.27 });
 });
 
-test("Eskhata: a page without the expected header yields nothing", () => {
+test("Eskhata: the repayment pane has one price and no spread", () => {
+  assert.deepEqual(parseEskhata(ESKHATA_HTML).RUB.loan, { buy: 0.1111, sell: null });
+});
+
+test("Eskhata: the gold tab is not mistaken for a currency", () => {
+  const parsed = parseEskhata(ESKHATA_HTML);
+  assert.equal(Object.keys(parsed).sort().join(","), "RUB,USD");
+});
+
+test("Eskhata: an unnamed pane is skipped rather than guessed at", () => {
+  // Without a button naming it there is nothing to say which transaction the numbers describe.
+  const orphan = `<div data-tab="mystery">${eskhataTable("<tr><td>USD</td><td>1.0</td><td>2.0</td><td>3.0</td></tr>")}</div>`;
+  assert.deepEqual(parseEskhata(orphan), {});
+});
+
+test("Eskhata: a redesigned page yields nothing", () => {
   assert.deepEqual(parseEskhata("<html><body><p>Курсы валют</p></body></html>"), {});
 });
 
