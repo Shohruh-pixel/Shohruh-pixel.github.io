@@ -74,7 +74,7 @@ const T = {
   navHome:'Курс', navRates:'Банки', navConv:'Счёт', navLimits:'Лимиты',
   titleHome:'Курс сегодня', titleRates:'Банки', titleConv:'Конвертер', titleLimits:'Лимиты карт',
   bestBuy:'Лучше всего продать', bestSell:'Дешевле всего купить',
-  buy:'Покупка', sell:'Продажа', allBanks:'Все банки', search:'Найти банк',
+  buy:'Покупка', sell:'Продажа', compare:'Сравнить', clear:'Убрать сравнение', pickTwo:'Отметьте два банка — покажу их рядом', allBanks:'Все банки', search:'Найти банк',
   iGive:'Отдаю', iGet:'Получаю', rateUsed:'Курс банка', pickBank:'Банк для расчёта',
   perDay:'В день', perMonth:'В месяц', fee:'Комиссия', card:'Карта',
   // The mock says "каждые 15 минут". Ours runs every three hours, and a promise of freshness on a
@@ -87,7 +87,7 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l] = await Promise.all([
@@ -139,6 +139,35 @@ function screenHome(){
   <div class="note">${T.source}</div>`;
 }
 
+// Two banks side by side, every currency at once. Choosing between banks is the actual decision
+// this product exists to support, and scrolling a list comparing one column at a time is how people
+// lose track of which was better — the answer changes depending on the currency they hold.
+function comparePanel(){
+  const picked = S.compare.map(id => S.rates.find(r => r.bankId === id)).filter(Boolean);
+  if(picked.length < 2) return `<div class="note" style="margin:0 0 12px">${T.pickTwo}</div>`;
+
+  const [a, c] = picked;
+  return `
+  <div class="card" style="margin-bottom:12px">
+    <div class="row lbl" style="margin-bottom:10px">
+      <div style="flex:0 0 44px"></div>
+      <div style="text-align:right">${a.bank.nameRu}</div>
+      <div style="text-align:right">${c.bank.nameRu}</div>
+    </div>
+    ${CUR.map(cur => ['buy','sell'].map(side => {
+      const va = val(a,cur,side), vc = val(c,cur,side);
+      // Better for the reader: selling into the higher bid, buying at the lower ask.
+      const aWins = side === 'buy' ? va > vc : va < vc;
+      return `<div class="row" style="margin-bottom:6px;align-items:baseline">
+        <div class="lbl" style="flex:0 0 44px">${cur} ${side === 'buy' ? '↓' : '↑'}</div>
+        <div class="n ${va !== vc && aWins ? 'best' : ''}" style="text-align:right">${fmt(va,cur)}</div>
+        <div class="n ${va !== vc && !aWins ? 'best' : ''}" style="text-align:right">${fmt(vc,cur)}</div>
+      </div>`;
+    }).join('')).join('')}
+    <div class="lbl" style="margin-top:10px">↓ ${T.buy} · ↑ ${T.sell}</div>
+  </div>`;
+}
+
 function screenRates(){
   const q = S.q.toLowerCase();
   const list = S.rates.filter(r => !q || r.bank.nameRu.toLowerCase().includes(q));
@@ -147,6 +176,10 @@ function screenRates(){
   <h1>${T.titleRates}</h1>
   <div class="sub">${list.length} из ${S.rates.length}</div>
   <input id="q" placeholder="${T.search}" value="${S.q}" style="margin-bottom:10px">
+  <button class="pill ${S.compareMode?'on':''}" data-cmp="toggle" style="width:100%;margin-bottom:10px">
+    ${S.compareMode ? T.clear : T.compare}
+  </button>
+  ${S.compareMode ? comparePanel() : ''}
   <div class="chips" style="margin-bottom:12px">
     ${CUR.map(c=>`<button class="chip ${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
   </div>
@@ -154,7 +187,7 @@ function screenRates(){
     <div style="text-align:right;flex:0 0 64px">${T.buy}</div>
     <div style="text-align:right;flex:0 0 64px">${T.sell}</div></div>
   ${list.map(r=>`
-    <button class="bank" data-bank="${r.bankId}">
+    <button class="bank" data-bank="${r.bankId}" style="${S.compareMode && S.compare.includes(r.bankId) ? 'box-shadow:var(--acc-edge)' : ''}">
       <div><div class="nm">${r.bank.nameRu}</div><div class="lbl">${r.sourceLabel}</div></div>
       <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
       <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
@@ -222,12 +255,21 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp]');
   if(!t) return;
   if(t.dataset.tab) S.tab = t.dataset.tab;
   else if(t.dataset.cur) S.cur = t.dataset.cur;
   else if(t.dataset.from) S.from = t.dataset.from;
-  else if(t.dataset.bank){ S.bank = Number(t.dataset.bank); S.tab = 'conv'; }
+  else if(t.dataset.cmp){ S.compareMode = !S.compareMode; S.compare = []; }
+  else if(t.dataset.bank){
+    const id = Number(t.dataset.bank);
+    if(S.compareMode){
+      // Two at a time: a third pick replaces the older of the pair, so the control never dead-ends
+      // on a full selection the reader has to clear by hand.
+      S.compare = S.compare.includes(id) ? S.compare.filter(x=>x!==id)
+        : [...S.compare, id].slice(-2);
+    } else { S.bank = id; S.tab = 'conv'; }
+  }
   render();
   window.scrollTo(0,0);
 });
