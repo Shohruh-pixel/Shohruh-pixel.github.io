@@ -12,7 +12,7 @@
 // Bumped to v2 when the static build arrived: a device still holding v1 caches would keep serving
 // the old entries, and activate() only clears caches whose name does not end in the current
 // version. Without the bump, offline visitors would sit on data that no longer has a source.
-const VERSION = "v2";
+const VERSION = "v3";
 const ASSET_CACHE = `bankrate-assets-${VERSION}`;
 const PAGE_CACHE = `bankrate-pages-${VERSION}`;
 const DATA_CACHE = `bankrate-data-${VERSION}`;
@@ -31,7 +31,11 @@ const CACHEABLE_API = [
   "/data/rates.json",
   "/data/rates-best.json",
   "/data/limits.json",
-  "/data/banks.json"
+  "/data/banks.json",
+  // Added with the rate-type switcher and missed at the time: without it the switcher opens empty
+  // offline while every other screen still works, which reads as a broken feature rather than as a
+  // missing connection.
+  "/data/rates-typed.json"
 ];
 
 self.addEventListener("install", (event) => {
