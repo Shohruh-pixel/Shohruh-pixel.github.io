@@ -61,10 +61,31 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+/* The mock keeps one soft accent glow behind the top-left corner — the single piece of colour on
+   the ground, sized and blurred so it reads as depth rather than as decoration. */
+.blob{position:fixed;width:360px;height:360px;left:-120px;top:-110px;border-radius:50%;
+  background:radial-gradient(circle, rgba(110,231,255,.22), transparent 70%);filter:blur(80px);
+  pointer-events:none;z-index:-1}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#app{animation:rise .3s ease both}
+/* 56px, title and controls on one line — not a page heading stacked above the content. */
+header{height:56px;display:flex;align-items:center;gap:8px;padding:0 4px;position:sticky;top:0;
+  background:var(--bg);z-index:10}
+header .ttl{flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.03em}
+header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:13px;
+  color:#c8cddb;background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+/* Currencies are one segmented control, not loose chips: the three are a single choice. */
+.seg{display:flex;gap:6px;padding:3px;border-radius:999px;background:var(--glass-soft);
+  box-shadow:var(--edge);margin-bottom:14px}
+.seg button{flex:1;height:38px;border-radius:999px;border:0;font:inherit;font-size:13.5px;
+  color:var(--dim);background:none;cursor:pointer}
+.seg button.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
 </style>
 </head>
 <body>
 
+<div class="blob"></div>
+<header><div class="ttl" id="ttl"></div></header>
 <main id="app"><div class="sub" style="margin-top:40px">Загружаю курсы…</div></main>
 
 <nav id="nav"></nav>
@@ -118,10 +139,9 @@ function screenHome(){
   const b = best(S.cur);
   if(!b) return '<div class="card">Нет данных</div>';
   return `
-  <h1>${T.titleHome}</h1>
   <div class="sub">${CUR_NAME[S.cur]}</div>
-  <div class="chips" style="margin-bottom:14px">
-    ${CUR.map(c=>`<button class="chip ${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
+  <div class="seg">
+    ${CUR.map(c=>`<button class="${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
   </div>
   <div class="row" style="margin-bottom:8px">
     <div class="card">
@@ -173,15 +193,14 @@ function screenRates(){
   const list = S.rates.filter(r => !q || r.bank.nameRu.toLowerCase().includes(q));
   const b = best(S.cur);
   return `
-  <h1>${T.titleRates}</h1>
   <div class="sub">${list.length} из ${S.rates.length}</div>
   <input id="q" placeholder="${T.search}" value="${S.q}" style="margin-bottom:10px">
   <button class="pill ${S.compareMode?'on':''}" data-cmp="toggle" style="width:100%;margin-bottom:10px">
     ${S.compareMode ? T.clear : T.compare}
   </button>
   ${S.compareMode ? comparePanel() : ''}
-  <div class="chips" style="margin-bottom:12px">
-    ${CUR.map(c=>`<button class="chip ${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
+  <div class="seg">
+    ${CUR.map(c=>`<button class="${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
   </div>
   <div class="row lbl" style="padding:0 16px 6px"><div></div>
     <div style="text-align:right;flex:0 0 64px">${T.buy}</div>
@@ -201,7 +220,6 @@ function screenConv(){
   const amt = parseFloat(String(S.amount).replace(',','.')) || 0;
   const out = S.from === 'TJS' ? amt / rate : amt * rate;
   return `
-  <h1>${T.titleConv}</h1>
   <div class="sub">${T.pickBank}</div>
   <select id="bank" style="margin-bottom:10px">
     ${S.rates.map(x=>`<option value="${x.bankId}" ${x.bankId===S.bank?'selected':''}>${x.bank.nameRu}</option>`).join('')}
@@ -221,9 +239,8 @@ function screenConv(){
 }
 
 function screenLimits(){
-  if(!S.limits.length) return `<h1>${T.titleLimits}</h1><div class="card">Данных пока нет</div>`;
+  if(!S.limits.length) return `<div class="card">Данных пока нет</div>`;
   return `
-  <h1>${T.titleLimits}</h1>
   <div class="sub">${S.limits.length} карт</div>
   ${S.limits.map(l=>`
     <div class="card" style="margin-bottom:8px">
@@ -251,6 +268,7 @@ function render(){
     ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
   ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('');
+  document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
   document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
 }
 
