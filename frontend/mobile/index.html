@@ -119,31 +119,56 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <body>
 
 <div class="blob"></div>
-<header><div class="ttl" id="ttl"></div></header>
+<header><div class="ttl" id="ttl"></div><button id="lang" title="Язык"></button><button id="map" title="Банкоматы" style="width:34px;padding:0">◎</button></header>
 <main id="app"><div class="sub" style="margin-top:40px">Загружаю курсы…</div></main>
 
 <nav id="nav"></nav>
 
 <script>
-const T = {
-  navHome:'Курс', navRates:'Банки', navConv:'Счёт', navLimits:'Лимиты',
-  titleHome:'Курс сегодня', titleRates:'Банки', titleConv:'Конвертер', titleLimits:'Лимиты карт',
-  bestBuy:'Лучше всего продать', bestSell:'Дешевле всего купить',
-  buy:'Покупка', sell:'Продажа', compare:'Сравнить', clear:'Убрать сравнение', pickTwo:'Отметьте два банка — покажу их рядом', allBanks:'Все банки', more:'Все курсы', bank:'Банк', search:'Найти банк',
-  iGive:'Отдаю', iGet:'Получаю', rateUsed:'Курс банка', pickBank:'Банк для расчёта',
-  perDay:'В день', perMonth:'В месяц', fee:'Комиссия', card:'Карта',
-  updated:'Курс обновлён', currency:'Валюта', convertHere:'Считать по этому банку', close:'Закрыть',
-  // The mock says "каждые 15 минут". Ours runs every three hours, and a promise of freshness on a
-  // page about money has to be the real number.
-  source:'Курсы с сайтов и API самих банков. Обновляются каждые 3 часа.'
+const LANGS = ['ru','tj','uz'];
+const D = {
+  ru:{navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+    titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
+    bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
+    buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
+    compare:'Сравнить',clear:'Убрать сравнение',pickTwo:'Отметьте два банка — покажу их рядом',
+    iGive:'Отдаю',iGet:'Получаю',rateUsed:'Курс банка',pickBank:'Банк для расчёта',
+    perDay:'В день',perMonth:'В месяц',fee:'Комиссия',card:'Карта',
+    updated:'Курс обновлён',currency:'Валюта',convertHere:'Считать по этому банку',close:'Закрыть',
+    noData:'Нет данных',cards:'карт',
+    source:'Курсы с сайтов и API самих банков. Обновляются каждые 3 часа.'},
+  tj:{navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+    titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
+    bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
+    buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
+    compare:'Муқоиса',clear:'Муқоисаро тоза кунед',pickTwo:'Ду бонкро интихоб кунед — паҳлӯи ҳам нишон медиҳам',
+    iGive:'Медиҳам',iGet:'Мегирам',rateUsed:'Қурби бонк',pickBank:'Бонк барои ҳисоб',
+    perDay:'Дар як рӯз',perMonth:'Дар як моҳ',fee:'Комиссия',card:'Корт',
+    updated:'Қурб нав шуд',currency:'Асъор',convertHere:'Бо ин бонк ҳисоб кардан',close:'Пӯшидан',
+    noData:'Маълумот нест',cards:'корт',
+    source:'Қурбҳо аз сомонаҳо ва API-и худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
+  uz:{navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+    titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
+    bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
+    buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
+    compare:'Solishtirish',clear:'Solishtirishni olib tashlash',pickTwo:'Ikkita bankni belgilang — yonma-yon ko\'rsataman',
+    iGive:'Beraman',iGet:'Olaman',rateUsed:'Bank kursi',pickBank:'Hisob uchun bank',
+    perDay:'Kuniga',perMonth:'Oyiga',fee:'Komissiya',card:'Karta',
+    updated:'Kurs yangilandi',currency:'Valyuta',convertHere:'Shu bank bo\'yicha hisoblash',close:'Yopish',
+    noData:'Ma\'lumot yo\'q',cards:'karta',
+    source:'Kurslar banklarning o\'z saytlari va API\'laridan. Har 3 soatda yangilanadi.'}
 };
+
+// The choice outlives the session: someone who reads Tajik reads Tajik every time, and asking them
+// to pick again on each visit is asking them to notice the site is in the wrong language first.
+let T = D[localStorage.getItem('bankrate-m-lang') || 'ru'] || D.ru;
 
 const CUR = ['USD','RUB','EUR'];
 const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубль', EUR:'Евро'};
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l] = await Promise.all([
@@ -172,7 +197,7 @@ function best(c){
 
 function screenHome(){
   const b = best(S.cur);
-  if(!b) return '<div class="card">Нет данных</div>';
+  if(!b) return '<div class="card">${T.noData}</div>';
   return `
   <div class="sub">${CUR_NAME[S.cur]}</div>
   <div class="seg">
@@ -244,7 +269,7 @@ function screenRates(){
   const list = S.rates.filter(r => !q || r.bank.nameRu.toLowerCase().includes(q));
   const b = best(S.cur);
   return `
-  <div class="sub">${list.length} из ${S.rates.length}</div>
+  <div class="sub">${list.length} / ${S.rates.length}</div>
   <input id="q" placeholder="${T.search}" value="${S.q}" style="margin-bottom:10px">
   <button class="pill ${S.compareMode?'on':''}" data-cmp="toggle" style="width:100%;margin-bottom:10px">
     ${S.compareMode ? T.clear : T.compare}
@@ -308,9 +333,9 @@ function screenConv(){
 }
 
 function screenLimits(){
-  if(!S.limits.length) return `<div class="card">Данных пока нет</div>`;
+  if(!S.limits.length) return `<div class="card">${T.noData}</div>`;
   return `
-  <div class="sub">${S.limits.length} карт</div>
+  <div class="sub">${S.limits.length} ${T.cards}</div>
   ${S.limits.map(l=>`
     <div class="card" style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
@@ -385,6 +410,7 @@ function render(){
       <span class="cap"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg></span>${l}</button>`).join('');
   if(S.sheet != null) document.getElementById('app').insertAdjacentHTML('beforeend', sheetHtml());
   document.body.style.overflow = S.sheet != null ? 'hidden' : '';
+  document.getElementById('lang').textContent = S.lang.toUpperCase();
   document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
   document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
 }
@@ -430,6 +456,20 @@ document.addEventListener('input', e => {
   if(e.target.id === 'amt'){ S.amount = e.target.value; const v = e.target.value;
     render(); const f = document.getElementById('amt'); if(f){ f.value = v; f.focus(); } }
 });
+document.getElementById('lang').addEventListener('click', () => {
+  S.lang = LANGS[(LANGS.indexOf(S.lang) + 1) % LANGS.length];
+  localStorage.setItem('bankrate-m-lang', S.lang);
+  T = D[S.lang];
+  document.documentElement.lang = S.lang;
+  render();
+});
+
+// Nothing behind this yet — the mock shows nearby ATMs and we have no location data, so it says
+// so rather than opening an empty screen that looks broken.
+document.getElementById('map').addEventListener('click', () => {
+  alert(S.lang === 'ru' ? 'Банкоматы появятся позже' : S.lang === 'tj' ? 'Банкоматҳо баъдтар' : 'Bankomatlar keyinroq');
+});
+
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && S.sheet != null){ S.sheet = null; render(); } });
 
 document.addEventListener('change', e => {
