@@ -166,6 +166,12 @@ async function main() {
     // Without this GitHub Pages runs the output through Jekyll, which silently drops files and
     // directories beginning with an underscore. Nothing here starts with one today; the file costs
     // nothing and removes a failure that would only appear after a future rename.
+    // The phone app is a separate, self-contained page served at /m/. It reads the same data files
+    // as the desktop build, so there is one scraper, one deploy and one set of numbers — two front
+    // ends over one truth rather than two products drifting apart.
+    const mobile = fs.readFileSync(path.resolve(__dirname, "../../frontend/mobile/index.html"), "utf8");
+    outputs.push({ file: "m/index.html", body: mobile });
+
     outputs.push({ file: ".nojekyll", body: "" });
 
     for (const { file, body } of outputs) {

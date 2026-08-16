@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d15">
+<title>Курс сегодня — BankRate TJ</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<style>
+/* Values are the mock's own, read out of its editable parameters rather than sampled from a
+   screenshot. Everything is a film of the text colour over a near-black ground: no solid fills,
+   because a screen of eight bank cards has to read as one surface, not eight boxes. */
+:root{
+  --bg:#0b0d15; --glass:rgba(242,244,250,.05); --glass-soft:rgba(242,244,250,.032);
+  --edge:inset 0 1px 0 rgba(242,244,250,.09), 0 0 0 1px rgba(242,244,250,.055);
+  --edge-lit:inset 0 1px 0 rgba(242,244,250,.14), 0 0 0 1px rgba(242,244,250,.07), 0 20px 46px rgba(0,0,0,.4);
+  --acc:#6ee7ff; --acc-wash:rgba(110,231,255,.1);
+  --acc-edge:inset 0 1px 0 rgba(110,231,255,.3), 0 0 0 1px rgba(110,231,255,.34), 0 0 22px rgba(110,231,255,.16);
+  --text:#f2f4fa; --dim:#a4aabd; --faint:#8b91a4; --rad:22px;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono","Roboto Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font:15px/1.45 "Inter",system-ui,-apple-system,sans-serif;
+  padding:0 16px calc(84px + env(safe-area-inset-bottom));overflow-x:hidden}
+/* Figures in the monospace face throughout: down a column of eight banks the digits line up, which
+   turns comparing 9,22 against 9,18 into a glance rather than a reading. */
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.card{background:var(--glass);border-radius:var(--rad);box-shadow:var(--edge);padding:16px}
+.soft{background:var(--glass-soft);border-radius:var(--rad);box-shadow:var(--edge)}
+h1{font-size:26px;font-weight:600;margin:18px 0 4px}
+.sub{color:var(--faint);font-size:13px;margin-bottom:16px}
+.lbl{font-size:12.5px;color:var(--faint)}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.big{font-size:30px;font-weight:600;margin-top:6px}
+.mid{font-size:16px;margin-top:5px}
+.pill{height:50px;border-radius:999px;border:0;font:inherit;font-size:15px;display:flex;
+  align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  color:var(--dim);background:var(--glass-soft);box-shadow:var(--edge)}
+.pill.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;height:38px;padding:0 16px;border-radius:999px;border:0;font:inherit;font-size:13.5px;
+  color:var(--dim);background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+.chip.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
+.bank{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:14px 16px;
+  background:var(--glass);border-radius:var(--rad);box-shadow:var(--edge);margin-bottom:8px;width:100%;
+  border:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.bank .nm{font-size:14.5px}
+.bank .v{font-size:15px;text-align:right;min-width:64px}
+.best{color:var(--acc)}
+input,select{width:100%;height:50px;border-radius:var(--rad);border:0;padding:0 16px;font:inherit;
+  color:var(--text);background:var(--glass-soft);box-shadow:var(--edge);outline:none}
+input.n{font-size:19px}
+nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(11,13,21,.92);
+  backdrop-filter:blur(16px);box-shadow:0 -1px 0 rgba(242,244,250,.06)}
+nav button{border:0;background:none;font:inherit;font-size:11.5px;color:var(--faint);padding:8px 0 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:52px}
+nav button.on{color:var(--acc)}
+nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+.hide{display:none}
+.note{font-size:12.5px;color:var(--faint);margin-top:12px}
+</style>
+</head>
+<body>
+
+<main id="app"><div class="sub" style="margin-top:40px">Загружаю курсы…</div></main>
+
+<nav id="nav"></nav>
+
+<script>
+const T = {
+  navHome:'Курс', navRates:'Банки', navConv:'Счёт', navLimits:'Лимиты',
+  titleHome:'Курс сегодня', titleRates:'Банки', titleConv:'Конвертер', titleLimits:'Лимиты карт',
+  bestBuy:'Лучше всего продать', bestSell:'Дешевле всего купить',
+  buy:'Покупка', sell:'Продажа', allBanks:'Все банки', search:'Найти банк',
+  iGive:'Отдаю', iGet:'Получаю', rateUsed:'Курс банка', pickBank:'Банк для расчёта',
+  perDay:'В день', perMonth:'В месяц', fee:'Комиссия', card:'Карта',
+  // The mock says "каждые 15 минут". Ours runs every three hours, and a promise of freshness on a
+  // page about money has to be the real number.
+  source:'Курсы с сайтов и API самих банков. Обновляются каждые 3 часа.'
+};
+
+const CUR = ['USD','RUB','EUR'];
+const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубль', EUR:'Евро'};
+const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
+const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
+
+const S = { tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+
+async function load(){
+  const [r,l] = await Promise.all([
+    fetch('/data/rates.json').then(x=>x.json()),
+    fetch('/data/limits.json').then(x=>x.json()).catch(()=>({data:[]}))
+  ]);
+  S.rates = r.data || [];
+  S.limits = l.data || [];
+  S.bank = S.rates[0]?.bankId ?? null;
+  render();
+}
+
+const val = (r,c,side) => r[c.toLowerCase() + (side === 'buy' ? 'Buy' : 'Sell')];
+
+// Best to sell = the bank paying most for your currency. Best to buy = the bank charging least.
+// Named from the reader's side, because "лучший курс покупки" describes what the bank does and
+// sends people to the wrong side of the spread.
+function best(c){
+  const list = S.rates.filter(r => val(r,c,'buy') != null);
+  if(!list.length) return null;
+  return {
+    sell: list.reduce((a,b)=> val(b,c,'buy') > val(a,c,'buy') ? b : a),
+    buy:  list.reduce((a,b)=> val(b,c,'sell') < val(a,c,'sell') ? b : a)
+  };
+}
+
+function screenHome(){
+  const b = best(S.cur);
+  if(!b) return '<div class="card">Нет данных</div>';
+  return `
+  <h1>${T.titleHome}</h1>
+  <div class="sub">${CUR_NAME[S.cur]}</div>
+  <div class="chips" style="margin-bottom:14px">
+    ${CUR.map(c=>`<button class="chip ${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
+  </div>
+  <div class="row" style="margin-bottom:8px">
+    <div class="card">
+      <div class="lbl">${T.bestBuy}</div>
+      <div class="big n best">${fmt(val(b.sell,S.cur,'buy'),S.cur)}</div>
+      <div class="lbl" style="margin-top:6px">${b.sell.bank.nameRu}</div>
+    </div>
+    <div class="card">
+      <div class="lbl">${T.bestSell}</div>
+      <div class="big n">${fmt(val(b.buy,S.cur,'sell'),S.cur)}</div>
+      <div class="lbl" style="margin-top:6px">${b.buy.bank.nameRu}</div>
+    </div>
+  </div>
+  <button class="pill on" data-tab="rates" style="width:100%;margin-top:6px">${T.allBanks}</button>
+  <div class="note">${T.source}</div>`;
+}
+
+function screenRates(){
+  const q = S.q.toLowerCase();
+  const list = S.rates.filter(r => !q || r.bank.nameRu.toLowerCase().includes(q));
+  const b = best(S.cur);
+  return `
+  <h1>${T.titleRates}</h1>
+  <div class="sub">${list.length} из ${S.rates.length}</div>
+  <input id="q" placeholder="${T.search}" value="${S.q}" style="margin-bottom:10px">
+  <div class="chips" style="margin-bottom:12px">
+    ${CUR.map(c=>`<button class="chip ${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
+  </div>
+  <div class="row lbl" style="padding:0 16px 6px"><div></div>
+    <div style="text-align:right;flex:0 0 64px">${T.buy}</div>
+    <div style="text-align:right;flex:0 0 64px">${T.sell}</div></div>
+  ${list.map(r=>`
+    <button class="bank" data-bank="${r.bankId}">
+      <div><div class="nm">${r.bank.nameRu}</div><div class="lbl">${r.sourceLabel}</div></div>
+      <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
+      <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
+    </button>`).join('')}`;
+}
+
+function screenConv(){
+  const r = S.rates.find(x=>x.bankId===S.bank) || S.rates[0];
+  if(!r) return '<div class="card">Нет данных</div>';
+  const rate = val(r, S.from === 'TJS' ? S.cur : S.from, S.dir);
+  const amt = parseFloat(String(S.amount).replace(',','.')) || 0;
+  const out = S.from === 'TJS' ? amt / rate : amt * rate;
+  return `
+  <h1>${T.titleConv}</h1>
+  <div class="sub">${T.pickBank}</div>
+  <select id="bank" style="margin-bottom:10px">
+    ${S.rates.map(x=>`<option value="${x.bankId}" ${x.bankId===S.bank?'selected':''}>${x.bank.nameRu}</option>`).join('')}
+  </select>
+  <div class="card" style="margin-bottom:8px">
+    <div class="lbl">${T.iGive}</div>
+    <input class="n" id="amt" inputmode="decimal" value="${S.amount}" style="margin-top:8px;background:none;box-shadow:none;padding:0;height:auto;font-size:30px">
+    <div class="chips" style="margin-top:10px">
+      ${['TJS',...CUR].map(c=>`<button class="chip ${c===S.from?'on':''}" data-from="${c}">${c}</button>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="lbl">${T.iGet}</div>
+    <div class="big n best">${out.toFixed(2).replace('.',',')} ${S.from==='TJS'?S.cur:'TJS'}</div>
+    <div class="lbl" style="margin-top:8px">${T.rateUsed}: <span class="n">${fmt(rate, S.from==='TJS'?S.cur:S.from)}</span></div>
+  </div>`;
+}
+
+function screenLimits(){
+  if(!S.limits.length) return `<h1>${T.titleLimits}</h1><div class="card">Данных пока нет</div>`;
+  return `
+  <h1>${T.titleLimits}</h1>
+  <div class="sub">${S.limits.length} карт</div>
+  ${S.limits.map(l=>`
+    <div class="card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div>${l.cardName}</div><div class="lbl">${l.bank.nameRu}</div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="soft" style="padding:13px 16px"><div class="lbl">${T.perDay}</div><div class="mid n">${l.dailyLimit}</div></div>
+        <div class="soft" style="padding:13px 16px"><div class="lbl">${T.fee}</div><div class="mid n">${l.commission}</div></div>
+      </div>
+    </div>`).join('')}`;
+}
+
+const ICON = {
+  home:'<path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+  rates:'<path d="M4 18V9M10 18V5M16 18v-6M22 18H2"/>',
+  conv:'<path d="M7 8h13l-3-3M17 16H4l3 3"/>',
+  limits:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>'
+};
+
+function render(){
+  document.getElementById('app').innerHTML =
+    S.tab==='home'?screenHome():S.tab==='rates'?screenRates():S.tab==='conv'?screenConv():screenLimits();
+  document.getElementById('nav').innerHTML = [
+    ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
+  ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('');
+  document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from]');
+  if(!t) return;
+  if(t.dataset.tab) S.tab = t.dataset.tab;
+  else if(t.dataset.cur) S.cur = t.dataset.cur;
+  else if(t.dataset.from) S.from = t.dataset.from;
+  else if(t.dataset.bank){ S.bank = Number(t.dataset.bank); S.tab = 'conv'; }
+  render();
+  window.scrollTo(0,0);
+});
+
+// Typing must not re-render the field it is typed into, or the caret jumps to the start on every
+// keystroke — so the input keeps focus and only the parts that depend on it are recomputed.
+document.addEventListener('input', e => {
+  if(e.target.id === 'q'){ S.q = e.target.value; const v = e.target.value;
+    render(); const f = document.getElementById('q'); if(f){ f.value = v; f.focus(); } }
+  if(e.target.id === 'amt'){ S.amount = e.target.value; const v = e.target.value;
+    render(); const f = document.getElementById('amt'); if(f){ f.value = v; f.focus(); } }
+});
+document.addEventListener('change', e => {
+  if(e.target.id === 'bank'){ S.bank = Number(e.target.value); render(); }
+});
+
+load().catch(() => {
+  document.getElementById('app').innerHTML = '<div class="card" style="margin-top:40px">Не удалось загрузить курсы</div>';
+});
+</script>
+</body>
+</html>
