@@ -1,25 +1,30 @@
 @import "./design-tokens.css";
 
+/* The names below are the ones ~400 lines of existing rules already reference. Rather than rewrite
+   every one of them, each is re-pointed at the mock-up's value: the whole interface adopts the new
+   ground, glass and type in one place, and the rules that use them keep working untouched.
+
+   The old theme painted two blue radial glows over a navy gradient. The mock is a flat near-black
+   with light carried entirely by the translucent surfaces — so the gradients go, or they would
+   fight the glass for the same job and win. */
 :root {
-  font-family: "Manrope", "Segoe UI Variable", "Segoe UI", sans-serif;
-  color: #ecf7ff;
-  background:
-    radial-gradient(circle at top left, rgba(81, 185, 255, 0.22), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(72, 114, 255, 0.24), transparent 28%),
-    linear-gradient(180deg, #06111f 0%, #0a1629 42%, #06111f 100%);
+  font-family: var(--font);
+  color: var(--text-bright);
+  background: var(--bg);
   color-scheme: dark;
-  --surface: rgba(12, 27, 46, 0.74);
-  --surface-strong: rgba(10, 24, 44, 0.92);
-  --surface-soft: rgba(128, 184, 255, 0.12);
-  --border: rgba(184, 224, 255, 0.12);
-  --text: #ecf7ff;
-  --text-soft: #a8bfd7;
-  --accent: #66e3ff;
-  --accent-strong: #2d7cff;
-  --success: #3bf7c1;
+
+  /* Surfaces are a film of the text colour, never a blue-grey fill. */
+  --surface: var(--glass);
+  --surface-strong: var(--surface-raised);
+  --surface-soft: var(--glass-soft);
+  --border: rgba(242, 244, 250, 0.055);
+  --text-soft: var(--text-muted);
+  --accent-strong: var(--accent);
+  --success: var(--accent-mint);
   --warning: #ffd166;
-  --danger: #ff7c8e;
-  --shadow: 0 24px 80px rgba(2, 8, 20, 0.36);
+  /* Depth comes from the edge treatment, not from a large ambient shadow — on a ground this dark a
+     wide soft shadow is invisible and only costs paint time. */
+  --shadow: var(--edge);
 }
 
 * {
@@ -36,10 +41,8 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(81, 185, 255, 0.22), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(72, 114, 255, 0.24), transparent 28%),
-    linear-gradient(180deg, #06111f 0%, #0a1629 42%, #06111f 100%);
+  /* Flat, so the translucent surfaces are the only thing carrying light. */
+  background: var(--bg);
 }
 
 button,
@@ -60,13 +63,12 @@ a {
   overflow: hidden;
 }
 
+/* The drifting blue orbs belonged to the old gradient theme and have no counterpart in the mock.
+   On a flat near-black ground they compete with the glass for the job of carrying light, and being
+   fixed and animated they also repaint continuously on exactly the low-end phones this is for.
+   Kept in the markup, switched off here, so removing them is one line rather than a component edit. */
 .ambient-orb {
-  position: fixed;
-  border-radius: 999px;
-  filter: blur(20px);
-  opacity: 0.55;
-  pointer-events: none;
-  animation: drift 14s ease-in-out infinite;
+  display: none;
 }
 
 .orb-one {
@@ -96,10 +98,11 @@ a {
 }
 
 .glass-panel {
-  backdrop-filter: blur(24px);
-  background: linear-gradient(180deg, rgba(20, 38, 63, 0.82), rgba(10, 23, 41, 0.72));
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  background: var(--glass);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--edge);
+  backdrop-filter: blur(14px);
 }
 
 .top-bar {
