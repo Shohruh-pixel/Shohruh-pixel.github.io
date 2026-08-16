@@ -160,6 +160,7 @@ export default {
     description: "Havola eskirgan yoki manzilda xatolik bor."
   },
   bank: {
+    convertHere: "Shu bank bo'yicha hisoblash",
     title: "{bank} valyuta kurslari",
     subtitle: "{bank}da dollar, rubl va yevro sotib olish va sotish kurslari, ma'lumot manbai bilan.",
     limitsTitle: "Naqd pul yechish limitlari — {bank}",

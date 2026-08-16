@@ -27,6 +27,12 @@
         />
       </div>
 
+      <!-- Somebody reading this page has already chosen the bank. Sending them to the converter to
+           pick it again from a list of eight is asking them to repeat a decision they just made. -->
+      <RouterLink class="button-link primary" :to="`/converter?bank=${rate.bank.slug}`">
+        {{ t("bank.convertHere") }}
+      </RouterLink>
+
       <!-- A bank does not have "a rate". The card above shows one figure — the transfer rate for
            most banks — and this is where the others become visible, because the counter rate can be
            twenty percent away from it and the person reading is standing in exactly one of those

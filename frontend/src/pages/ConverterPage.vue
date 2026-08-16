@@ -32,7 +32,8 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 import { STATIC_DATA } from "../api/http";
 import ConverterCard from "../components/ConverterCard.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -45,6 +46,29 @@ import { useRatesStore } from "../stores/rates";
 const { t } = useLocale();
 const ratesStore = useRatesStore();
 const { form, selectedBank, result, syncState, setQuickAmount, swapCurrencies } = useConverter();
+
+const route = useRoute();
+
+// Arriving from a bank page carries that bank in the URL. Applied once the rates are in, because
+// until then there is no list to match the slug against — and only on a match, so a stale or
+// mistyped link falls back to the default bank rather than leaving the form pointing at nothing.
+watch(
+  () => [ratesStore.items, route.query.bank],
+  () => {
+    const slug = route.query.bank;
+
+    if (!slug) {
+      return;
+    }
+
+    const match = ratesStore.items.find((item) => item.bank.slug === slug);
+
+    if (match) {
+      form.bankId = String(match.bankId);
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   await ratesStore.fetchAll().catch(() => null);
