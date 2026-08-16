@@ -1301,3 +1301,58 @@ nav span,
 .others-short {
   font-size: 0.8rem;
 }
+
+/* ---- mock-up: figures and actions ---------------------------------------------------------- */
+
+/* Every number on the site, in the mock's monospace face with tabular figures. Applied by element
+   and class rather than per-component so a screen added later inherits it without being told. */
+.rate-value,
+.summary-value,
+.metric-card strong,
+.others-table td,
+.converter-result,
+.limit-value,
+td[class*="value"],
+.rate-card strong,
+.stat-pill strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Pill actions at the mock's height. 50px also clears the 44px touch minimum with room to spare. */
+.button-link,
+.type-chip,
+.filter-chip,
+.view-switch-button,
+.mode-button,
+.quick-chip {
+  border-radius: 999px;
+}
+
+.button-link {
+  min-height: 50px;
+  padding: 0 22px;
+}
+
+/* The accent marks one action per screen: a wash rather than a fill, so it sits beside the figures
+   instead of competing with them. */
+.button-link.primary {
+  color: var(--accent);
+  background: var(--accent-wash);
+  box-shadow: var(--accent-edge);
+}
+
+.button-link.secondary {
+  color: var(--text-muted);
+  background: var(--glass-soft);
+  box-shadow: var(--edge);
+  border-color: transparent;
+}
+
+.type-chip.active {
+  color: var(--accent);
+  background: var(--accent-wash);
+  box-shadow: var(--accent-edge);
+  border-color: transparent;
+}

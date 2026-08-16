@@ -48,3 +48,17 @@
 
   --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+/* Accent surfaces, from the mock's own ACC_WASH / ACC_EDGE. A wash at 10% plus an edge that glows
+   faintly rather than a solid fill — the accent marks the one action worth taking on a screen
+   without shouting over the figures, which are what people came to read. */
+:root {
+  --accent-wash: rgba(110, 231, 255, 0.1);
+  --accent-edge: inset 0 1px 0 rgba(110, 231, 255, 0.3), 0 0 0 1px rgba(110, 231, 255, 0.34),
+    0 0 22px rgba(110, 231, 255, 0.16);
+
+  /* Figures are set in a monospace face throughout the mock. Down a column of eight banks the
+     digits line up exactly, so comparing 9,22 against 9,18 is a glance rather than a reading —
+     which is the entire task this product exists for. */
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+}
