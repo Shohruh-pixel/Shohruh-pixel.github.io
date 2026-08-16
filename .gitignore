@@ -9,3 +9,6 @@ Thumbs.db
 backend/prisma/dev.db
 backend/prisma/dev.db-journal
 
+# The 4.7MB design mock-up. Kept on disk as the reference to build against, but a bundled React
+# runtime does not belong in the history of the app it is a picture of.
+design/

@@ -1,0 +1,50 @@
+/* Design tokens taken from the mobile mock-up (Bankrate-TJ-Mobile-App.html), read out of the
+   component rather than eyeballed from a screenshot — the mock exposes them as its own editable
+   parameters, so these are the author's numbers, not an approximation of them.
+
+   The surfaces are glass over a near-black ground: a translucent white film plus a hairline edge,
+   never a solid fill. That is what keeps a screen of eight bank cards from reading as eight boxes.
+*/
+
+:root {
+  /* Ground and surfaces */
+  --bg: #0b0d15;
+  --bg-deep: #07080d;
+  --surface: #12141d;
+  --surface-raised: #161826;
+  --surface-high: #232532;
+
+  /* Glass: a film of the text colour, not a grey. Two weights — the soft one for large areas,
+     the standard one for anything that should read as lifted. */
+  --glass: rgba(242, 244, 250, 0.05);
+  --glass-soft: rgba(242, 244, 250, 0.032);
+
+  /* Edges do the work shadows would do on a light theme: an inner highlight along the top plus a
+     hairline outline. The lit variant adds real depth and is for what the eye should land on. */
+  --edge: inset 0 1px 0 rgba(242, 244, 250, 0.09), 0 0 0 1px rgba(242, 244, 250, 0.055);
+  --edge-lit: inset 0 1px 0 rgba(242, 244, 250, 0.14), 0 0 0 1px rgba(242, 244, 250, 0.07),
+    0 20px 46px rgba(0, 0, 0, 0.4);
+
+  /* Text */
+  --text: #f2f4fa;
+  --text-bright: #fbfcff;
+  --text-muted: #a4aabd;
+  --text-dim: #8b91a4;
+  --text-faint: #666c7d;
+
+  /* Accent. The mock offers four; cyan is its default and the one the screens are drawn with. */
+  --accent: #6ee7ff;
+  --accent-mint: #7cf5b0;
+  --accent-violet: #b18cff;
+  --accent-pink: #ff7ab8;
+
+  /* Negative states */
+  --danger: #ff8a80;
+  --danger-bg: #2a1215;
+  --danger-edge: #5c2b2e;
+
+  --radius: 22px;
+  --radius-sm: 14px;
+
+  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}

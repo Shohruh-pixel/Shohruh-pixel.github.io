@@ -1,3 +1,5 @@
+@import "./design-tokens.css";
+
 :root {
   font-family: "Manrope", "Segoe UI Variable", "Segoe UI", sans-serif;
   color: #ecf7ff;
