@@ -61,6 +61,22 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+/* The amount is typed on a keypad the page owns rather than the system keyboard. On a phone the
+   OS keyboard covers half the screen and pushes the result — the number being typed towards — out
+   of sight, which is the one thing that must stay visible while typing. */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pad button{height:58px;border-radius:18px;border:0;font:inherit;font-size:22px;color:var(--text);
+  background:var(--glass);box-shadow:var(--edge);cursor:pointer}
+.pad button:active{background:var(--acc-wash);box-shadow:var(--acc-edge);color:var(--acc)}
+.cpill{height:38px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:14px;
+  color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge);cursor:pointer;flex:0 0 auto}
+.amt{font-size:42px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.got{font-size:38px;font-weight:600;letter-spacing:-.02em;color:var(--acc);line-height:1.1}
+/* The active tab sits in a capsule, so which screen you are on is legible at a glance rather than
+   by comparing two shades of the same colour. */
+nav button span.cap{display:flex;align-items:center;justify-content:center;width:56px;height:34px;
+  border-radius:999px;transition:background .16s ease, box-shadow .16s ease}
+nav button.on span.cap{background:var(--acc-wash);box-shadow:var(--acc-edge)}
 /* The sheet answers "what exactly does this bank offer" without leaving the list behind — the page
    stays visible and dimmed underneath, so closing it returns the reader exactly where they were
    rather than to a screen they have to re-orient in. */
@@ -249,28 +265,46 @@ function screenRates(){
 }
 
 function screenConv(){
-  const r = S.rates.find(x=>x.bankId===S.bank) || S.rates[0];
-  if(!r) return '<div class="card">Нет данных</div>';
-  const rate = val(r, S.from === 'TJS' ? S.cur : S.from, S.dir);
-  const amt = parseFloat(String(S.amount).replace(',','.')) || 0;
-  const out = S.from === 'TJS' ? amt / rate : amt * rate;
-  return `
-  <div class="sub">${T.pickBank}</div>
-  <select id="bank" style="margin-bottom:10px">
-    ${S.rates.map(x=>`<option value="${x.bankId}" ${x.bankId===S.bank?'selected':''}>${x.bank.nameRu}</option>`).join('')}
-  </select>
-  <div class="card" style="margin-bottom:8px">
-    <div class="lbl">${T.iGive}</div>
-    <input class="n" id="amt" inputmode="decimal" value="${S.amount}" style="margin-top:8px;background:none;box-shadow:none;padding:0;height:auto;font-size:30px">
-    <div class="chips" style="margin-top:10px">
-      ${['TJS',...CUR].map(c=>`<button class="chip ${c===S.from?'on':''}" data-from="${c}">${c}</button>`).join('')}
+  if(!S.rates.length) return '<div class="card">Нет данных</div>';
+  return (() => {
+    const r = S.rates.find(x=>x.bankId===S.bank) || S.rates[0];
+    const other = S.from === 'TJS' ? S.cur : S.from;
+    const rate = val(r, other, S.dir);
+    const amt = parseFloat(String(S.amount || '0').replace(',','.')) || 0;
+    const out = S.from === 'TJS' ? (rate ? amt / rate : 0) : amt * rate;
+    const grp = n => n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="amt n" style="flex:1;min-width:0;overflow:hidden">${S.amount || '0'}</div>
+        <button class="cpill" data-swapcur="1">${S.from} ⇅</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="chip" data-dir="1">⇵ ${S.dir === 'buy' ? T.buy : T.sell}</button>
+      </div>
+      <div style="height:1px;background:rgba(242,244,250,.06);margin:14px 0"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div class="lbl" style="color:var(--acc)">${T.iGet}</div>
+          <div class="got n">${grp(out)}</div>
+        </div>
+        <div class="chip" style="pointer-events:none">${S.from === 'TJS' ? other : 'TJS'}</div>
+      </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="lbl">${T.iGet}</div>
-    <div class="big n best">${out.toFixed(2).replace('.',',')} ${S.from==='TJS'?S.cur:'TJS'}</div>
-    <div class="lbl" style="margin-top:8px">${T.rateUsed}: <span class="n">${fmt(rate, S.from==='TJS'?S.cur:S.from)}</span></div>
-  </div>`;
+
+    <div class="lbl" style="margin:14px 0 8px">${T.pickBank}</div>
+    <div class="chips">
+      ${S.rates.map(x=>`<button class="chip ${x.bankId===S.bank?'on':''}" data-bank2="${x.bankId}">${x.bank.shortName ? x.bank.nameRu.split(' ')[0] : x.bank.nameRu}</button>`).join('')}
+    </div>
+
+    <div class="soft" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin-top:10px">
+      <div class="lbl">${T.rateUsed}</div><div class="n" style="font-size:16px">${fmt(rate, other)}</div>
+    </div>
+
+    <div class="pad">
+      ${['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(k=>`<button data-key="${k}">${k}</button>`).join('')}
+    </div>`;
+  })();
 }
 
 function screenLimits(){
@@ -348,7 +382,7 @@ function render(){
   document.getElementById('nav').innerHTML = [
     ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
   ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
-      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('');
+      <span class="cap"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg></span>${l}</button>`).join('');
   if(S.sheet != null) document.getElementById('app').insertAdjacentHTML('beforeend', sheetHtml());
   document.body.style.overflow = S.sheet != null ? 'hidden' : '';
   document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
@@ -356,9 +390,20 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur]');
   if(!t) return;
-  if(t.dataset.close) S.sheet = null;
+  if(t.dataset.key){
+    const k = t.dataset.key;
+    // Typing is capped and the separator kept single, because the field has no browser validation
+    // behind it — the page owns the keypad, so the page owns what a valid amount is.
+    if(k === '⌫') S.amount = String(S.amount).slice(0, -1) || '';
+    else if(k === '.') { if(!String(S.amount).includes('.')) S.amount = (S.amount || '0') + '.'; }
+    else if(String(S.amount).replace(/\D/g,'').length < 9) S.amount = (S.amount === '0' ? '' : S.amount) + k;
+  }
+  else if(t.dataset.bank2) S.bank = Number(t.dataset.bank2);
+  else if(t.dataset.dir) S.dir = S.dir === 'buy' ? 'sell' : 'buy';
+  else if(t.dataset.swapcur){ const i = ['TJS',...CUR].indexOf(S.from); S.from = ['TJS',...CUR][(i+1) % 4]; }
+  else if(t.dataset.close) S.sheet = null;
   else if(t.dataset.use){ S.bank = Number(t.dataset.use); S.sheet = null; S.tab = 'conv'; }
   else if(t.dataset.tab) S.tab = t.dataset.tab;
   else if(t.dataset.cur) S.cur = t.dataset.cur;
