@@ -61,6 +61,21 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+/* The sheet answers "what exactly does this bank offer" without leaving the list behind — the page
+   stays visible and dimmed underneath, so closing it returns the reader exactly where they were
+   rather than to a screen they have to re-orient in. */
+.scrim{position:fixed;inset:0;background:rgba(5,6,10,.62);backdrop-filter:blur(2px);z-index:40;
+  animation:fade .2s ease both}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:#12141d;
+  border-radius:26px 26px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -20px 46px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,244,250,.09);
+  max-height:88vh;overflow-y:auto;animation:up .26s cubic-bezier(.2,.8,.2,1) both}
+.grab{width:36px;height:4px;border-radius:999px;background:rgba(242,244,250,.18);margin:0 auto 14px}
+.srow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;padding:11px 0;
+  box-shadow:inset 0 -1px 0 rgba(242,244,250,.05)}
+.srow .v{min-width:62px;text-align:right;font-size:15px}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 .link{border:0;background:none;font:inherit;font-size:13.5px;color:var(--acc);cursor:pointer;padding:0}
 .brow{display:flex;gap:12px;align-items:center;width:100%;padding:11px 16px;border:0;background:none;
   font:inherit;font-size:15px;color:inherit;text-align:left;cursor:pointer}
@@ -101,6 +116,7 @@ const T = {
   buy:'Покупка', sell:'Продажа', compare:'Сравнить', clear:'Убрать сравнение', pickTwo:'Отметьте два банка — покажу их рядом', allBanks:'Все банки', more:'Все курсы', bank:'Банк', search:'Найти банк',
   iGive:'Отдаю', iGet:'Получаю', rateUsed:'Курс банка', pickBank:'Банк для расчёта',
   perDay:'В день', perMonth:'В месяц', fee:'Комиссия', card:'Карта',
+  updated:'Курс обновлён', currency:'Валюта', convertHere:'Считать по этому банку', close:'Закрыть',
   // The mock says "каждые 15 минут". Ours runs every three hours, and a promise of freshness on a
   // page about money has to be the real number.
   source:'Курсы с сайтов и API самих банков. Обновляются каждые 3 часа.'
@@ -111,7 +127,7 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l] = await Promise.all([
@@ -280,6 +296,52 @@ const ICON = {
   limits:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>'
 };
 
+
+// Rendered outside the screen switch so it floats over whichever tab is open.
+function sheetHtml(){
+  const r = S.rates.find(x => x.bankId === S.sheet);
+  if(!r) return '';
+
+  const lim = S.limits.find(l => l.bank.slug === r.bank.slug);
+  const ago = (() => {
+    const mins = Math.round((Date.now() - new Date(r.updatedAt).getTime()) / 60000);
+    if(mins < 1) return 'только что';
+    if(mins < 60) return mins + ' мин назад';
+    const h = Math.round(mins / 60);
+    return h < 24 ? h + ' ч назад' : Math.round(h / 24) + ' дн назад';
+  })();
+
+  return `
+  <div class="scrim" data-close="1"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em">${r.bank.nameRu}</div>
+    <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago}</div>
+
+    <div class="row lbl" style="padding-bottom:6px">
+      <div>${T.currency}</div>
+      <div class="v" style="flex:0 0 62px;text-align:right">${T.buy}</div>
+      <div class="v" style="flex:0 0 62px;text-align:right">${T.sell}</div>
+    </div>
+    ${CUR.map(c => `
+      <div class="srow">
+        <div style="font-size:15.5px">${c}<span class="lbl"> · ${CUR_NAME[c]}</span></div>
+        <div class="v n">${fmt(val(r,c,'buy'),c)}</div>
+        <div class="v n">${fmt(val(r,c,'sell'),c)}</div>
+      </div>`).join('')}
+
+    ${lim ? `<div class="row" style="margin-top:14px">
+      <div class="soft" style="padding:13px 16px"><div class="lbl">${T.perDay}</div><div class="mid n">${lim.dailyLimit}</div></div>
+      <div class="soft" style="padding:13px 16px"><div class="lbl">${T.fee}</div><div class="mid n">${lim.commission}</div></div>
+    </div>` : ''}
+
+    <div class="row" style="margin-top:16px">
+      <button class="pill on" data-use="${r.bankId}">${T.convertHere}</button>
+      <button class="pill" style="flex:0 0 auto;padding:0 22px" data-close="1">${T.close}</button>
+    </div>
+  </div>`;
+}
+
 function render(){
   document.getElementById('app').innerHTML =
     S.tab==='home'?screenHome():S.tab==='rates'?screenRates():S.tab==='conv'?screenConv():screenLimits();
@@ -287,14 +349,18 @@ function render(){
     ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
   ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('');
+  if(S.sheet != null) document.getElementById('app').insertAdjacentHTML('beforeend', sheetHtml());
+  document.body.style.overflow = S.sheet != null ? 'hidden' : '';
   document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
   document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use]');
   if(!t) return;
-  if(t.dataset.tab) S.tab = t.dataset.tab;
+  if(t.dataset.close) S.sheet = null;
+  else if(t.dataset.use){ S.bank = Number(t.dataset.use); S.sheet = null; S.tab = 'conv'; }
+  else if(t.dataset.tab) S.tab = t.dataset.tab;
   else if(t.dataset.cur) S.cur = t.dataset.cur;
   else if(t.dataset.from) S.from = t.dataset.from;
   else if(t.dataset.cmp){ S.compareMode = !S.compareMode; S.compare = []; }
@@ -305,10 +371,10 @@ document.addEventListener('click', e => {
       // on a full selection the reader has to clear by hand.
       S.compare = S.compare.includes(id) ? S.compare.filter(x=>x!==id)
         : [...S.compare, id].slice(-2);
-    } else { S.bank = id; S.tab = 'conv'; }
+    } else { S.sheet = id; }
   }
   render();
-  window.scrollTo(0,0);
+  if(S.sheet == null) window.scrollTo(0,0);
 });
 
 // Typing must not re-render the field it is typed into, or the caret jumps to the start on every
@@ -319,6 +385,8 @@ document.addEventListener('input', e => {
   if(e.target.id === 'amt'){ S.amount = e.target.value; const v = e.target.value;
     render(); const f = document.getElementById('amt'); if(f){ f.value = v; f.focus(); } }
 });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && S.sheet != null){ S.sheet = null; render(); } });
+
 document.addEventListener('change', e => {
   if(e.target.id === 'bank'){ S.bank = Number(e.target.value); render(); }
 });
