@@ -70,12 +70,12 @@ export default {
     EUR: "Yevro"
   },
   summary: {
-    usdBuy: "Eng yaxshi USD xarid kursi",
-    usdSell: "Eng yaxshi USD sotuv kursi",
-    rubBuy: "Eng yaxshi RUB xarid kursi",
-    rubSell: "Eng yaxshi RUB sotuv kursi",
-    eurBuy: "Eng yaxshi EUR xarid kursi",
-    eurSell: "Eng yaxshi EUR sotuv kursi"
+    usdBuy: "Dollarni qayerda sotish foydaliroq",
+    usdSell: "Dollarni qayerda arzonroq olish",
+    rubBuy: "Rublni qayerda sotish foydaliroq",
+    rubSell: "Rublni qayerda arzonroq olish",
+    eurBuy: "Yevroni qayerda sotish foydaliroq",
+    eurSell: "Yevroni qayerda arzonroq olish"
   },
   trend: {
     up: "Yuqori",
