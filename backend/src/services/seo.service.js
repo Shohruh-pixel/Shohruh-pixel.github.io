@@ -127,9 +127,15 @@ function bestRatesSummary(best) {
       if (!buy || !sell) {
         return "";
       }
-      return `<li>Лучший курс ${escapeHtml(label)}: покупка ${formatRate(buy[`${code.toLowerCase()}Buy`])} (${escapeHtml(
-        buy.bank.nameRu
-      )}), продажа ${formatRate(sell[`${code.toLowerCase()}Sell`])} (${escapeHtml(sell.bank.nameRu)})</li>`;
+      // Written from the reader's side, matching the interface. "Лучший курс покупки" describes
+      // what the *bank* does; the person reading is selling, so the old phrasing invited exactly
+      // the wrong reading of the figure beside it. This text is what a crawler indexes and what
+      // appears in a search result, so it has to say the same thing the app says.
+      return `<li>${escapeHtml(label)}: выгоднее всего продать по ${formatRate(
+        buy[`${code.toLowerCase()}Buy`]
+      )} (${escapeHtml(buy.bank.nameRu)}), дешевле всего купить по ${formatRate(
+        sell[`${code.toLowerCase()}Sell`]
+      )} (${escapeHtml(sell.bank.nameRu)})</li>`;
     })
     .filter(Boolean)
     .join("\n");
