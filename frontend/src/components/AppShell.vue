@@ -30,6 +30,16 @@
 
     <!-- Offline is routine on the connections this site is built for, so the difference between
          "current" and "last known" has to be stated rather than left for the reader to guess. -->
+    <!-- The phone build at /m/ is 31 KB against this one's 160, which on the connections this
+         audience actually has is the difference between a page and a wait. Offered rather than
+         redirected: this page carries the server-rendered rates search engines index, and sending
+         a mobile crawler away from it would trade the indexed content for the lighter bundle. -->
+    <div v-if="showMobileHint" class="offline-banner mobile-hint" role="status">
+      <span>{{ t("common.mobileHint") }}</span>
+      <a class="hint-open" href="/m/">{{ t("common.mobileOpen") }}</a>
+      <button type="button" class="hint-close" @click="dismissMobileHint">{{ t("common.mobileDismiss") }}</button>
+    </div>
+
     <div v-if="showStaleWarning" class="offline-banner" role="status">
       <WifiOff :size="16" />
       <span>
@@ -51,7 +61,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 import { WifiOff } from "lucide-vue-next";
 import BottomNav from "./BottomNav.vue";
@@ -63,6 +73,18 @@ import { useLocale } from "../composables/useLocale";
 import { useOnline } from "../composables/useOnline";
 
 const route = useRoute();
+
+// Shown once. Someone who said no does not want asking again on every page, and the choice has to
+// survive a reload or the banner becomes the thing they remember about the site.
+const HINT_KEY = "bankrate-mobile-hint-dismissed";
+const hintDismissed = ref(true);
+
+const showMobileHint = computed(() => !hintDismissed.value);
+
+function dismissMobileHint() {
+  hintDismissed.value = true;
+  try { localStorage.setItem(HINT_KEY, "1"); } catch (error) { /* private mode: the banner simply returns next visit */ }
+}
 const { t, formatRelativeTime } = useLocale();
 const banksStore = useBanksStore();
 const ratesStore = useRatesStore();
@@ -79,6 +101,14 @@ const lastUpdatedLabel = computed(() =>
 // worker quietly answers from its cache. Both have to raise the warning, or stale rates pass for
 // current on a phone showing full bars.
 const showStaleWarning = computed(() => !isOnline.value || ratesStore.fromCache);
+
+onMounted(() => {
+  // Read after mount so the server-rendered HTML is identical for everyone, including crawlers.
+  const narrow = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+  let dismissed = true;
+  try { dismissed = localStorage.getItem(HINT_KEY) === "1"; } catch (error) { dismissed = false; }
+  hintDismissed.value = dismissed || !narrow;
+});
 
 onMounted(async () => {
   await Promise.allSettled([banksStore.fetchBanks(), ratesStore.fetchAll()]);

@@ -1370,3 +1370,30 @@ td[class*="value"],
   background: rgba(255, 209, 102, 0.12);
   box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.3);
 }
+
+/* The offer to switch to the phone build. Reuses the offline banner's amber, because both say the
+   same kind of thing: nothing is broken, here is something you may want to know. */
+.mobile-hint {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mobile-hint .hint-open {
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--accent-wash);
+  box-shadow: var(--accent-edge);
+  font-size: 0.85rem;
+}
+
+.mobile-hint .hint-close {
+  border: 0;
+  background: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 6px 4px;
+}

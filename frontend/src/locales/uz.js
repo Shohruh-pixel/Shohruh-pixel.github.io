@@ -40,6 +40,9 @@ export default {
     contactText: "Kursda xatolik topsangiz yoki bank qo'shmoqchi bo'lsangiz — yozing: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    mobileHint: "Telefon uchun yengil versiya bor — 160 KB o'rniga 31 KB",
+    mobileOpen: "Ochish",
+    mobileDismiss: "Yashirish",
     officialBadge: "rasmiy kurs",
     officialNote: "Bank o'z kursini e'lon qilmaydi — MBT rasmiy kursi ko'rsatilgan. Kassada farq qilishi mumkin.",
     favoriteAdd: "Saralanganlarga qo'shish",

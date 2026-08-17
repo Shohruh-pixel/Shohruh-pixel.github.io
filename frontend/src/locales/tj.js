@@ -40,6 +40,9 @@ export default {
     contactText: "Хатогӣ ёфтед ё бонк илова кардан мехоҳед — нависед: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    mobileHint: "Барои телефон варианти сабук ҳаст — 31 КБ ба ҷои 160",
+    mobileOpen: "Кушодан",
+    mobileDismiss: "Пинҳон кардан",
     officialBadge: "қурби расмӣ",
     officialNote: "Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.",
     favoriteAdd: "Ба баргузидаҳо илова кардан",
