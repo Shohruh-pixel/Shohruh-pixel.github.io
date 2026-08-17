@@ -69,6 +69,7 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+.mv{color:var(--faint);font-size:11px;margin-right:3px;vertical-align:1px}
 .stale{font-size:12.5px;color:#ffd166;background:var(--glass-soft);box-shadow:var(--edge);border-radius:14px;padding:9px 12px;margin-bottom:14px}
 /* Amber rather than red: the figure is published and real, it is just the state's average and
    not what the counter quotes. Red would claim it is wrong. */
@@ -231,6 +232,22 @@ function bannerHtml(){
   return `<div class="stale">${S.online ? T.updatedAgo : T.offline} · ${ago(new Date(newest).toISOString())}</div>`;
 }
 
+// Which way a figure last moved, from recorded history. Absent unless the server could support it:
+// it withholds the direction when the two readings are of different rate types, when the newest is
+// older than two days, and when there is only one reading — so anything here is a real movement.
+//
+// Deliberately one colour for both directions. A rate rising is good for whoever is selling that
+// currency and bad for whoever is buying it, so painting up green and down red would be wrong for
+// half the people reading it. Flat draws nothing: most figures are unchanged most of the time, and
+// a marker on each of them is noise that hides the few that moved.
+function arrow(r, field){
+  const d = r.trend && r.trend.changes && r.trend.changes[field] && r.trend.changes[field].direction;
+  if(d !== 'up' && d !== 'down') return '';
+  return `<span class="mv" aria-hidden="true">${d === 'up' ? '↑' : '↓'}</span>`;
+}
+
+const bankName = b => (S.lang === 'tj' && b.nameTj) || (S.lang === 'uz' && b.nameUz) || b.nameRu;
+
 const val = (r,c,side) => r[c.toLowerCase() + (side === 'buy' ? 'Buy' : 'Sell')];
 
 // Best to sell = the bank paying most for your currency. Best to buy = the bank charging least.
@@ -257,12 +274,12 @@ function screenHome(){
     <div class="card">
       <div class="lbl">${T.bestBuy}</div>
       <div class="big n best">${fmt(val(b.sell,S.cur,'buy'),S.cur)}</div>
-      <div class="lbl" style="margin-top:6px">${b.sell.bank.nameRu}</div>
+      <div class="lbl" style="margin-top:6px">${bankName(b.sell.bank)}</div>
     </div>
     <div class="card">
       <div class="lbl">${T.bestSell}</div>
       <div class="big n">${fmt(val(b.buy,S.cur,'sell'),S.cur)}</div>
-      <div class="lbl" style="margin-top:6px">${b.buy.bank.nameRu}</div>
+      <div class="lbl" style="margin-top:6px">${bankName(b.buy.bank)}</div>
     </div>
   </div>
   <div class="card" style="margin-top:8px;padding:16px 0">
@@ -277,7 +294,7 @@ function screenHome(){
     </div>
     ${S.rates.map(r=>`
       <button class="brow" data-bank="${r.bankId}">
-        <div style="flex:1;min-width:0;font-size:14.5px">${r.bank.nameRu}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div>
+        <div style="flex:1;min-width:0;font-size:14.5px">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div>
         <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
         <div class="n ${r.bankId===b.buy.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
       </button>`).join('')}
@@ -297,8 +314,8 @@ function comparePanel(){
   <div class="card" style="margin-bottom:12px">
     <div class="row lbl" style="margin-bottom:10px">
       <div style="flex:0 0 44px"></div>
-      <div style="text-align:right">${a.bank.nameRu}</div>
-      <div style="text-align:right">${c.bank.nameRu}</div>
+      <div style="text-align:right">${bankName(a.bank)}</div>
+      <div style="text-align:right">${bankName(c.bank)}</div>
     </div>
     ${CUR.map(cur => ['buy','sell'].map(side => {
       const va = val(a,cur,side), vc = val(c,cur,side);
@@ -317,7 +334,7 @@ function comparePanel(){
 function screenRates(){
   const q = S.q.toLowerCase();
   const list = S.rates
-    .filter(r => !q || r.bank.nameRu.toLowerCase().includes(q))
+    .filter(r => !q || [r.bank.nameRu, r.bank.nameTj, r.bank.nameUz].some(n => (n || '').toLowerCase().includes(q)))
     .filter(r => !S.ownOnly || !r.sourceLabel.startsWith('НБТ'));
   const b = best(S.cur);
   return `
@@ -338,7 +355,7 @@ function screenRates(){
     <div style="text-align:right;flex:0 0 64px">${T.sell}</div></div>
   ${list.map(r=>`
     <button class="bank" data-bank="${r.bankId}" style="${S.compareMode && S.compare.includes(r.bankId) ? 'box-shadow:var(--acc-edge)' : ''}">
-      <div><div class="nm">${r.bank.nameRu}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}</div></div>
+      <div><div class="nm">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}</div></div>
       <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
       <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
     </button>`).join('')}`;
@@ -374,7 +391,7 @@ function screenConv(){
 
     <div class="lbl" style="margin:14px 0 8px">${T.pickBank}</div>
     <div class="chips">
-      ${S.rates.map(x=>`<button class="chip ${x.bankId===S.bank?'on':''}" data-bank2="${x.bankId}">${x.bank.shortName ? x.bank.nameRu.split(' ')[0] : x.bank.nameRu}</button>`).join('')}
+      ${S.rates.map(x=>`<button class="chip ${x.bankId===S.bank?'on':''}" data-bank2="${x.bankId}">${x.bank.shortName ? bankName(x.bank).split(' ')[0] : bankName(x.bank)}</button>`).join('')}
     </div>
 
     <div class="soft" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin-top:10px">
@@ -393,7 +410,7 @@ function screenLimits(){
   // Grouped by bank, because the question is "what does my bank allow", not "list every card in
   // the country" — and a bank with two cards should read as one entry with two, not as two banks.
   const byBank = {};
-  S.limits.forEach(l => { (byBank[l.bank.nameRu] = byBank[l.bank.nameRu] || []).push(l); });
+  S.limits.forEach(l => { (byBank[l.bank.slug] = byBank[l.bank.slug] || []).push(l); });
 
   return `
   <div class="sub" style="margin-top:2px">${S.limits.length} ${T.cards}</div>
@@ -437,7 +454,7 @@ function sheetHtml(){
   <div class="scrim" data-close="1"></div>
   <div class="sheet">
     <div class="grab"></div>
-    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${r.bank.nameRu}</div><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
+    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${bankName(r.bank)}</div><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
     <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago(r.updatedAt)}</div>
     ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
@@ -467,11 +484,12 @@ function sheetHtml(){
       const picked = avail.length > 1 ? (byCur[c] || {})[active] : null;
       const buy = picked ? picked.buy : val(r,c,'buy');
       const sell = picked ? picked.sell : val(r,c,'sell');
+      const tracked = !picked || active === r.rateType;
       return `
       <div class="srow">
         <div style="font-size:15.5px">${c}<span class="lbl"> · ${CUR_NAME[c]}</span></div>
-        <div class="v n">${fmt(buy,c)}</div>
-        <div class="v n">${sell === null ? '—' : fmt(sell,c)}</div>
+        <div class="v n">${tracked ? arrow(r, c.toLowerCase() + 'Buy') : ''}${fmt(buy,c)}</div>
+        <div class="v n">${sell === null ? '—' : (tracked ? arrow(r, c.toLowerCase() + 'Sell') : '') + fmt(sell,c)}</div>
       </div>`;
     }).join('')}
 

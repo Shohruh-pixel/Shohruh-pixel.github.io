@@ -62,6 +62,25 @@ test("a cached screen says how old its figures are", () => {
   assert.match(script, /S\.online/, "страница не следит за связью");
 });
 
+test("bank names follow the language the reader picked", () => {
+  // The switcher translated the buttons and left all ten bank names in Russian, which is most of
+  // what is actually on a screen of banks. The data has carried nameTj and nameUz throughout.
+  const script = inlineScript();
+  assert.match(script, /const bankName = /, "нет помощника для названий");
+  const raw = script.split("\n").filter((line) => /\$\{[^}]*\bname(Ru|Tj|Uz)\b/.test(line) && !line.includes("bankName ="));
+  assert.deepEqual(raw.map((l) => l.trim().slice(0, 70)), [], "название банка подставляется напрямую, минуя язык");
+});
+
+test("search matches a bank in any of the three spellings", () => {
+  // Typing the name on the screen returned nothing, because the filter only read the Russian one —
+  // the reader had to spell it in a language they had switched away from.
+  const filter = inlineScript().match(/\.filter\(r => !q \|\|[^\n]*/);
+  assert.ok(filter, "не найден фильтр поиска");
+  for (const field of ["nameRu", "nameTj", "nameUz"]) {
+    assert.ok(filter[0].includes(field), "поиск не смотрит на " + field);
+  }
+});
+
 test("iOS gets a real icon", () => {
   // iPhone ignores the manifest; without this tag an added-to-home-screen app is a screenshot.
   assert.match(HTML, /rel="apple-touch-icon"/);
