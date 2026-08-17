@@ -28,6 +28,13 @@
   --mono:"JetBrains Mono",ui-monospace,"SF Mono","Roboto Mono",monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior:none}
+body{touch-action:manipulation;overscroll-behavior:none}
+/* Controls do not offer themselves for selection: a long press on a bank row raised the iOS text
+   menu over the row instead of opening it. The figures stay selectable — a rate is the one thing
+   here worth copying out. */
+button,nav,header,.chip,.pill,.pad button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.n,.amt,.got{-webkit-user-select:text;user-select:text}
 body{background:var(--bg);color:var(--text);font:15px/1.45 "Inter",system-ui,-apple-system,sans-serif;
   padding:0 16px calc(84px + env(safe-area-inset-bottom));overflow-x:hidden}
 /* Figures in the monospace face throughout: down a column of eight banks the digits line up, which
