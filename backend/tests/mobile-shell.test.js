@@ -120,6 +120,35 @@ test("the sheet opens at the bottom of the screen, not the bottom of the page", 
   assert.match(inlineScript(), /document\.body\.insertAdjacentHTML\('beforeend', sheetHtml\(\)\)/, "шторка живёт внутри #app");
 });
 
+test("banks are listed in the order of the alphabet the reader is reading", () => {
+  // They arrived sorted by slug — a Latin string nobody sees — which put Эсхата sixth for a Russian
+  // reader and made the list look unordered. It has to be redone per language: in Tajik ten of the
+  // twenty-two names begin with "Бонки", so the answer is not the same list rearranged.
+  const script = inlineScript();
+  assert.match(script, /localeCompare\(/, "сортировка не учитывает алфавит");
+  assert.equal((script.match(/sort\(byName\(\)\)/g) || []).length, 3, "отсортированы не все три списка банков");
+});
+
+test("a bank chip carries enough of the name to tell it from the others", () => {
+  // The converter cut each chip to its first word. In Russian that cost one label; in Tajik it
+  // produced ten chips reading "Бонки" and no way to pick a bank at all.
+  assert.doesNotMatch(inlineScript(), /bankName\([^)]*\)\.split\(' '\)\[0\]/, "название банка режется до первого слова");
+});
+
+test("the limits screen shows bank names, not the key it groups by", () => {
+  // Grouping moved to the slug so that identity survives a language switch, and the heading kept
+  // printing the grouping key: the card introduced itself as "alif-bank".
+  const script = inlineScript();
+  assert.match(script, /Object\.values\(byBank\)/, "лимиты всё ещё группируются по подписи");
+  assert.doesNotMatch(script, /byBank\)\.map\(\(\[name, cards\]\)/, "заголовок печатает ключ группировки");
+});
+
+test("the abroad note is translated on its way to the screen", () => {
+  // That column is written in English — "2%, plus ATM fee" — and unlike the general note it has no
+  // per-language variants, so an app with three languages and no English showed English.
+  assert.match(inlineScript(), /abroad\(l\.abroadNote\)/, "английская подпись выводится как есть");
+});
+
 test("iOS gets a real icon", () => {
   // iPhone ignores the manifest; without this tag an added-to-home-screen app is a screenshot.
   assert.match(HTML, /rel="apple-touch-icon"/);
