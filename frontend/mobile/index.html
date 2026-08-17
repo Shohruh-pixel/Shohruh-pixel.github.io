@@ -139,6 +139,8 @@ nav button.on span.cap{background:var(--acc-wash);box-shadow:var(--acc-edge)}
 header{height:56px;display:flex;align-items:center;gap:8px;padding:0 4px;position:sticky;top:0;
   background:var(--bg);z-index:10}
 header .ttl{flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.03em}
+body.tg header{height:44px;justify-content:flex-end}
+body.tg header .ttl{display:none}
 header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:13px;
   color:#c8cddb;background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
 /* Currencies are one segmented control, not loose chips: the three are a single choice. */
@@ -282,6 +284,7 @@ function syncTelegram(){
 function initTelegram(){
   const tg = TG();
   if(!tg) return;
+  document.body.classList.add('tg');
   try { tg.ready(); tg.expand(); } catch(e){}
 
   // The palette here is a deliberate dark one, chosen so eight bank cards read as a single surface.
@@ -379,9 +382,8 @@ function best(c){
 
 function screenHome(){
   const b = best(S.cur);
-  if(!b) return '<div class="card">${T.noData}</div>';
+  if(!b) return `<div class="card">${T.noData}</div>`;
   return `
-  <div class="sub">${CUR_NAME[S.cur]}</div>
   <div class="seg">
     ${CUR.map(c=>`<button class="${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
   </div>
