@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0b0d15">
 <title>Курс сегодня — BankRate TJ</title>
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <meta property="og:title" content="Курс валют Таджикистана">
 <meta property="og:description" content="22 банка, курсы с их собственных сайтов. Обновляются каждые 3 часа.">
 <meta property="og:image" content="https://shohruh-pixel.github.io/og.png">
@@ -68,6 +69,7 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+.stale{font-size:12.5px;color:#ffd166;background:var(--glass-soft);box-shadow:var(--edge);border-radius:14px;padding:9px 12px;margin-bottom:14px}
 /* Amber rather than red: the figure is published and real, it is just the state's average and
    not what the counter quotes. Red would claim it is wrong. */
 .nbtbadge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;
@@ -145,7 +147,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -157,7 +159,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -169,7 +171,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -192,7 +194,7 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -207,6 +209,26 @@ async function load(){
   S.typed = ty.data || {};
   S.bank = S.rates[0]?.bankId ?? null;
   render();
+}
+
+function ago(iso){
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if(mins < 1) return T.justNow;
+  if(mins < 60) return mins + ' ' + T.minAgo;
+  const h = Math.round(mins / 60);
+  return h < 24 ? h + ' ' + T.hAgo : Math.round(h / 24) + ' ' + T.dAgo;
+}
+
+// Caching the app makes it open without a connection; this makes it say so. A rate is a number with
+// a time attached, and a cached screen that looks live is a worse failure than a screen that does
+// not open — the reader would walk to a bank on a figure that moved hours ago. Silent under four
+// hours, because updates run every three and one late cycle is not news.
+function bannerHtml(){
+  const newest = S.rates.reduce((a,r) => Math.max(a, new Date(r.updatedAt).getTime()), 0);
+  if(!newest) return '';
+  const stale = Date.now() - newest > 4 * 3600 * 1000;
+  if(S.online && !stale) return '';
+  return `<div class="stale">${S.online ? T.updatedAgo : T.offline} · ${ago(new Date(newest).toISOString())}</div>`;
 }
 
 const val = (r,c,side) => r[c.toLowerCase() + (side === 'buy' ? 'Buy' : 'Sell')];
@@ -410,20 +432,13 @@ function sheetHtml(){
   if(!r) return '';
 
   const lim = S.limits.find(l => l.bank.slug === r.bank.slug);
-  const ago = (() => {
-    const mins = Math.round((Date.now() - new Date(r.updatedAt).getTime()) / 60000);
-    if(mins < 1) return 'только что';
-    if(mins < 60) return mins + ' мин назад';
-    const h = Math.round(mins / 60);
-    return h < 24 ? h + ' ч назад' : Math.round(h / 24) + ' дн назад';
-  })();
 
   return `
   <div class="scrim" data-close="1"></div>
   <div class="sheet">
     <div class="grab"></div>
     <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${r.bank.nameRu}</div><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
-    <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago}</div>
+    <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago(r.updatedAt)}</div>
     ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
     ${(() => {
@@ -473,8 +488,8 @@ function sheetHtml(){
 }
 
 function render(){
-  document.getElementById('app').innerHTML =
-    S.tab==='home'?screenHome():S.tab==='rates'?screenRates():S.tab==='conv'?screenConv():screenLimits();
+  document.getElementById('app').innerHTML = bannerHtml() +
+    (S.tab==='home'?screenHome():S.tab==='rates'?screenRates():S.tab==='conv'?screenConv():screenLimits());
   document.getElementById('nav').innerHTML = [
     ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
   ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
@@ -553,6 +568,17 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape' && S.sheet != 
 document.addEventListener('change', e => {
   if(e.target.id === 'bank'){ S.bank = Number(e.target.value); render(); }
 });
+
+window.addEventListener('online', () => { S.online = true; load().catch(() => render()); });
+window.addEventListener('offline', () => { S.online = false; render(); });
+
+// The manifest starts at /m/, so this is the copy that lands on a home screen — and until now it was
+// the one build that could not open without a connection, because only the desktop entry point ever
+// registered the worker. Rates move every three hours: an hour-old figure is still the right figure,
+// and the banner above says how old it is.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
 
 load().catch(() => {
   document.getElementById('app').innerHTML = '<div class="card" style="margin-top:40px">Не удалось загрузить курсы</div>';

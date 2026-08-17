@@ -12,7 +12,7 @@
 // Bumped to v2 when the static build arrived: a device still holding v1 caches would keep serving
 // the old entries, and activate() only clears caches whose name does not end in the current
 // version. Without the bump, offline visitors would sit on data that no longer has a source.
-const VERSION = "v3";
+const VERSION = "v4";
 const ASSET_CACHE = `bankrate-assets-${VERSION}`;
 const PAGE_CACHE = `bankrate-pages-${VERSION}`;
 const DATA_CACHE = `bankrate-data-${VERSION}`;
@@ -38,10 +38,29 @@ const CACHEABLE_API = [
   "/data/rates-typed.json"
 ];
 
+// The phone app and the figures it needs to draw a first screen. Everything else is cached as it is
+// visited, but waiting for a second visit is the wrong bargain here: the worker installs during the
+// first visit, which means that visit's own navigation was never seen by it, so an app installed and
+// then opened without a connection showed a browser error. Whoever installs this does it on a
+// connection they have and needs it on one they do not.
+const PRECACHE = ["/m/", "/data/rates.json", "/data/limits.json", "/data/rates-typed.json"];
+
 self.addEventListener("install", (event) => {
   // Take over as soon as possible: a half-updated app is more confusing than a brief reload.
   self.skipWaiting();
-  event.waitUntil(caches.open(ASSET_CACHE));
+  event.waitUntil(
+    (async () => {
+      await caches.open(ASSET_CACHE);
+      // One at a time and each failure swallowed: a single unreachable file must not abort the
+      // install, or a hiccup costs the visitor the worker altogether.
+      await Promise.all(
+        PRECACHE.map(async (url) => {
+          const cache = await caches.open(url.startsWith("/data/") ? DATA_CACHE : PAGE_CACHE);
+          await cache.add(new Request(url, { cache: "reload" })).catch(() => {});
+        })
+      );
+    })()
+  );
 });
 
 self.addEventListener("activate", (event) => {
