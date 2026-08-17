@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset="utf-8">
+<!--
+  The 640x360 picture BotFather asks for when registering the mini app (/newapp).
+
+  Open this file in a browser, right-click the image and save it as frontend/public/telegram-app.png.
+
+  A canvas rather than the hand-rolled PNG encoder in make-icons.js, because this one has words on
+  it: that encoder draws rectangles, and drawing letterforms out of rectangles would look like it.
+  A canvas has real fonts and is already installed on every machine that can open this file.
+
+  og.png has no generator at all — it exists and cannot be remade, which is why this sits in the
+  repository rather than in a scratch directory.
+-->
+<body style="margin:0;background:#222">
+<canvas id="c" width="640" height="360"></canvas>
+<script>
+const c = document.getElementById('c');
+const x = c.getContext('2d');
+
+const BG = '#0b0d15';
+const ACC = '#6ee7ff';
+const TEXT = '#f2f4fa';
+const DIM = '#a4aabd';
+
+x.fillStyle = BG;
+x.fillRect(0, 0, 640, 360);
+
+// The same three ascending bars as the app icon, at the left where a logo sits.
+const bars = [[0.45, 0], [0.72, 1], [1, 2]];
+const H = 96, W = 26, GAP = 12, X0 = 56, BASE = 217;
+x.fillStyle = ACC;
+bars.forEach(([f, i]) => {
+  const h = Math.round(H * f);
+  x.fillRect(X0 + i * (W + GAP), BASE - h, W, h);
+});
+
+x.textBaseline = 'alphabetic';
+x.fillStyle = TEXT;
+x.font = '600 54px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+x.fillText('BankRate TJ', 190, 157);
+
+x.fillStyle = DIM;
+x.font = '400 24px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+x.fillText('Курсы валют банков Таджикистана', 192, 197);
+
+x.fillStyle = ACC;
+x.font = '400 21px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+x.fillText('22 банка · обновление каждые 3 часа', 192, 233);
+</script>
+</body>
