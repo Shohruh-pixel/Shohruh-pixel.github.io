@@ -1357,3 +1357,16 @@ td[class*="value"],
   box-shadow: var(--accent-edge);
   border-color: transparent;
 }
+
+/* Amber, not red: the figure is real and published, it is simply the state's average rather
+   than the branch's price. A red warning would say the number is wrong, which it is not. */
+.official-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--warning);
+  background: rgba(255, 209, 102, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.3);
+}

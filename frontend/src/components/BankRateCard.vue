@@ -80,7 +80,7 @@
     </div>
 
     <div class="rate-card-footer">
-      <span>{{ t("common.source") }}: {{ rate.sourceLabel }}</span>
+      <span>{{ t("common.source") }}: {{ rate.sourceLabel }}<span v-if="isOfficial" class="official-badge" :title="t('common.officialNote')">{{ t("common.officialBadge") }}</span></span>
       <span>{{ rate.bank.shortName }}</span>
     </div>
   </article>
@@ -115,6 +115,10 @@ const props = defineProps({
 });
 
 defineEmits(["toggle-favorite"]);
+
+// Every bank falls back to the National Bank's table when its own source stops answering, so
+// this is a state a card can enter at any time rather than a property of particular banks.
+const isOfficial = computed(() => String(props.rate?.sourceLabel || "").startsWith("НБТ"));
 
 const { t, locale, getBankName, formatRelativeTime } = useLocale();
 

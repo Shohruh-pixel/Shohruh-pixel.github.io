@@ -40,6 +40,8 @@ export default {
     contactText: "Хатогӣ ёфтед ё бонк илова кардан мехоҳед — нависед: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    officialBadge: "қурби расмӣ",
+    officialNote: "Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.",
     favoriteAdd: "Ба баргузидаҳо илова кардан",
     favoriteRemove: "Аз баргузидаҳо гирифтан",
     searchBank: "Ҷустуҷӯи бонк",

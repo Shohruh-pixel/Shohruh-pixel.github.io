@@ -61,6 +61,10 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+/* Amber rather than red: the figure is published and real, it is just the state's average and
+   not what the counter quotes. Red would claim it is wrong. */
+.nbtbadge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;
+  color:#ffd166;background:rgba(255,209,102,.12);box-shadow:0 0 0 1px rgba(255,209,102,.3)}
 /* A marked bank keeps its place in the list rather than jumping to the top. On a list of eight the
    reorder costs more than it saves: the reader loses the position they had just learned. */
 .fav{display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--acc);
@@ -134,7 +138,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -146,7 +150,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов и API самих банков. Обновляются каждые 3 часа.'},
-  tj:{navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -158,7 +162,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳо ва API-и худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -296,7 +300,7 @@ function screenRates(){
     <div style="text-align:right;flex:0 0 64px">${T.sell}</div></div>
   ${list.map(r=>`
     <button class="bank" data-bank="${r.bankId}" style="${S.compareMode && S.compare.includes(r.bankId) ? 'box-shadow:var(--acc-edge)' : ''}">
-      <div><div class="nm">${r.bank.nameRu}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}</div></div>
+      <div><div class="nm">${r.bank.nameRu}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}</div></div>
       <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
       <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
     </button>`).join('')}`;
@@ -404,6 +408,7 @@ function sheetHtml(){
     <div class="grab"></div>
     <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${r.bank.nameRu}</div><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
     <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago}</div>
+    ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
     <div class="row lbl" style="padding-bottom:6px">
       <div>${T.currency}</div>

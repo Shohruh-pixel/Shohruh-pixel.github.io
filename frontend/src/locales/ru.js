@@ -40,6 +40,8 @@ export default {
     contactText: "Нашли ошибку в курсе или хотите добавить банк — напишите: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    officialBadge: "официальный курс",
+    officialNote: "Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.",
     favoriteAdd: "Добавить в избранное",
     favoriteRemove: "Убрать из избранного",
     searchBank: "Поиск банка",
