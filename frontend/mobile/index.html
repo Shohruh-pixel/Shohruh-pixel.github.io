@@ -444,7 +444,7 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav]');
   if(!t) return;
   if(t.dataset.fav){
     const id = Number(t.dataset.fav);
