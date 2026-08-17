@@ -98,13 +98,13 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
    OS keyboard covers half the screen and pushes the result — the number being typed towards — out
    of sight, which is the one thing that must stay visible while typing. */
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.pad button{height:58px;border-radius:18px;border:0;font:inherit;font-size:22px;color:var(--text);
+.pad button{height:clamp(44px,6.6vh,58px);border-radius:18px;border:0;font:inherit;font-size:22px;color:var(--text);
   background:var(--glass);box-shadow:var(--edge);cursor:pointer}
 .pad button:active{background:var(--acc-wash);box-shadow:var(--acc-edge);color:var(--acc)}
 .cpill{height:38px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:14px;
   color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge);cursor:pointer;flex:0 0 auto}
-.amt{font-size:42px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
-.got{font-size:38px;font-weight:600;letter-spacing:-.02em;color:var(--acc);line-height:1.1}
+.amt{font-size:clamp(30px,5.2vh,42px);font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.got{font-size:clamp(27px,4.7vh,38px);font-weight:600;letter-spacing:-.02em;color:var(--acc);line-height:1.1}
 /* The active tab sits in a capsule, so which screen you are on is legible at a glance rather than
    by comparing two shades of the same colour. */
 nav button span.cap{display:flex;align-items:center;justify-content:center;width:56px;height:34px;
@@ -511,15 +511,13 @@ function screenConv(){
       </div>
     </div>
 
-    <div class="lbl" style="margin:14px 0 8px">${T.pickBank}</div>
+    <div class="lbl" style="margin:14px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+      <span>${T.pickBank}</span><span class="n" style="font-size:15px;color:var(--text)">${fmt(rate, other)}</span>
+    </div>
     <div class="chips">
       <!-- Full names: the strip scrolls, and cutting to the first word made ten of these read
            "Бонки" in Tajik, where almost every bank name starts with it. -->
       ${[...S.rates].sort(byName()).map(x=>`<button class="chip ${x.bankId===S.bank?'on':''}" data-bank2="${x.bankId}">${bankName(x.bank)}</button>`).join('')}
-    </div>
-
-    <div class="soft" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin-top:10px">
-      <div class="lbl">${T.rateUsed}</div><div class="n" style="font-size:16px">${fmt(rate, other)}</div>
     </div>
 
     <div class="pad">
