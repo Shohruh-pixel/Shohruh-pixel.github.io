@@ -145,7 +145,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{typeOrder:['transfer','cash','card','noncash','legal','loan','nbt'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -157,7 +157,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{typeOrder:['transfer','cash','card','noncash','legal','loan','nbt'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -169,7 +169,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{typeOrder:['transfer','cash','card','noncash','legal','loan','nbt'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -192,15 +192,19 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
-  const [r,l] = await Promise.all([
+  const [r,l,ty] = await Promise.all([
     fetch('/data/rates.json').then(x=>x.json()),
-    fetch('/data/limits.json').then(x=>x.json()).catch(()=>({data:[]}))
+    fetch('/data/limits.json').then(x=>x.json()).catch(()=>({data:[]})),
+    // Optional on purpose: four banks publish more than one rate and the rest publish one. A
+    // failure here costs the switcher and nothing else, so it must not take the screen with it.
+    fetch('/data/rates-typed.json').then(x=>x.json()).catch(()=>({data:{}}))
   ]);
   S.rates = r.data || [];
   S.limits = l.data || [];
+  S.typed = ty.data || {};
   S.bank = S.rates[0]?.bankId ?? null;
   render();
 }
@@ -422,17 +426,39 @@ function sheetHtml(){
     <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago}</div>
     ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
+    ${(() => {
+      const byCur = S.typed[r.bank.slug] || {};
+      const found = new Set();
+      Object.values(byCur).forEach(perType => Object.keys(perType).forEach(t => found.add(t)));
+      const avail = T.typeOrder.filter(t => found.has(t));
+      if (avail.length < 2) return '';
+      const active = avail.includes(S.sheetType) ? S.sheetType : avail[0];
+      return `<div class="chips" style="margin-bottom:12px">${avail.map(t =>
+        `<button class="chip ${t===active?'on':''}" data-stype="${t}">${T.types[t]}</button>`).join('')}</div>`;
+    })()}
     <div class="row lbl" style="padding-bottom:6px">
       <div>${T.currency}</div>
       <div class="v" style="flex:0 0 62px;text-align:right">${T.buy}</div>
       <div class="v" style="flex:0 0 62px;text-align:right">${T.sell}</div>
     </div>
-    ${CUR.map(c => `
+    ${CUR.map(c => {
+      const byCur = S.typed[r.bank.slug] || {};
+      const found = new Set();
+      Object.values(byCur).forEach(perType => Object.keys(perType).forEach(t => found.add(t)));
+      const avail = T.typeOrder.filter(t => found.has(t));
+      const active = avail.includes(S.sheetType) ? S.sheetType : avail[0];
+      // Falls back to the headline figures when the bank publishes only one rate, so a card never
+      // empties just because there is nothing to switch between.
+      const picked = avail.length > 1 ? (byCur[c] || {})[active] : null;
+      const buy = picked ? picked.buy : val(r,c,'buy');
+      const sell = picked ? picked.sell : val(r,c,'sell');
+      return `
       <div class="srow">
         <div style="font-size:15.5px">${c}<span class="lbl"> · ${CUR_NAME[c]}</span></div>
-        <div class="v n">${fmt(val(r,c,'buy'),c)}</div>
-        <div class="v n">${fmt(val(r,c,'sell'),c)}</div>
-      </div>`).join('')}
+        <div class="v n">${fmt(buy,c)}</div>
+        <div class="v n">${sell === null ? '—' : fmt(sell,c)}</div>
+      </div>`;
+    }).join('')}
 
     ${lim ? `<div class="row" style="margin-top:14px">
       <div class="soft" style="padding:13px 16px"><div class="lbl">${T.perDay}</div><div class="mid n">${lim.dailyLimit}</div></div>
@@ -461,9 +487,10 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype]');
   if(!t) return;
-  if(t.dataset.own){ S.ownOnly = !S.ownOnly; }
+  if(t.dataset.stype){ S.sheetType = t.dataset.stype; }
+  else if(t.dataset.own){ S.ownOnly = !S.ownOnly; }
   else if(t.dataset.fav){
     const id = Number(t.dataset.fav);
     S.favs = S.favs.includes(id) ? S.favs.filter(x=>x!==id) : [...S.favs, id];
@@ -493,7 +520,7 @@ document.addEventListener('click', e => {
       // on a full selection the reader has to clear by hand.
       S.compare = S.compare.includes(id) ? S.compare.filter(x=>x!==id)
         : [...S.compare, id].slice(-2);
-    } else { S.sheet = id; }
+    } else { S.sheet = id; S.sheetType = null; }
   }
   render();
   if(S.sheet == null) window.scrollTo(0,0);
