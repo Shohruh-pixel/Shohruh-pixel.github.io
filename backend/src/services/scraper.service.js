@@ -12,13 +12,13 @@ const { buildHeadline, storeTypedRates } = require("./typed-rates.service");
 const API_SOURCES = [
   {
     slug: "alif-bank",
-    label: "API банка (alif.tj)",
+    label: "Сайт банка (alif.tj)",
     requests: [{ url: "https://alif.tj/api/rates" }],
     parse: ([payload]) => bankApis.parseAlif(payload)
   },
   {
     slug: "dushanbe-city-bank",
-    label: "API банка (dc.tj)",
+    label: "Сайт банка (dc.tj)",
     // One request per tab. Replaces parsing a homepage that takes 25s+ and ships its unrendered
     // client template, which forced every value there to be treated as suspect.
     requests: Object.keys(bankApis.DC_TYPE_MAP).map((type) => ({
@@ -36,7 +36,7 @@ const API_SOURCES = [
   },
   {
     slug: "amonatbank",
-    label: "API банка (amonatbonk.tj)",
+    label: "Сайт банка (amonatbonk.tj)",
     requests: [
       { url: "https://www.amonatbonk.tj/bitrix/templates/amonatbonk/ajax/ambApi.php" }
     ],
@@ -44,13 +44,13 @@ const API_SOURCES = [
   },
   {
     slug: "imon-international",
-    label: "API банка (imon.tj)",
+    label: "Сайт банка (imon.tj)",
     requests: [{ url: "https://imon.tj/api/exchange-rates" }],
     parse: ([payload]) => bankApis.parseImon(payload)
   },
   {
     slug: "arvand",
-    label: "API банка (arvand.tj)",
+    label: "Сайт банка (arvand.tj)",
     requests: [{ url: "https://arvand.tj/api/currencies/" }],
     parse: ([payload]) => bankApis.parseArvand(payload)
   }
