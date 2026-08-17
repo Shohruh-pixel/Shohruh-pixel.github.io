@@ -35,9 +35,17 @@ async function main() {
 
   if (!body.ok) {
     // Not fatal, deliberately. A published site whose bot button is stale is worth more than no
-    // published site, and the next run tries again. A wrong token shows up here as "Unauthorized",
-    // which makes this the cheapest check that the secret is still good.
+    // published site, and the next run tries again.
     console.log(`[telegram] кнопка меню не установлена: ${body.description || res.status}`);
+
+    // A rejected token is different in kind from a hiccup. It means every alert this project sends
+    // is going nowhere — including the one that says a bank stopped publishing — and the way that
+    // failure normally announces itself is by nothing ever arriving again. So it gets an annotation
+    // on the run rather than a line in a log nobody opens. Still not a failure: rates must keep
+    // publishing whether or not Telegram is reachable.
+    if (body.error_code === 401) {
+      console.log("::warning title=Telegram::TELEGRAM_BOT_TOKEN отклонён — уведомления и кнопка меню не работают");
+    }
     return;
   }
 
