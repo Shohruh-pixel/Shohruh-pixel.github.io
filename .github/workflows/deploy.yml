@@ -168,5 +168,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Publishing fails now and then — three times this week — on a build that was otherwise green.
+      # The failure is inside GitHub's own Pages API and its logs are not readable without a token,
+      # so the cause is not something this repository can see. What it can see is the consequence: a
+      # commit that reached origin, a run marked failed, and the previous site still live. Every one
+      # of those needed a hand-pushed empty commit to clear.
+      #
+      # So the first attempt is allowed to fail and a second one follows. A retry is not a diagnosis,
+      # and it is not being passed off as one; it is what turns a silent half-hour of stale rates into
+      # thirty extra seconds. If the second also fails the run goes red, which is the honest outcome.
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - id: deployment-retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
