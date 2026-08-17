@@ -143,6 +143,11 @@ jobs:
             git push
           fi
 
+      - name: Point Telegram's menu button at the mini app
+        # Idempotent, so it runs every time rather than once by hand: Telegram stores the last value
+        # and setting the same one again changes nothing. Never fails the build — see the script.
+        run: node backend/scripts/set-telegram-menu.js
+
       - uses: actions/upload-pages-artifact@v3
         with:
           # dist-static, not dist: the prerenderer reads Vite's output as its shell and writes the
