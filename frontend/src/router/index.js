@@ -24,6 +24,9 @@ const router = createRouter({
     // Long-tail search entry point: one page per bank. Lazy-loaded because most visits start on
     // the comparison pages, not here.
     { path: "/bank/:slug", name: "bank", component: () => import("../pages/BankPage.vue") },
+    // Lazy, like the other pages nobody lands on first — but present in the sitemap, because a
+    // site that tells people where to move money has to say who is telling them.
+    { path: "/about", name: "about", component: () => import("../pages/AboutPage.vue") },
     { path: "/admin", name: "admin", component: () => import("../pages/AdminPage.vue") },
     // Must stay last: it matches anything the routes above did not.
     { path: "/:pathMatch(.*)*", name: "not-found", component: () => import("../pages/NotFoundPage.vue") }

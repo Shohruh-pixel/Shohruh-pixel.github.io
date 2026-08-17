@@ -43,7 +43,7 @@ const DATA_FILES = [
 
 // /admin is deliberately absent: it talks to endpoints that no longer exist in a static build, and
 // prerendering it would publish a login screen that can never succeed.
-const STATIC_ROUTES = ["/", "/rates", "/converter", "/limits", "/favorites"];
+const STATIC_ROUTES = ["/", "/rates", "/converter", "/limits", "/favorites", "/about"];
 
 function writeFile(relativePath, contents) {
   const target = path.join(DIST, relativePath);

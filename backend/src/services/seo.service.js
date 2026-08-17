@@ -177,6 +177,17 @@ async function buildForRoute(rawPathname) {
     };
   }
 
+  if (pathname === "/about") {
+    return {
+      ...shared,
+      title: "О проекте BankRate TJ — источники курсов и ответственность",
+      description:
+        "Кто собирает курсы валют банков Таджикистана, из каких источников они берутся, как часто обновляются и почему это справочные данные, а не публичная оферта.",
+      heading: "О проекте",
+      body: ""
+    };
+  }
+
   if (pathname === "/limits") {
     return {
       ...shared,
@@ -351,6 +362,9 @@ async function renderSitemap() {
     { path: "/rates", changefreq: "hourly", priority: "0.9" },
     { path: "/converter", changefreq: "daily", priority: "0.7" },
     { path: "/limits", changefreq: "weekly", priority: "0.6" },
+    // Rarely changes, but a site telling people where to move money has to say who is telling
+    // them — and search engines weigh that when deciding whether to trust the rest.
+    { path: "/about", changefreq: "monthly", priority: "0.4" },
     // Built from the live bank list rather than hardcoded, so adding or deactivating a bank
     // updates the sitemap without anyone remembering to edit it.
     ...snapshot.rates.map((rate) => ({

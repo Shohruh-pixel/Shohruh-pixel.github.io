@@ -25,6 +25,20 @@ export default {
     loan: "Kredit to'lovi",
     nbt: "MBT kursi"
   },
+  about: {
+    title: "Loyiha haqida",
+    subtitle: "Bu kurslarni kim yig'adi, qayerdan olinadi va qanday foydalanish kerak.",
+    whatTitle: "Bu nima",
+    whatText: "BankRate TJ — Tojikiston banklari valyuta kurslarining mustaqil ma'lumotnomasi. Biz bank, ayirboshlash shoxobchasi yoki vositachi emasmiz: pul almashtirmaymiz va almashuvdan komissiya olmaymiz. Sayt bugun qayerda valyutani sotish yoki sotib olish foydaliroq ekanini ko'rsatadi.",
+    sourcesTitle: "Kurslar qayerdan",
+    sourcesText: "Kurslar to'g'ridan-to'g'ri banklarning o'z saytlari va ochiq API'laridan olinadi, bank ularni e'lon qilmagan joyda esa — Tojikiston Milliy banki jadvalidan. Manba har bir bank uchun alohida ko'rsatilgan. Yangilanish har 3 soatda avtomatik amalga oshadi.",
+    disclaimerTitle: "Javobgarlik",
+    disclaimerText: "Kurslar ma'lumot uchun berilgan va ommaviy oferta emas. Bank kursni istalgan paytda, shu jumladan bizning yangilanishlarimiz orasida ham o'zgartirishi mumkin, filialda esa kurs farq qilishi mumkin. Katta summani almashtirishdan oldin kursni bevosita bankda aniqlang.",
+    privacyTitle: "Tashrifchilar ma'lumotlari",
+    privacyText: "Biz ro'yxatdan o'tishni so'ramaymiz, ism, telefon va pochtani yig'maymiz. Tashqi hisoblagichlar va reklama tarmoqlari yo'q. Saralangan banklar va tanlangan til faqat brauzeringizda saqlanadi.",
+    contactTitle: "Aloqa",
+    contactText: "Kursda xatolik topsangiz yoki bank qo'shmoqchi bo'lsangiz — yozing: shoxruxmahkamov05@gmail.com"
+  },
   common: {
     favoriteAdd: "Saralanganlarga qo'shish",
     favoriteRemove: "Saralanganlardan olib tashlash",
