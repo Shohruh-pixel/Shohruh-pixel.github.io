@@ -23,11 +23,18 @@ permissions:
   pages: write
   id-token: write
 
-# A scheduled run and a push can overlap. Letting both publish would mean the older build can land
-# last and put stale rates on the site, so the newer run wins and the older is cancelled.
+# A scheduled run and a push can overlap, and letting both publish would mean the older build lands
+# last and puts stale rates on the site. Queueing fixes that on its own: GitHub runs one at a time
+# and keeps only the newest of whatever is waiting, so the freshest build is still the one that ends
+# up published.
+#
+# In-progress runs are deliberately not cancelled. Cutting one off during actions/deploy-pages leaves
+# a half-created deployment behind, and the next run fails on it — which is what happened here: a
+# green build whose publish step failed, leaving the previous site up while the commit looked
+# delivered. A slow deploy is cheaper than a deploy that breaks the one after it.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
