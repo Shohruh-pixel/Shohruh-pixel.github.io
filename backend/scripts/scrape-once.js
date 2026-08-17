@@ -12,7 +12,21 @@ const { scrapeNbtRates } = require("../src/services/scraper.service");
 const rateService = require("../src/services/rate.service");
 const notify = require("../src/services/notify.service");
 
+// The National Bank's table is the fallback every bank shares; anything else is the bank speaking
+// for itself. That distinction is what makes a change worth reporting in one direction and
+// reassuring in the other.
+const NBT_LABEL = "НБТ";
+
+async function sourcesBySlug() {
+  const rows = await prisma.exchangeRate.findMany({ include: { bank: { select: { slug: true, nameRu: true } } } });
+  return new Map(rows.map((r) => [r.bank.slug, { label: r.sourceLabel, name: r.bank.nameRu }]));
+}
+
 async function main() {
+  // Captured before the scrape overwrites them, so the comparison is between this run and the last
+  // one rather than against a file that may or may not have been committed.
+  const before = await sourcesBySlug();
+
   const result = await scrapeNbtRates("external");
 
   console.log(
@@ -21,6 +35,35 @@ async function main() {
 
   if (result.changed.length) {
     console.log(`changed: ${result.changed.join(", ")}`);
+  }
+
+  // Source changes first: if a bank fell back to the official table its rates may well have
+  // "changed" too, and the reason is worth knowing before the figures.
+  if (notify.isConfigured()) {
+    try {
+      const after = await sourcesBySlug();
+      const changes = [];
+
+      for (const [slug, now] of after) {
+        const was = before.get(slug);
+        if (!was || was.label === now.label) {
+          continue;
+        }
+        changes.push({
+          bank: now.name,
+          from: was.label,
+          to: now.label,
+          degraded: now.label.startsWith(NBT_LABEL) && !was.label.startsWith(NBT_LABEL)
+        });
+      }
+
+      if (changes.length) {
+        await notify.alertSourceChanged(changes);
+        console.log(`telegram: source change announced (${changes.length})`);
+      }
+    } catch (error) {
+      console.warn("telegram source-change announce failed:", error.message);
+    }
   }
 
   // Announced from here rather than from inside the scraper: this script is what CI runs, and the

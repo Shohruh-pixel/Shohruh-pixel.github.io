@@ -195,6 +195,40 @@ function alertRatesChanged({ changed, best }) {
   return notify("rates-changed", lines.join("\n"), { force: true });
 }
 
+
+// A bank quietly moving from its own published figures to the National Bank's table is a real
+// degradation and it is invisible: the card still shows a number, the build stays green, and the
+// only symptom is that the figure is now an averaged official one rather than what the branch
+// quotes. Amonatbank did exactly this and it took a manual audit a week later to notice.
+//
+// Not folded into the failure alert, because nothing failed — every source that answered was used
+// correctly. This says the answer got worse, which is a different thing to report.
+function alertSourceChanged(changes) {
+  if (!changes.length) {
+    return false;
+  }
+
+  const lost = changes.filter((c) => c.degraded);
+  const gained = changes.filter((c) => !c.degraded);
+  const lines = [];
+
+  if (lost.length) {
+    lines.push("⚠️ <b>Банк перешёл на курс НБТ</b>", "");
+    lost.forEach((c) => lines.push(`${escapeHtml(c.bank)}: ${escapeHtml(c.from)} → ${escapeHtml(c.to)}`));
+    lines.push("", "Показываем официальный курс вместо кассового. Вернётся само, когда источник банка ответит.");
+  }
+
+  if (gained.length) {
+    if (lines.length) {
+      lines.push("");
+    }
+    lines.push("✅ <b>Банк вернулся на свой источник</b>", "");
+    gained.forEach((c) => lines.push(`${escapeHtml(c.bank)}: ${escapeHtml(c.from)} → ${escapeHtml(c.to)}`));
+  }
+
+  return notify("source-changed", lines.join("\n"), { force: true });
+}
+
 // Exposed for tests, which need to reset the in-memory guards between cases.
 function _resetGuards() {
   lastSentByKey.clear();
@@ -209,6 +243,7 @@ module.exports = {
   alertServerError,
   sendDailyDigest,
   alertRatesChanged,
+  alertSourceChanged,
   _resetGuards,
   DEDUPE_WINDOW_MS,
   MAX_MESSAGES_PER_HOUR
