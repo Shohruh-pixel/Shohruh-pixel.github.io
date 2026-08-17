@@ -200,7 +200,7 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, about:false, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -488,7 +488,7 @@ function screenConv(){
     return `
     <div class="card">
       <div style="display:flex;align-items:center;gap:10px">
-        <div class="amt n" style="flex:1;min-width:0;overflow:hidden">${S.amount || '0'}</div>
+        <div class="amt n" style="flex:1;min-width:0;overflow:hidden${S.amountFresh ? ';color:var(--faint)' : ''}">${S.amount || '0'}</div>
         <button class="cpill" data-swapcur="1">${S.from} ⇅</button>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:10px">
@@ -673,8 +673,12 @@ document.addEventListener('click', e => {
     const k = t.dataset.key;
     // Typing is capped and the separator kept single, because the field has no browser validation
     // behind it — the page owns the keypad, so the page owns what a valid amount is.
-    if(k === '⌫') S.amount = String(S.amount).slice(0, -1) || '';
-    else if(k === '.') { if(!String(S.amount).includes('.')) S.amount = (S.amount || '0') + '.'; }
+    if(k === '⌫'){ S.amount = String(S.amount).slice(0, -1) || ''; S.amountFresh = false; }
+    else if(k === '.'){
+      if(S.amountFresh){ S.amount = '0.'; S.amountFresh = false; }
+      else if(!String(S.amount).includes('.')) S.amount = (S.amount || '0') + '.';
+    }
+    else if(S.amountFresh){ S.amount = k; S.amountFresh = false; }
     else if(String(S.amount).replace(/\D/g,'').length < 9) S.amount = (S.amount === '0' ? '' : S.amount) + k;
   }
   else if(t.dataset.bank2) S.bank = Number(t.dataset.bank2);
