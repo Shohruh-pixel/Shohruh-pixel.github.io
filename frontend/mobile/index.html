@@ -646,6 +646,24 @@ function sheetHtml(){
   </div>`;
 }
 
+// Kept in step with screenConv, which computes the same two values when it draws the screen whole.
+function repaintAmount(){
+  const amtEl = document.querySelector('.amt');
+  const gotEl = document.querySelector('.got');
+  if(!amtEl || !gotEl || !S.rates.length) return false;
+
+  const r = S.rates.find(x => x.bankId === S.bank) || S.rates[0];
+  const other = S.from === 'TJS' ? S.cur : S.from;
+  const rate = val(r, other, S.dir);
+  const amt = parseFloat(String(S.amount || '0').replace(',','.')) || 0;
+  const out = S.from === 'TJS' ? (rate ? amt / rate : 0) : amt * rate;
+
+  amtEl.textContent = S.amount || '0';
+  amtEl.style.color = S.amountFresh ? 'var(--faint)' : '';
+  gotEl.textContent = out.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return true;
+}
+
 function render(){
   document.querySelectorAll('.scrim,.sheet').forEach(n => n.remove());
   document.getElementById('app').innerHTML = bannerHtml() +
@@ -687,6 +705,7 @@ document.addEventListener('click', e => {
     }
     else if(S.amountFresh){ S.amount = k; S.amountFresh = false; }
     else if(String(S.amount).replace(/\D/g,'').length < 9) S.amount = (S.amount === '0' ? '' : S.amount) + k;
+    if(repaintAmount()) return;
   }
   else if(t.dataset.bank2) S.bank = Number(t.dataset.bank2);
   else if(t.dataset.dir) S.dir = S.dir === 'buy' ? 'sell' : 'buy';
