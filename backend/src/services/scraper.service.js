@@ -84,7 +84,21 @@ const BANK_MAP = [
   { slug: "amonatbank", match: "Амонатбанк" },
   { slug: "eskhata-bank", match: "Эсхата" },
   { slug: "orienbank", match: "Ориён" },
-  { slug: "spitamen-bank", match: "Спитамен" }
+  { slug: "spitamen-bank", match: "Спитамен" },
+  { slug: "tawhidbank", match: "Тавхидбанк" },
+  { slug: "mbt", match: "Международный банк" },
+  { slug: "ikb-tajikistan", match: "Инвестиционно-Кредитный" },
+  { slug: "aktiv-bank", match: "Актив Банк" },
+  { slug: "sanoatsodirotbonk", match: "Саноатсодиротбонк" },
+  { slug: "freedom-bank", match: "Фридом Банк" },
+  { slug: "vasl-bank", match: "Васл Банк" },
+  { slug: "finca", match: "ФИНКА" },
+  { slug: "azizi-moliya", match: "Азизи-Молия" },
+  { slug: "matin", match: "МАТИН" },
+  { slug: "lols-moliya", match: "ЛОЛС" },
+  { slug: "shukr-moliya", match: "Шукр Молия" },
+  { slug: "sunduk", match: "Сундук" },
+  { slug: "zudamal", match: "Зудамал" }
 ];
 
 const RATE_FIELDS = ["usdBuy", "usdSell", "rubBuy", "rubSell", "eurBuy", "eurSell"];

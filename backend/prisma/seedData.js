@@ -340,6 +340,29 @@ const laterBanks = [
 
 banks.push(...laterBanks);
 
+// Everything else the National Bank publishes. None of these has a reachable source of its own, so
+// all of them show the official figure and say so on the card. Nine banks answered "which of the
+// ones I know is best"; twenty-three answers "where in the country is best", which is the question
+// people actually have.
+const nbtOnlyBanks = [
+  { slug: "tawhidbank", nameRu: "Тавхидбанк", nameTj: "Тавҳидбонк", nameUz: "Tavhidbank", shortName: "TWD", logo: "T", isActive: true },
+  { slug: "mbt", nameRu: "Международный банк Таджикистана", nameTj: "Бонки байналмилалии Тоҷикистон", nameUz: "Tojikiston Xalqaro banki", shortName: "MBT", logo: "MB", isActive: true },
+  { slug: "ikb-tajikistan", nameRu: "Инвестиционно-Кредитный Банк", nameTj: "Бонки Сармоягузорӣ-Қарзӣ", nameUz: "Investitsiya-Kredit banki", shortName: "IKB", logo: "IK", isActive: true },
+  { slug: "aktiv-bank", nameRu: "Актив Банк", nameTj: "Бонки Актив", nameUz: "Aktiv Bank", shortName: "AKT", logo: "AK", isActive: true },
+  { slug: "sanoatsodirotbonk", nameRu: "Саноатсодиротбонк", nameTj: "Саноатсодиротбонк", nameUz: "Sanoatsodirotbonk", shortName: "SSB", logo: "SS", isActive: true },
+  { slug: "freedom-bank", nameRu: "Фридом Банк Таджикистан", nameTj: "Бонки Фридом Тоҷикистон", nameUz: "Freedom Bank Tojikiston", shortName: "FRD", logo: "F", isActive: true },
+  { slug: "vasl-bank", nameRu: "Васл Банк", nameTj: "Бонки Васл", nameUz: "Vasl Bank", shortName: "VSL", logo: "V", isActive: true },
+  { slug: "finca", nameRu: "ФИНКА", nameTj: "ФИНКА", nameUz: "FINCA", shortName: "FIN", logo: "FI", isActive: true },
+  { slug: "azizi-moliya", nameRu: "Азизи-Молия", nameTj: "Азизӣ-Молия", nameUz: "Azizi-Moliya", shortName: "AZM", logo: "AZ", isActive: true },
+  { slug: "matin", nameRu: "МАТИН", nameTj: "МАТИН", nameUz: "MATIN", shortName: "MAT", logo: "MA", isActive: true },
+  { slug: "lols-moliya", nameRu: "ЛОЛС Молия", nameTj: "ЛОЛС Молия", nameUz: "LOLS Moliya", shortName: "LLS", logo: "L", isActive: true },
+  { slug: "shukr-moliya", nameRu: "Шукр Молия", nameTj: "Шукр Молия", nameUz: "Shukr Moliya", shortName: "SHK", logo: "SH", isActive: true },
+  { slug: "sunduk", nameRu: "Сундук", nameTj: "Сундуқ", nameUz: "Sunduq", shortName: "SND", logo: "SN", isActive: true },
+  { slug: "zudamal", nameRu: "Зудамал", nameTj: "Зудамал", nameUz: "Zudamal", shortName: "ZUD", logo: "Z", isActive: true }
+];
+
+banks.push(...nbtOnlyBanks);
+
 async function seedDatabase(prisma, options = {}) {
   const { reset = false } = options;
 
