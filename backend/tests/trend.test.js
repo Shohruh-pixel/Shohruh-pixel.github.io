@@ -173,3 +173,44 @@ test("direction comparison handles missing numbers without inventing a direction
   assert.equal(rateService.directionOf(null, null), "flat");
   assert.equal(rateService.directionOf(9.3, 9.2), "up");
 });
+
+// The history had no foreign key until 17.08.2026, so a reseed left rows behind while the banks
+// were recreated — 21 orphans out of 118 on the live database. SQLite reissues freed ids, so one of
+// those rows could later attach itself to a new bank and give it a movement arrow computed from a
+// different bank's rates. On a page people use to decide where to change money, a confident arrow
+// pointing the wrong way is worse than no arrow at all.
+test("deleting a bank takes its history with it", async () => {
+  const bank = await prisma.bank.create({
+    data: {
+      slug: "fk-probe",
+      nameRu: "Проверка",
+      nameTj: "Санҷиш",
+      nameUz: "Tekshiruv",
+      shortName: "FKP",
+      isActive: true
+    }
+  });
+
+  await prisma.rateHistory.create({
+    data: {
+      bankId: bank.id,
+      usdBuy: 9.1,
+      usdSell: 9.2,
+      rubBuy: 0.1,
+      rubSell: 0.11,
+      eurBuy: 10.1,
+      eurSell: 10.2,
+      sourceLabel: "test"
+    }
+  });
+
+  assert.equal(await prisma.rateHistory.count({ where: { bankId: bank.id } }), 1);
+
+  await prisma.bank.delete({ where: { id: bank.id } });
+
+  assert.equal(
+    await prisma.rateHistory.count({ where: { bankId: bank.id } }),
+    0,
+    "history must not outlive the bank it belongs to"
+  );
+});

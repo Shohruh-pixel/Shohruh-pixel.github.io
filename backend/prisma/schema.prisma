@@ -18,6 +18,7 @@ model Bank {
   isActive         Boolean           @default(true)
   exchangeRate     ExchangeRate?
   rates            Rate[]
+  rateHistory      RateHistory[]
   withdrawalLimits WithdrawalLimit[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -78,6 +79,11 @@ model ExchangeRate {
 model RateHistory {
   id          Int      @id @default(autoincrement())
   bankId      Int
+  // Without this relation a reseed left the history behind while the banks were recreated, and
+  // SQLite hands out freed ids again — so a new bank could inherit a deleted one's history and the
+  // card would draw a confident movement arrow computed from another bank's rates. Measured on the
+  // live database before the fix: 21 orphaned rows out of 118.
+  bank        Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
   usdBuy      Float
   usdSell     Float
   rubBuy      Float
