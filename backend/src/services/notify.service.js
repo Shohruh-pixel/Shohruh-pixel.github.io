@@ -165,6 +165,36 @@ function sendDailyDigest({ views, conversions, rateChanges, errors, topPages }) 
   return notify("daily-digest", lines.join("\n"), { force: true });
 }
 
+
+// Sent only when figures actually moved, never on a run that found the same numbers. The scrape
+// happens eight times a day and the sources publish roughly once per business day, so alerting on
+// every run would deliver seven identical messages a day and teach the reader to ignore the channel
+// by the time something real arrives.
+function alertRatesChanged({ changed, best }) {
+  if (!changed.length) {
+    return false;
+  }
+
+  const lines = ["💱 <b>Курсы обновились</b>", ""];
+
+  // Best rates first: it is the one line most readers act on, and it says what changed in terms of
+  // the decision rather than in terms of which rows the scraper rewrote.
+  for (const [code, value] of Object.entries(best || {})) {
+    if (!value || !value.sell || !value.buy) {
+      continue;
+    }
+    lines.push(
+      `${escapeHtml(code)}: продать ${value.sell.rate} (${escapeHtml(value.sell.bank)}) · купить ${value.buy.rate} (${escapeHtml(value.buy.bank)})`
+    );
+  }
+
+  lines.push("", `Изменились: ${escapeHtml(changed.join(", "))}`);
+
+  // Forced past the hourly budget: this is the message the channel exists for, and dropping it
+  // because alerts used up the allowance would leave the reader with warnings and no news.
+  return notify("rates-changed", lines.join("\n"), { force: true });
+}
+
 // Exposed for tests, which need to reset the in-memory guards between cases.
 function _resetGuards() {
   lastSentByKey.clear();
@@ -178,6 +208,7 @@ module.exports = {
   alertScraperRecovered,
   alertServerError,
   sendDailyDigest,
+  alertRatesChanged,
   _resetGuards,
   DEDUPE_WINDOW_MS,
   MAX_MESSAGES_PER_HOUR
