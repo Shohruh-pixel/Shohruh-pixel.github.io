@@ -328,7 +328,11 @@ function injectIntoShell(html, seo) {
     `<meta property="og:description" content="${escapeHtml(seo.description)}" />`,
     `<meta property="og:url" content="${escapeHtml(seo.canonical)}" />`,
     `<meta property="og:locale" content="ru_RU" />`,
-    `<meta name="twitter:card" content="summary" />`
+    `<meta property="og:image" content="${escapeHtml(env.publicUrl)}/og.png" />`,
+    `<meta property="og:image:width" content="1200" />`,
+    `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:site_name" content="BankRate TJ" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`
   ].join("\n    ");
 
   let output = html
