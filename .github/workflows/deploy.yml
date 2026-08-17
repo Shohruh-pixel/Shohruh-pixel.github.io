@@ -41,6 +41,17 @@ jobs:
       # database file; the snapshot JSON is the only thing that persists between runs.
       DATABASE_URL: file:/tmp/bankrate-build.db
 
+      # Read from repository secrets, never written down here — this file is committed and the
+      # repository is public, so a token in it would be a token anyone can use. Absent secrets are
+      # not an error: notify.service.js simply stays quiet when either value is missing, which is
+      # the normal state locally.
+      #
+      # Without these, a bank that redesigns its site turns the build red and nothing says so; the
+      # rates quietly stop moving and the site keeps serving figures that look current. That is the
+      # worst failure this project can have, and it is the one alerting exists to prevent.
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
     steps:
       - uses: actions/checkout@v4
 
