@@ -81,7 +81,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .apart{margin-top:18px}
 .apart b{display:block;font-size:15px;font-weight:600;color:var(--text)}
 .apart span{display:block;margin-top:5px;font-size:13px;line-height:1.5;color:var(--dim)}
-.mv{font-size:11px;margin-right:3px;vertical-align:1px}
+.mv{width:7px;height:7px;margin-right:4px;fill:currentColor;display:inline-block;
+  vertical-align:middle;position:relative;top:-1px}
 /* Muted rather than pure red and green: these sit beside the figure they describe and must not
    outshout it, and a screen of twenty-two rows of saturated colour is unreadable. */
 .mv.up{color:#4ade80}
@@ -352,7 +353,8 @@ function shareRate(id){
 function arrow(r, field){
   const d = r.trend && r.trend.changes && r.trend.changes[field] && r.trend.changes[field].direction;
   if(d !== 'up' && d !== 'down') return '';
-  return `<span class="mv ${d}" aria-hidden="true">${d === 'up' ? '↑' : '↓'}</span>`;
+  const shape = d === 'up' ? 'M5 0 10 9H0z' : 'M5 9 0 0h10z';
+  return `<svg class="mv ${d}" viewBox="0 0 10 9" aria-hidden="true"><path d="${shape}"/></svg>`;
 }
 
 // Intl collation, not code-point order: Cyrillic Ё, Uzbek O' and the rest sit where a reader

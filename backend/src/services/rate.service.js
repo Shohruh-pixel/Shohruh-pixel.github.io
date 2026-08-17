@@ -173,6 +173,17 @@ async function getBestRates() {
 // Grouped by bank slug, then currency, then type — the shape a bank page needs to offer a
 // switcher without regrouping in the browser. Banks with no typed rates yet simply do not appear,
 // which the page reads as "this bank publishes one figure" rather than as an error.
+// How long a per-type rate stays offerable. Scraping runs every three hours, so a day is eight
+// missed rounds — not a hiccup but a source that has stopped answering.
+//
+// Amonatbank is why this exists. Their server has been refusing us since 15 August, so the headline
+// correctly fell back to the National Bank and stayed current, while these rows sat untouched from
+// the last good read. The card then said "this bank publishes no rate of its own, here is the
+// official one" directly above a switcher offering that bank's own counter, transfer and corporate
+// rates — three days old, presented as today's. Contradicting ourselves is bad; doing it with money
+// figures someone is about to act on is the failure this project exists to prevent.
+const TYPED_FRESHNESS_MS = 24 * 60 * 60 * 1000;
+
 async function getTypedRates() {
   const rows = await prisma.rate.findMany({
     include: { bank: { select: { slug: true } } },
@@ -180,8 +191,13 @@ async function getTypedRates() {
   });
 
   const byBank = {};
+  const cutoff = Date.now() - TYPED_FRESHNESS_MS;
 
   for (const row of rows) {
+    if (new Date(row.updatedAt).getTime() < cutoff) {
+      continue;
+    }
+
     const slug = row.bank.slug;
     byBank[slug] = byBank[slug] || {};
     byBank[slug][row.currency] = byBank[slug][row.currency] || {};
@@ -203,6 +219,7 @@ module.exports = {
   buildBestRatePayload,
   getTrendsByBankId,
   directionOf,
-  TREND_FRESHNESS_MS
+  TREND_FRESHNESS_MS,
+  TYPED_FRESHNESS_MS
 };
 
