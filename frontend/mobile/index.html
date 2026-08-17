@@ -69,6 +69,11 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+.srcbtn{display:block;width:100%;text-align:left;background:none;border:0;padding:10px 16px 0;font:inherit;font-size:12.5px;color:var(--faint)}
+.srcmore{color:var(--acc);white-space:nowrap}
+.apart{margin-top:18px}
+.apart b{display:block;font-size:15px;font-weight:600;color:var(--text)}
+.apart span{display:block;margin-top:5px;font-size:13px;line-height:1.5;color:var(--dim)}
 .mv{color:var(--faint);font-size:11px;margin-right:3px;vertical-align:1px}
 .stale{font-size:12.5px;color:#ffd166;background:var(--glass-soft);box-shadow:var(--edge);border-radius:14px;padding:9px 12px;margin-bottom:14px}
 /* Amber rather than red: the figure is published and real, it is just the state's average and
@@ -122,7 +127,7 @@ nav button.on span.cap{background:var(--acc-wash);box-shadow:var(--acc-edge)}
   background:radial-gradient(circle, rgba(110,231,255,.22), transparent 70%);filter:blur(80px);
   pointer-events:none;z-index:-1}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-#app{animation:rise .3s ease both}
+#app{animation:rise .3s ease backwards}
 /* 56px, title and controls on one line — not a page heading stacked above the content. */
 header{height:56px;display:flex;align-items:center;gap:8px;padding:0 4px;position:sticky;top:0;
   background:var(--bg);z-index:10}
@@ -148,7 +153,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -160,7 +165,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -172,7 +177,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -195,7 +200,7 @@ const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубл�
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -264,7 +269,7 @@ function haptic(style){
 function syncTelegram(){
   const tg = TG();
   if(!tg || !tg.BackButton) return;
-  try { S.sheet != null ? tg.BackButton.show() : tg.BackButton.hide(); } catch(e){}
+  try { (S.sheet != null || S.about) ? tg.BackButton.show() : tg.BackButton.hide(); } catch(e){}
 }
 
 function initTelegram(){
@@ -280,7 +285,7 @@ function initTelegram(){
   try { tg.setBottomBarColor('#0b0d15'); } catch(e){}
   // Newer clients only: without it a scroll that starts at the top drags the app closed.
   try { tg.disableVerticalSwipes(); } catch(e){}
-  try { tg.BackButton.onClick(() => { S.sheet = null; render(); }); } catch(e){}
+  try { tg.BackButton.onClick(() => { S.sheet = null; S.about = false; render(); }); } catch(e){}
 
   // A reader who has never touched the language button gets the language of their Telegram account
   // rather than Russian. An explicit choice always wins — it is stored, and this never overrides it.
@@ -380,7 +385,7 @@ function screenHome(){
         <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
         <div class="n ${r.bankId===b.buy.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
       </button>`).join('')}
-    <div class="lbl" style="padding:10px 16px 0">${T.source}</div>
+    <button class="srcbtn" data-about="1">${T.source} <span class="srcmore">${T.aboutTitle} →</span></button>
   </div>`;
 }
 
@@ -525,6 +530,23 @@ const ICON = {
 };
 
 
+// Who is behind the numbers, in a product about money. The phone app had no way to ask: the desktop
+// site has an about page, and nobody arriving through Telegram will ever see it.
+function aboutHtml(){
+  const part = (t,b) => `<div class="apart"><b>${t}</b><span>${b}</span></div>`;
+  return `
+  <div class="scrim" data-close="1"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em">${T.aboutTitle}</div>
+    ${part(T.aboutWhatT, T.aboutWhatB)}
+    ${part(T.aboutSrcT, T.aboutSrcB)}
+    ${part(T.aboutRiskT, T.aboutRiskB)}
+    ${part(T.aboutDataT, T.aboutDataB)}
+    ${part(T.aboutContactT, T.aboutContactB)}
+  </div>`;
+}
+
 // Rendered outside the screen switch so it floats over whichever tab is open.
 function sheetHtml(){
   const r = S.rates.find(x => x.bankId === S.sheet);
@@ -588,14 +610,16 @@ function sheetHtml(){
 }
 
 function render(){
+  document.querySelectorAll('.scrim,.sheet').forEach(n => n.remove());
   document.getElementById('app').innerHTML = bannerHtml() +
     (S.tab==='home'?screenHome():S.tab==='rates'?screenRates():S.tab==='conv'?screenConv():screenLimits());
   document.getElementById('nav').innerHTML = [
     ['home',T.navHome],['rates',T.navRates],['conv',T.navConv],['limits',T.navLimits]
   ].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-tab="${k}">
       <span class="cap"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg></span>${l}</button>`).join('');
-  if(S.sheet != null) document.getElementById('app').insertAdjacentHTML('beforeend', sheetHtml());
-  document.body.style.overflow = S.sheet != null ? 'hidden' : '';
+  if(S.sheet != null) document.body.insertAdjacentHTML('beforeend', sheetHtml());
+  else if(S.about) document.body.insertAdjacentHTML('beforeend', aboutHtml());
+  document.body.style.overflow = (S.sheet != null || S.about) ? 'hidden' : '';
   document.getElementById('lang').textContent = S.lang.toUpperCase();
   document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
   document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
@@ -603,9 +627,10 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about]');
   if(!t) return;
-  if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
+  if(t.dataset.about){ S.about = true; }
+  else if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
   if(t.dataset.stype){ S.sheetType = t.dataset.stype; }
   else if(t.dataset.own){ S.ownOnly = !S.ownOnly; }
   else if(t.dataset.fav){
@@ -624,7 +649,7 @@ document.addEventListener('click', e => {
   else if(t.dataset.bank2) S.bank = Number(t.dataset.bank2);
   else if(t.dataset.dir) S.dir = S.dir === 'buy' ? 'sell' : 'buy';
   else if(t.dataset.swapcur){ const i = ['TJS',...CUR].indexOf(S.from); S.from = ['TJS',...CUR][(i+1) % 4]; }
-  else if(t.dataset.close) S.sheet = null;
+  else if(t.dataset.close){ S.sheet = null; S.about = false; }
   else if(t.dataset.use){ S.bank = Number(t.dataset.use); S.sheet = null; S.tab = 'conv'; }
   else if(t.dataset.tab) S.tab = t.dataset.tab;
   else if(t.dataset.cur) S.cur = t.dataset.cur;
@@ -665,7 +690,7 @@ document.getElementById('map').addEventListener('click', () => {
   alert(S.lang === 'ru' ? 'Банкоматы появятся позже' : S.lang === 'tj' ? 'Банкоматҳо баъдтар' : 'Bankomatlar keyinroq');
 });
 
-document.addEventListener('keydown', e => { if(e.key === 'Escape' && S.sheet != null){ S.sheet = null; render(); } });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && (S.sheet != null || S.about)){ S.sheet = null; S.about = false; render(); } });
 
 document.addEventListener('change', e => {
   if(e.target.id === 'bank'){ S.bank = Number(e.target.value); render(); }

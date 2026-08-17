@@ -97,8 +97,27 @@ test("Telegram's back button closes the bank, not the app", () => {
   // Pressing back is how a reader closes something. Unhandled, Telegram reads it as "close the mini
   // app" and the whole thing disappears when they meant to go back one step.
   const script = inlineScript();
-  assert.match(script, /BackButton\.onClick\(\(\) => \{ S\.sheet = null/);
-  assert.match(script, /S\.sheet != null \? tg\.BackButton\.show\(\) : tg\.BackButton\.hide\(\)/);
+
+  const handler = script.match(/BackButton\.onClick\([\s\S]*?\);/);
+  assert.ok(handler, "кнопка «назад» ни к чему не привязана");
+  assert.match(handler[0], /S\.sheet = null/, "«назад» не закрывает открытую карточку");
+
+  // Shown and hidden from the same place, so the two cannot drift apart: a back button left visible
+  // over the list is a button that closes the app when pressed.
+  const toggle = script.split("\n").find((line) => line.includes("BackButton.show()"));
+  assert.ok(toggle, "кнопка «назад» никогда не показывается");
+  assert.ok(toggle.includes("BackButton.hide()"), "показывается, но не прячется");
+  assert.match(toggle, /S\.sheet/, "видимость не зависит от того, открыта ли карточка");
+});
+
+test("the sheet opens at the bottom of the screen, not the bottom of the page", () => {
+  // `animation: ... both` holds the last keyframe for good, and a held transform — even the identity
+  // one this animation ends on — makes the element the containing block for its `position: fixed`
+  // children. With the sheet inside #app it anchored to the bottom of a list two thousand pixels
+  // tall, so tapping a bank did nothing anyone could see. Neither half of this is visible in a
+  // screenshot of the list, which is why it survived so long.
+  assert.doesNotMatch(HTML, /#app\{animation:[^}]*\bboth\b/, "#app удерживает transform после анимации");
+  assert.match(inlineScript(), /document\.body\.insertAdjacentHTML\('beforeend', sheetHtml\(\)\)/, "шторка живёт внутри #app");
 });
 
 test("iOS gets a real icon", () => {

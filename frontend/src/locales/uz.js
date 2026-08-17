@@ -35,7 +35,7 @@ export default {
     disclaimerTitle: "Javobgarlik",
     disclaimerText: "Kurslar ma'lumot uchun berilgan va ommaviy oferta emas. Bank kursni istalgan paytda, shu jumladan bizning yangilanishlarimiz orasida ham o'zgartirishi mumkin, filialda esa kurs farq qilishi mumkin. Katta summani almashtirishdan oldin kursni bevosita bankda aniqlang.",
     privacyTitle: "Tashrifchilar ma'lumotlari",
-    privacyText: "Biz ro'yxatdan o'tishni so'ramaymiz, ism, telefon va pochtani yig'maymiz. Tashqi hisoblagichlar va reklama tarmoqlari yo'q. Saralangan banklar va tanlangan til faqat brauzeringizda saqlanadi.",
+    privacyText: "Biz ro'yxatdan o'tishni so'ramaymiz, ism, telefon va pochtani yig'maymiz. Tashqi hisoblagichlar va reklama tarmoqlari yo'q. Saralangan banklar va tanlangan til faqat brauzeringizda saqlanadi. Biz hech qanday statistika yuritmaymiz; har qanday saytdagi kabi, so'rovlarni xosting — GitHub Pages ko'radi.",
     contactTitle: "Aloqa",
     contactText: "Kursda xatolik topsangiz yoki bank qo'shmoqchi bo'lsangiz — yozing: shoxruxmahkamov05@gmail.com"
   },
