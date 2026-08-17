@@ -81,6 +81,26 @@ test("search matches a bank in any of the three spellings", () => {
   }
 });
 
+test("nothing third-party is fetched unless the app is inside Telegram", () => {
+  // The page's whole claim is that it opens without a connection. A script tag pointing at
+  // telegram.org would put a third-party request on every load — including every load outside
+  // Telegram, where the code it fetches does nothing at all. It is injected on demand instead.
+  assert.doesNotMatch(HTML, /<script[^>]+src="https?:\/\//, "в разметке есть внешний скрипт");
+  const script = inlineScript();
+  assert.match(script, /function inTelegram\(\)/, "нет проверки на Telegram");
+  const injected = script.indexOf("telegram.org/js/telegram-web-app.js");
+  assert.ok(injected !== -1, "скрипт Telegram нигде не загружается");
+  assert.ok(script.lastIndexOf("if(inTelegram())", injected) !== -1, "скрипт Telegram грузится без проверки");
+});
+
+test("Telegram's back button closes the bank, not the app", () => {
+  // Pressing back is how a reader closes something. Unhandled, Telegram reads it as "close the mini
+  // app" and the whole thing disappears when they meant to go back one step.
+  const script = inlineScript();
+  assert.match(script, /BackButton\.onClick\(\(\) => \{ S\.sheet = null/);
+  assert.match(script, /S\.sheet != null \? tg\.BackButton\.show\(\) : tg\.BackButton\.hide\(\)/);
+});
+
 test("iOS gets a real icon", () => {
   // iPhone ignores the manifest; without this tag an added-to-home-screen app is a screenshot.
   assert.match(HTML, /rel="apple-touch-icon"/);

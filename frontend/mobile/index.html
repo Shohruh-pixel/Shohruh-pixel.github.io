@@ -148,7 +148,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -160,7 +160,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -172,7 +172,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -240,6 +240,88 @@ function bannerHtml(){
 // currency and bad for whoever is buying it, so painting up green and down red would be wrong for
 // half the people reading it. Flat draws nothing: most figures are unchanged most of the time, and
 // a marker on each of them is noise that hides the few that moved.
+// Telegram integration.
+//
+// Loaded only inside Telegram, decided from the launch parameters Telegram puts in the URL. The
+// alternative — a script tag in the head — would put a third-party request on every load of a page
+// whose whole point is that it opens without a connection, to run code that does nothing outside
+// Telegram. Everything below is feature-detected, so an old client or a failed load costs the
+// integration and never the app.
+function inTelegram(){
+  return location.hash.indexOf('tgWebApp') !== -1 || !!window.TelegramWebviewProxy;
+}
+
+const TG = () => (window.Telegram || {}).WebApp;
+
+function haptic(style){
+  const tg = TG();
+  try { tg.HapticFeedback.impactOccurred(style || 'light'); } catch(e){}
+}
+
+// Telegram's own back button. Without this the reader's instinct — press back to close the bank —
+// closes the entire mini app instead, which is the difference between a page inside Telegram and
+// something that behaves like it belongs there.
+function syncTelegram(){
+  const tg = TG();
+  if(!tg || !tg.BackButton) return;
+  try { S.sheet != null ? tg.BackButton.show() : tg.BackButton.hide(); } catch(e){}
+}
+
+function initTelegram(){
+  const tg = TG();
+  if(!tg) return;
+  try { tg.ready(); tg.expand(); } catch(e){}
+
+  // The palette here is a deliberate dark one, chosen so eight bank cards read as a single surface.
+  // Repainting it to follow a light Telegram theme would undo that; matching Telegram's own chrome
+  // to the app is the way round that keeps the design intact.
+  try { tg.setHeaderColor('#0b0d15'); tg.setBackgroundColor('#0b0d15'); } catch(e){}
+  // Telegram paints its bottom bar white by default, which reads as a broken strip under a dark app.
+  try { tg.setBottomBarColor('#0b0d15'); } catch(e){}
+  // Newer clients only: without it a scroll that starts at the top drags the app closed.
+  try { tg.disableVerticalSwipes(); } catch(e){}
+  try { tg.BackButton.onClick(() => { S.sheet = null; render(); }); } catch(e){}
+
+  // A reader who has never touched the language button gets the language of their Telegram account
+  // rather than Russian. An explicit choice always wins — it is stored, and this never overrides it.
+  if(!localStorage.getItem('bankrate-m-lang')){
+    const code = ((tg.initDataUnsafe || {}).user || {}).language_code || '';
+    const pick = code.slice(0,2) === 'tg' ? 'tj' : code.slice(0,2) === 'uz' ? 'uz' : '';
+    if(pick){ S.lang = pick; T = D[pick]; }
+  }
+  render();
+}
+
+if(inTelegram()){
+  const s = document.createElement('script');
+  s.src = 'https://telegram.org/js/telegram-web-app.js';
+  s.onload = initTelegram;
+  document.head.appendChild(s);
+}
+
+// Rates travel by forwarded message here, so this is the shape they travel in. Inside Telegram it
+// opens Telegram's own share sheet — the reader picks the chat and presses send, we never do.
+function shareRate(id){
+  const r = S.rates.find(x => x.bankId === id);
+  if(!r) return;
+  const line = c => c + ' ' + fmt(val(r,c,'buy'),c) + ' / ' + fmt(val(r,c,'sell'),c);
+  const at = new Date(r.updatedAt);
+  const two = n => String(n).padStart(2, '0');
+  const stamp = two(at.getDate()) + '.' + two(at.getMonth() + 1) + ', ' + two(at.getHours()) + ':' + two(at.getMinutes());
+  const text = T.navHome + ' · ' + bankName(r.bank) + ' · ' + stamp + '\n' + CUR.map(line).join('\n');
+  const url = 'https://shohruh-pixel.github.io/m/';
+  const tg = TG();
+  if(tg && tg.openTelegramLink){
+    haptic();
+    try {
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
+      return;
+    } catch(e){}
+  }
+  if(navigator.share){ navigator.share({ text: text + '\n' + url }).catch(()=>{}); return; }
+  navigator.clipboard && navigator.clipboard.writeText(text + '\n' + url).catch(()=>{});
+}
+
 function arrow(r, field){
   const d = r.trend && r.trend.changes && r.trend.changes[field] && r.trend.changes[field].direction;
   if(d !== 'up' && d !== 'down') return '';
@@ -454,7 +536,7 @@ function sheetHtml(){
   <div class="scrim" data-close="1"></div>
   <div class="sheet">
     <div class="grab"></div>
-    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${bankName(r.bank)}</div><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
+    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${bankName(r.bank)}</div><button class="favbtn" data-share="${r.bankId}" aria-label="${T.share}">↗</button><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
     <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago(r.updatedAt)}</div>
     ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
@@ -517,11 +599,13 @@ function render(){
   document.getElementById('lang').textContent = S.lang.toUpperCase();
   document.getElementById('ttl').textContent = S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits;
   document.title = (S.tab==='home'?T.titleHome:S.tab==='rates'?T.titleRates:S.tab==='conv'?T.titleConv:T.titleLimits) + ' — BankRate TJ';
+  syncTelegram();
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share]');
   if(!t) return;
+  if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
   if(t.dataset.stype){ S.sheetType = t.dataset.stype; }
   else if(t.dataset.own){ S.ownOnly = !S.ownOnly; }
   else if(t.dataset.fav){
@@ -553,7 +637,7 @@ document.addEventListener('click', e => {
       // on a full selection the reader has to clear by hand.
       S.compare = S.compare.includes(id) ? S.compare.filter(x=>x!==id)
         : [...S.compare, id].slice(-2);
-    } else { S.sheet = id; S.sheetType = null; }
+    } else { S.sheet = id; S.sheetType = null; haptic(); }
   }
   render();
   if(S.sheet == null) window.scrollTo(0,0);
