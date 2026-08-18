@@ -62,7 +62,7 @@ h1{font-size:26px;font-weight:600;margin:18px 0 4px}
   background:var(--glass);border-radius:var(--rad);box-shadow:var(--edge);margin-bottom:8px;width:100%;
   border:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
 .bank .nm{font-size:14.5px}
-.bank .v{font-size:15px;text-align:right;min-width:64px}
+.bank .v{font-size:15px;text-align:right;min-width:75px}
 .best{color:var(--acc)}
 input,select{width:100%;height:50px;border-radius:var(--rad);border:0;padding:0 16px;font:inherit;
   color:var(--text);background:var(--glass-soft);box-shadow:var(--edge);outline:none}
@@ -350,9 +350,11 @@ function shareRate(id){
   navigator.clipboard && navigator.clipboard.writeText(text + '\n' + url).catch(()=>{});
 }
 
-function arrow(r, field){
-  const d = r.trend && r.trend.changes && r.trend.changes[field] && r.trend.changes[field].direction;
-  if(d !== 'up' && d !== 'down') return '';
+function arrow(r, field, tracked){
+  const d = tracked !== false && r.trend && r.trend.changes && r.trend.changes[field] && r.trend.changes[field].direction;
+  // Same box, nothing drawn in it: unchanged figures — most of them, most of the time — keep the
+  // column straight without adding a marker that would drown the few that moved.
+  if(d !== 'up' && d !== 'down') return '<span class="mv" aria-hidden="true"></span>';
   const shape = d === 'up' ? 'M5 0 10 9H0z' : 'M5 9 0 0h10z';
   return `<svg class="mv ${d}" viewBox="0 0 10 9" aria-hidden="true"><path d="${shape}"/></svg>`;
 }
@@ -426,8 +428,8 @@ function screenHome(){
     ${[...S.rates].sort(byName()).map(r=>`
       <button class="brow" data-bank="${r.bankId}">
         <div style="flex:1;min-width:0;font-size:14.5px">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div>
-        <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
-        <div class="n ${r.bankId===b.buy.bankId?'best':''}" style="flex:0 0 62px;text-align:right">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
+        <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 73px;text-align:right">${arrow(r, S.cur.toLowerCase()+'Buy')}${fmt(val(r,S.cur,'buy'),S.cur)}</div>
+        <div class="n ${r.bankId===b.buy.bankId?'best':''}" style="flex:0 0 73px;text-align:right">${arrow(r, S.cur.toLowerCase()+'Sell')}${fmt(val(r,S.cur,'sell'),S.cur)}</div>
       </button>`).join('')}
     <button class="srcbtn" data-about="1">${T.source} <span class="srcmore">${T.aboutTitle} →</span></button>
   </div>`;
@@ -494,8 +496,8 @@ function screenRates(){
   ${list.map(r=>`
     <button class="bank" data-bank="${r.bankId}" style="${S.compareMode && S.compare.includes(r.bankId) ? 'box-shadow:var(--acc-edge)' : ''}">
       <div><div class="nm">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}</div></div>
-      <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${fmt(val(r,S.cur,'buy'),S.cur)}</div>
-      <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${fmt(val(r,S.cur,'sell'),S.cur)}</div>
+      <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${arrow(r, S.cur.toLowerCase()+'Buy')}${fmt(val(r,S.cur,'buy'),S.cur)}</div>
+      <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${arrow(r, S.cur.toLowerCase()+'Sell')}${fmt(val(r,S.cur,'sell'),S.cur)}</div>
     </button>`).join('')}`;
 }
 
@@ -643,8 +645,8 @@ function sheetHtml(){
       return `
       <div class="srow">
         <div style="font-size:15.5px">${c}<span class="lbl"> · ${CUR_NAME[c]}</span></div>
-        <div class="v n">${tracked ? arrow(r, c.toLowerCase() + 'Buy') : ''}${fmt(buy,c)}</div>
-        <div class="v n">${sell === null ? '—' : (tracked ? arrow(r, c.toLowerCase() + 'Sell') : '') + fmt(sell,c)}</div>
+        <div class="v n">${arrow(r, c.toLowerCase() + 'Buy', tracked)}${fmt(buy,c)}</div>
+        <div class="v n">${sell === null ? '—' : arrow(r, c.toLowerCase() + 'Sell', tracked) + fmt(sell,c)}</div>
       </div>`;
     }).join('')}
 
