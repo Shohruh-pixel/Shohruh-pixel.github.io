@@ -700,6 +700,7 @@ function render(){
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq]');
   if(!t) return;
+  const tabBefore = S.tab;
   if(t.dataset.clearq){ S.q = ''; S.ownOnly = false; }
   else if(t.dataset.about){ S.about = true; }
   else if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
@@ -742,7 +743,12 @@ document.addEventListener('click', e => {
     } else { S.sheet = id; S.sheetType = null; haptic(); }
   }
   render();
-  if(S.sheet == null) window.scrollTo(0,0);
+  // Only when the screen actually changed. This used to fire on every click that did not leave a
+  // sheet open, which threw the reader back to the top of a list of twenty-two whenever they closed
+  // a bank card, starred a bank or switched currency — and it is what defeated three attempts to
+  // restore the scroll position from inside render(), each of which ran and was then undone one
+  // line later. Moving to another tab is a different screen and does start at the top.
+  if(S.tab !== tabBefore) window.scrollTo(0,0);
 });
 
 // Typing must not re-render the field it is typed into, or the caret jumps to the start on every
