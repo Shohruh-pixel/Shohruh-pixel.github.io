@@ -152,15 +152,20 @@ model WithdrawalLimit {
   bank         Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
   cardName     String
   cardType     String
-  dailyLimit   String
-  monthlyLimit String
-  commission   String
-  ownAtmNote   String
-  otherAtmNote String
-  abroadNote   String
-  noteRu       String
-  noteTj       String
-  noteUz       String
+  // Banks state their limits in whatever period they choose, and forcing one into another's field
+  // is how a weekly allowance becomes a daily one on somebody's screen. Every period is optional;
+  // only what a bank actually published is stored, and only that is drawn.
+  weeklyLimit  String?
+  counterLimit String?
+  dailyLimit   String?
+  monthlyLimit String?
+  commission   String?
+  ownAtmNote   String?
+  otherAtmNote String?
+  abroadNote   String?
+  noteRu       String?
+  noteTj       String?
+  noteUz       String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

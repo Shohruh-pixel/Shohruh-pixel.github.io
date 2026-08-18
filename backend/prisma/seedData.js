@@ -194,6 +194,34 @@ const nbtOnlyBanks = [
 
 banks.push(...nbtOnlyBanks);
 
+
+// The only withdrawal limits any bank in this country publishes where they can be read. Found by
+// going through the card and tariff pages of every bank with a reachable site — ten of them — on
+// 19.08.2026; Humo answers it in its own FAQ, in these words:
+//
+//   "Какие лимиты для обналичивания карты?
+//    Снятие наличных в банкоматах в неделю – до 50 000 сомони.
+//    Выдача наличных в кассах филиалов и агентов Хумо с помощью POS-терминалов – до 100 000 сомони."
+//   https://humo.tj/ru/cards
+//
+// Recorded in the period the bank chose. Everything else is left null rather than estimated: the
+// commission, the behaviour at other banks' machines and abroad are not stated anywhere, and a blank
+// is the honest rendering of a thing nobody published. Applies to the cards generally — the page does
+// not name one — so it is filed that way instead of being attached to a card it might not govern.
+const publishedLimits = {
+  humo: [
+    {
+      cardName: "Все карты",
+      cardType: "Хумо",
+      weeklyLimit: "50 000 TJS",
+      counterLimit: "100 000 TJS",
+      noteRu: "В банкоматах — за неделю. В кассах филиалов и у агентов Хумо через POS-терминал.",
+      noteTj: "Дар банкоматҳо — дар як ҳафта. Дар кассаҳои филиалҳо ва агентҳои Ҳумо тавассути POS-терминал.",
+      noteUz: "Bankomatlarda — haftasiga. Filiallar kassalarida va Humo agentlarida POS-terminal orqali."
+    }
+  ]
+};
+
 async function seedDatabase(prisma, options = {}) {
   const { reset = false } = options;
 
@@ -201,6 +229,21 @@ async function seedDatabase(prisma, options = {}) {
     await prisma.withdrawalLimit.deleteMany();
     await prisma.exchangeRate.deleteMany();
     await prisma.bank.deleteMany();
+  }
+
+  for (const [slug, limits] of Object.entries(publishedLimits)) {
+    const bank = await prisma.bank.findUnique({ where: { slug }, select: { id: true } });
+    if (!bank) {
+      continue;
+    }
+    for (const limit of limits) {
+      const existing = await prisma.withdrawalLimit.findFirst({ where: { bankId: bank.id, cardName: limit.cardName } });
+      if (existing) {
+        await prisma.withdrawalLimit.update({ where: { id: existing.id }, data: limit });
+      } else {
+        await prisma.withdrawalLimit.create({ data: { bankId: bank.id, ...limit } });
+      }
+    }
   }
 
   for (const entry of banks) {
