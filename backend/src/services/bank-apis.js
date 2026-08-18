@@ -237,7 +237,118 @@ function parseTawhid(payload) {
   return out;
 }
 
+// Two banks below publish their rates as HTML rather than JSON. Markup is the weaker contract — a
+// redesign moves a column silently, where a renamed field fails loudly — so both go through the same
+// validation as everything else here: a code that is not three letters is skipped, and a sell below
+// a buy is dropped rather than published.
+
+// Rows of a table as [cells]. Shared because both banks lay their rates out the same way, which is
+// also the way nearly every rate table on the web is laid out.
+function tableRows(html) {
+  return [...html.matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+    .map((match) =>
+      [...match[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)].map((cell) =>
+        cell[1]
+          .replace(/<[^>]*>/g, "")
+          .replace(/&nbsp;/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+    )
+    .filter((row) => row.length >= 3);
+}
+
+// The cell holds the code among other words — "USD Долл. США", "1 USD" — so the code is found rather
+// than assumed to be the whole cell.
+function codeIn(text) {
+  const match = String(text).match(/\b([A-Z]{3})\b/);
+  return match ? match[1] : null;
+}
+
+// Zudamal marks its three rate sets with ids that say which is which, so the mapping is the bank's
+// own rather than a guess of ours. Its roubles differ by eight percent between the counter and a
+// transfer, which is the difference this app exists to show.
+const ZUDAMAL_BLOCKS = [
+  ["cash-currency", RATE_TYPES.CASH],
+  ["transfer-currency", RATE_TYPES.TRANSFER],
+  ["cashless-currency", RATE_TYPES.NONCASH]
+];
+
+function parseZudamal(html) {
+  const out = {};
+
+  for (const [id, type] of ZUDAMAL_BLOCKS) {
+    const start = String(html).indexOf('id="' + id + '"');
+    if (start === -1) {
+      continue;
+    }
+
+    // Bounded by the table's own end, so a block that loses its rows cannot borrow the next one's
+    // and file another rate type's figures under this one.
+    const end = String(html).indexOf("</table>", start);
+    const block = String(html).slice(start, end === -1 ? undefined : end);
+
+    for (const row of tableRows(block)) {
+      const code = codeIn(row[0]);
+      if (code) {
+        put(out, code, type, pair(row[1], row[2]));
+      }
+    }
+  }
+
+  return out;
+}
+
+// Shukr publishes one set and does not say which kind it is. Recorded as the counter rate: that is
+// what someone walking in is quoted, and claiming less than the page might mean is safer than
+// claiming more.
+function parseShukr(html) {
+  const out = {};
+
+  for (const row of tableRows(String(html))) {
+    const code = codeIn(row[0]);
+    if (code) {
+      put(out, code, RATE_TYPES.CASH, pair(row[1], row[2]));
+    }
+  }
+
+  return out;
+}
+
+// The International Bank of Tajikistan shows two tables side by side in tabs: the National Bank's
+// reference and its own. Only the second is this bank speaking, and it lives under id="ibt" — so the
+// block is addressed directly rather than by position, which would silently swap the two the day
+// they reorder the tabs and put the state's figure on this bank's card.
+//
+// Its roubles read "---" on the day this was written: the bank does not deal in them. That falls out
+// on its own, because a dash is not a number and the pair validator refuses it.
+function parseMbt(html) {
+  const out = {};
+  const start = String(html).indexOf('id="ibt"');
+
+  if (start === -1) {
+    // Better to return nothing and keep the National Bank's figure than to guess which table is
+    // whose. An empty result is reported as a failed source; a wrong one is not reported at all.
+    return out;
+  }
+
+  const end = String(html).indexOf("</table>", start);
+  const block = String(html).slice(start, end === -1 ? undefined : end);
+
+  for (const row of tableRows(block)) {
+    const code = codeIn(row[0]);
+    if (code) {
+      put(out, code, RATE_TYPES.CASH, pair(row[1], row[2]));
+    }
+  }
+
+  return out;
+}
+
 module.exports = {
+  parseMbt,
+  parseZudamal,
+  parseShukr,
   parseTawhid,
   CURRENCIES,
   pair,

@@ -5,10 +5,13 @@ const bankApis = require("./bank-apis");
 const { RATE_TYPES } = require("./rate-types");
 const { buildHeadline, storeTypedRates } = require("./typed-rates.service");
 
-// Banks that publish their rates as JSON. Preferred over every HTML parser here: named fields
-// cannot be moved by a redesign, and a renamed one fails loudly instead of quietly writing the
-// wrong column. Each entry says where to fetch and how to turn the payload into our vocabulary;
-// nothing else in this file needs to know a bank's private naming.
+// Banks read directly, each saying where to fetch and how to turn what comes back into our
+// vocabulary; nothing else in this file needs to know a bank's private naming.
+//
+// JSON is preferred and most of these are: named fields cannot be moved by a redesign, and a renamed
+// one fails loudly instead of quietly writing the wrong column. Two banks publish their rates only
+// as a page and are marked `html: true` — the weaker contract, taken because the alternative for
+// them is the National Bank's averaged figure instead of what their own counter quotes.
 const API_SOURCES = [
   {
     slug: "alif-bank",
@@ -56,6 +59,31 @@ const API_SOURCES = [
     // which is the behaviour every other source here already has.
     requests: [{ url: "https://pay.tawhid.tj:4436/twbrates/v2/Handler2.ashx" }],
     parse: ([payload]) => bankApis.parseTawhid(payload)
+  },
+  {
+    slug: "mbt",
+    label: "Сайт банка (ibt.tj)",
+    html: true,
+    // Their server answers a normal request with a gzip stream Node cannot read — "incorrect header
+    // check" — and the request simply dies. Asking for no compression sidesteps it. Worth the extra
+    // bytes: the alternative is not a slower source but no source.
+    headers: { "Accept-Encoding": "identity" },
+    requests: [{ url: "https://ibt.tj/" }],
+    parse: ([html]) => bankApis.parseMbt(html)
+  },
+  {
+    slug: "zudamal",
+    label: "Сайт банка (zudamal.tj)",
+    html: true,
+    requests: [{ url: "https://zudamal.tj/" }],
+    parse: ([html]) => bankApis.parseZudamal(html)
+  },
+  {
+    slug: "shukr-moliya",
+    label: "Сайт банка (shukr.tj)",
+    html: true,
+    requests: [{ url: "https://shukr.tj/" }],
+    parse: ([html]) => bankApis.parseShukr(html)
   },
   {
     slug: "arvand",
@@ -152,7 +180,7 @@ function parseTable(html) {
     .filter((cells) => cells.length >= 5);
 }
 
-async function fetchWithRetry(url, label, timeoutMs = FETCH_TIMEOUT_MS) {
+async function fetchWithRetry(url, label, timeoutMs = FETCH_TIMEOUT_MS, extraHeaders = {}) {
   let lastError;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
@@ -163,7 +191,8 @@ async function fetchWithRetry(url, label, timeoutMs = FETCH_TIMEOUT_MS) {
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; BankRateTJ-Bot/1.0; +internal rate-comparison tool)"
+          "User-Agent": "Mozilla/5.0 (compatible; BankRateTJ-Bot/1.0; +internal rate-comparison tool)",
+          ...extraHeaders
         }
       });
 
@@ -503,7 +532,15 @@ async function collectFromApi(source) {
   const payloads = [];
 
   for (const request of source.requests) {
-    const body = await fetchWithRetry(request.url, `${source.slug} API`);
+    const body = await fetchWithRetry(request.url, `${source.slug} API`, FETCH_TIMEOUT_MS, source.headers || {});
+
+    if (source.html) {
+      // Markup, handed to the parser as it came. Two banks publish their rates only as a page, and
+      // routing them through this path rather than a second one of their own means they get the same
+      // retries, the same typed-rate storage and the same failure handling as everyone else.
+      payloads.push(body);
+      continue;
+    }
 
     try {
       payloads.push(JSON.parse(body));
