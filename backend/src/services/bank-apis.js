@@ -189,7 +189,56 @@ function parseArvand(payload) {
   return out;
 }
 
+// Tawhidbank's site is an Angular app; this is the endpoint it reads, found in its bundle. The
+// payload is positional — {"data":[["Cash_Rate",[[code, buy, sell, nbt], ...]], ...]} — which this
+// project normally avoids, because a column moved in a redesign becomes a wrong number rather than
+// an error. It is used anyway because the alternative is worse: the bank also exposes a tidy
+// named-field endpoint at /admin_ui_backend/app/rates, and on 18.08 that one answered USD 9.55/9.64
+// against a market sitting at 9.17-9.28, with its own NBT column reading 9.6131 where the National
+// Bank published about 9.20. Whatever it holds, it is not what the bank quotes.
+//
+// So the guard is the validation rather than the shape: a code that is not three letters, a sell
+// below a buy, anything non-numeric — dropped. The fourth column is the National Bank's reference
+// and is deliberately ignored; we take that figure from the National Bank itself.
+const TAWHID_TYPE_MAP = {
+  Cash_Rate: RATE_TYPES.CASH,
+  MoneyTransfer_Rate: RATE_TYPES.TRANSFER,
+  NonCash_Rate: RATE_TYPES.NONCASH
+};
+
+function parseTawhid(payload) {
+  const out = {};
+  const groups = payload && Array.isArray(payload.data) ? payload.data : [];
+
+  for (const group of groups) {
+    if (!Array.isArray(group) || group.length < 2) {
+      continue;
+    }
+
+    const type = TAWHID_TYPE_MAP[group[0]];
+    if (!type || !Array.isArray(group[1])) {
+      continue;
+    }
+
+    for (const row of group[1]) {
+      if (!Array.isArray(row) || row.length < 3) {
+        continue;
+      }
+
+      const code = String(row[0] || "").toUpperCase();
+      if (!/^[A-Z]{3}$/.test(code)) {
+        continue;
+      }
+
+      put(out, code, type, pair(row[1], row[2]));
+    }
+  }
+
+  return out;
+}
+
 module.exports = {
+  parseTawhid,
   CURRENCIES,
   pair,
   parseAlif,

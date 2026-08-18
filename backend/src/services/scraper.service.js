@@ -49,6 +49,15 @@ const API_SOURCES = [
     parse: ([payload]) => bankApis.parseImon(payload)
   },
   {
+    slug: "tawhidbank",
+    label: "Сайт банка (tawhidbank.tj)",
+    // Port 4436, which is the bank's own arrangement and not something we can choose. If a network
+    // between us and them blocks it the source simply fails and the National Bank's figure stays,
+    // which is the behaviour every other source here already has.
+    requests: [{ url: "https://pay.tawhid.tj:4436/twbrates/v2/Handler2.ashx" }],
+    parse: ([payload]) => bankApis.parseTawhid(payload)
+  },
+  {
     slug: "arvand",
     label: "Сайт банка (arvand.tj)",
     requests: [{ url: "https://arvand.tj/api/currencies/" }],
