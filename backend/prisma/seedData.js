@@ -4,6 +4,17 @@ const minutesAgo = (value) => {
   return timestamp;
 };
 
+// Withdrawal limits are not seeded, and the ones that used to be here have been removed. They were
+// written alongside placeholder rates — the same objects carried usdBuy 10.89 from a source called
+// "Mobile branch desk" — and where the rates were overwritten by the scraper within seconds of boot,
+// nothing ever overwrote the limits. So twelve invented figures sat on the live site for months:
+// daily allowances, monthly ceilings and ATM commissions that no bank ever published.
+//
+// Checked before removing them: no bank in this country publishes its withdrawal limits anywhere a
+// machine can read, and several do not publish them at all. There is nothing to replace these with,
+// which is the answer — the file already said so about the banks added later, and the rule simply
+// had not been applied backwards to the first six.
+
 const banks = [
   {
     slug: "alif-bank",
@@ -23,36 +34,6 @@ const banks = [
       sourceLabel: "Mobile branch desk",
       updatedAt: minutesAgo(9)
     },
-    limits: [
-      {
-        cardName: "Visa Gold",
-        cardType: "Visa",
-        dailyLimit: "15 000 TJS",
-        monthlyLimit: "220 000 TJS",
-        commission: "0%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.2%, min 15 TJS",
-        abroadNote: "2%, bank + ATM fee",
-        noteRu: "Лимит зависит от тарифа и может быть увеличен по заявке.",
-        noteTj: "Махдудият аз тарофа вобаста буда, бо дархост зиёд шуда метавонад.",
-        noteUz: "Limit tarifga bog'liq va ariza bilan oshirilishi mumkin.",
-        updatedAt: minutesAgo(30)
-      },
-      {
-        cardName: "Humo Premium",
-        cardType: "Humo",
-        dailyLimit: "10 000 TJS",
-        monthlyLimit: "150 000 TJS",
-        commission: "0.8%",
-        ownAtmNote: "0%",
-        otherAtmNote: "0.8%, min 10 TJS",
-        abroadNote: "Not supported",
-        noteRu: "Для Humo за рубежом операции могут быть ограничены.",
-        noteTj: "Барои Humo амалиёт дар хориҷ метавонад маҳдуд бошад.",
-        noteUz: "Humo kartalari uchun xorijdagi operatsiyalar cheklanishi mumkin.",
-        updatedAt: minutesAgo(42)
-      }
-    ]
   },
   {
     slug: "orienbank",
@@ -72,36 +53,6 @@ const banks = [
       sourceLabel: "Cash office rate",
       updatedAt: minutesAgo(14)
     },
-    limits: [
-      {
-        cardName: "Mastercard World",
-        cardType: "Mastercard",
-        dailyLimit: "18 000 TJS",
-        monthlyLimit: "280 000 TJS",
-        commission: "1%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1%, min 20 TJS",
-        abroadNote: "2.2%, plus operator fee",
-        noteRu: "Для премиальных карт доступны расширенные лимиты.",
-        noteTj: "Барои кортҳои премиум лимитҳои васеъ дастрасанд.",
-        noteUz: "Premium kartalar uchun kengaytirilgan limitlar mavjud.",
-        updatedAt: minutesAgo(55)
-      },
-      {
-        cardName: "Visa Classic",
-        cardType: "Visa",
-        dailyLimit: "9 000 TJS",
-        monthlyLimit: "120 000 TJS",
-        commission: "0%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.5%, min 20 TJS",
-        abroadNote: "2.5%, bank + ATM fee",
-        noteRu: "Проверьте лимиты в приложении банка перед поездкой.",
-        noteTj: "Пеш аз сафар лимитҳоро дар барномаи бонк санҷед.",
-        noteUz: "Safardan oldin limitlarni bank ilovasida tekshiring.",
-        updatedAt: minutesAgo(64)
-      }
-    ]
   },
   {
     slug: "amonatbank",
@@ -121,36 +72,6 @@ const banks = [
       sourceLabel: "Retail branch rate",
       updatedAt: minutesAgo(18)
     },
-    limits: [
-      {
-        cardName: "Corti Milli",
-        cardType: "National",
-        dailyLimit: "8 000 TJS",
-        monthlyLimit: "90 000 TJS",
-        commission: "0%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1%, min 10 TJS",
-        abroadNote: "Not available",
-        noteRu: "Национальные карты чаще используются внутри страны.",
-        noteTj: "Кортҳои миллӣ бештар дар дохили кишвар истифода мешаванд.",
-        noteUz: "Milliy kartalar asosan mamlakat ichida ishlatiladi.",
-        updatedAt: minutesAgo(80)
-      },
-      {
-        cardName: "Visa Platinum",
-        cardType: "Visa",
-        dailyLimit: "20 000 TJS",
-        monthlyLimit: "320 000 TJS",
-        commission: "1.1%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.1%, min 20 TJS",
-        abroadNote: "2%, plus ATM fee",
-        noteRu: "Премиальные лимиты согласуются отдельно для зарплатных клиентов.",
-        noteTj: "Лимитҳои премиум барои муштариёни маошӣ алоҳида тасдиқ мешаванд.",
-        noteUz: "Premium limitlar maosh mijozlari uchun alohida tasdiqlanadi.",
-        updatedAt: minutesAgo(87)
-      }
-    ]
   },
   {
     slug: "eskhata-bank",
@@ -170,36 +91,6 @@ const banks = [
       sourceLabel: "Digital channel rate",
       updatedAt: minutesAgo(6)
     },
-    limits: [
-      {
-        cardName: "Visa Infinite",
-        cardType: "Visa",
-        dailyLimit: "25 000 TJS",
-        monthlyLimit: "450 000 TJS",
-        commission: "0.7%",
-        ownAtmNote: "0%",
-        otherAtmNote: "0.7%, min 20 TJS",
-        abroadNote: "1.8%, plus ATM fee",
-        noteRu: "По премиальным картам доступен персональный менеджер.",
-        noteTj: "Барои кортҳои премиум менеҷери шахсӣ дастрас аст.",
-        noteUz: "Premium kartalar uchun shaxsiy menejer mavjud.",
-        updatedAt: minutesAgo(22)
-      },
-      {
-        cardName: "Mastercard Standard",
-        cardType: "Mastercard",
-        dailyLimit: "11 000 TJS",
-        monthlyLimit: "160 000 TJS",
-        commission: "0%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.4%, min 15 TJS",
-        abroadNote: "2.3%, bank + ATM fee",
-        noteRu: "Комиссия может отличаться для виртуальных карт.",
-        noteTj: "Комиссия барои кортҳои виртуалӣ метавонад фарқ кунад.",
-        noteUz: "Virtual kartalar uchun komissiya farq qilishi mumkin.",
-        updatedAt: minutesAgo(31)
-      }
-    ]
   },
   {
     slug: "spitamen-bank",
@@ -219,36 +110,6 @@ const banks = [
       sourceLabel: "Branch and app blended rate",
       updatedAt: minutesAgo(4)
     },
-    limits: [
-      {
-        cardName: "Visa Signature",
-        cardType: "Visa",
-        dailyLimit: "22 000 TJS",
-        monthlyLimit: "360 000 TJS",
-        commission: "0.5%",
-        ownAtmNote: "0%",
-        otherAtmNote: "0.5%, min 15 TJS",
-        abroadNote: "1.9%, plus ATM fee",
-        noteRu: "Держателям Signature часто доступны спецпредложения.",
-        noteTj: "Барои корти Signature аксаран пешниҳодҳои махсус мавҷуданд.",
-        noteUz: "Signature kartalari uchun maxsus takliflar tez-tez bo'ladi.",
-        updatedAt: minutesAgo(15)
-      },
-      {
-        cardName: "Humo Standard",
-        cardType: "Humo",
-        dailyLimit: "7 500 TJS",
-        monthlyLimit: "95 000 TJS",
-        commission: "0%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.3%, min 10 TJS",
-        abroadNote: "Not supported",
-        noteRu: "Уточняйте доступность снятия по Humo в сторонних банкоматах.",
-        noteTj: "Дастрасии гирифтани маблағро бо Humo дар банкоматҳои дигар санҷед.",
-        noteUz: "Humo uchun boshqa bankomatlardagi yechib olish shartlarini aniqlang.",
-        updatedAt: minutesAgo(25)
-      }
-    ]
   },
   {
     slug: "dushanbe-city-bank",
@@ -268,36 +129,6 @@ const banks = [
       sourceLabel: "City branch desk",
       updatedAt: minutesAgo(12)
     },
-    limits: [
-      {
-        cardName: "Visa Business",
-        cardType: "Visa",
-        dailyLimit: "17 000 TJS",
-        monthlyLimit: "260 000 TJS",
-        commission: "1.2%",
-        ownAtmNote: "0%",
-        otherAtmNote: "1.2%, min 20 TJS",
-        abroadNote: "2.4%, plus ATM fee",
-        noteRu: "Для бизнес-карт лимиты зависят от типа счета.",
-        noteTj: "Барои кортҳои бизнес лимит аз намуди ҳисоб вобаста аст.",
-        noteUz: "Biznes kartalar limiti hisob turiga bog'liq.",
-        updatedAt: minutesAgo(36)
-      },
-      {
-        cardName: "Mastercard World Elite",
-        cardType: "Mastercard",
-        dailyLimit: "28 000 TJS",
-        monthlyLimit: "500 000 TJS",
-        commission: "0.6%",
-        ownAtmNote: "0%",
-        otherAtmNote: "0.6%, min 25 TJS",
-        abroadNote: "1.7%, plus ATM fee",
-        noteRu: "Премиальные тарифы уточняются в персональном обслуживании.",
-        noteTj: "Тарифҳои премиум дар хизматрасонии шахсӣ мушаххас мешаванд.",
-        noteUz: "Premium tariflar shaxsiy xizmatda aniqlashtiriladi.",
-        updatedAt: minutesAgo(48)
-      }
-    ]
   }
 ];
 
