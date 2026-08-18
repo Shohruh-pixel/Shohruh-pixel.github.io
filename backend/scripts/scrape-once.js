@@ -8,7 +8,7 @@
 // Exits 0 on success (including partial), 1 on failure, so a scheduler can detect problems.
 
 const prisma = require("../src/config/prisma");
-const { scrapeNbtRates } = require("../src/services/scraper.service");
+const { scrapeNbtRates, OWN_SOURCE_SLUGS } = require("../src/services/scraper.service");
 const rateService = require("../src/services/rate.service");
 const notify = require("../src/services/notify.service");
 
@@ -16,6 +16,9 @@ const notify = require("../src/services/notify.service");
 // for itself. That distinction is what makes a change worth reporting in one direction and
 // reassuring in the other.
 const NBT_LABEL = "НБТ";
+// 09:00 UTC is 14:00 in Dushanbe — inside the working day, and one of the eight hours the
+// three-hourly schedule actually lands on.
+const REMINDER_HOUR_UTC = 9;
 
 async function sourcesBySlug() {
   const rows = await prisma.exchangeRate.findMany({ include: { bank: { select: { slug: true, nameRu: true } } } });
@@ -60,6 +63,25 @@ async function main() {
       if (changes.length) {
         await notify.alertSourceChanged(changes);
         console.log(`telegram: source change announced (${changes.length})`);
+      }
+      // The change above is announced once, when it happens, and the dedupe guards live in memory —
+      // and every CI run is a fresh process, so there is nothing to repeat it. A source that stays
+      // down therefore looks identical to a healthy system from the second run onwards. Amonatbank
+      // was on the fallback from 15 to 18 August and the only word about it was on day one.
+      //
+      // So once a day the standing state is reported rather than the transition. Keyed off the hour
+      // because the schedule is every three hours and there is nowhere durable to record "already
+      // sent today" — the guards are per-process and the database has no place for it.
+      const hour = new Date().getUTCHours();
+      if (hour === REMINDER_HOUR_UTC) {
+        const stillDown = [...after]
+          .filter(([slug, now]) => OWN_SOURCE_SLUGS.includes(slug) && now.label.startsWith(NBT_LABEL))
+          .map(([, now]) => now.name);
+
+        if (stillDown.length) {
+          await notify.alertSourcesStillDown(stillDown);
+          console.log(`telegram: still on fallback (${stillDown.length})`);
+        }
       }
     } catch (error) {
       console.warn("telegram source-change announce failed:", error.message);

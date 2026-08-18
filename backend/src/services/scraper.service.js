@@ -1062,8 +1062,17 @@ async function millisSinceLastSuccess() {
   return Date.now() - new Date(lastSuccess.startedAt).getTime();
 }
 
+// Banks this project reads directly rather than through the National Bank's table. Any of these
+// wearing an NBT label means its own source has stopped answering — the degradation worth reporting,
+// and the one that went unnoticed for three days because it is announced once and thereafter looks
+// exactly like a healthy system.
+const OWN_SOURCE_SLUGS = [
+  ...new Set([...API_SOURCES.map((s) => s.slug), DC_SLUG, SPITAMEN_SLUG, ESKHATA_SLUG, HUMO_SLUG])
+];
+
 module.exports = {
   scrapeNbtRates,
+  OWN_SOURCE_SLUGS,
   getScraperStatus,
   millisSinceLastSuccess,
   reconcileInterruptedRuns,

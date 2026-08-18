@@ -229,6 +229,29 @@ function alertSourceChanged(changes) {
   return notify("source-changed", lines.join("\n"), { force: true });
 }
 
+// The standing state, once a day, as opposed to the moment it changed. alertSourceChanged fires on
+// the transition and never again — its dedupe guard is a Map in memory and every scheduled run is a
+// fresh process, so there is nothing that could repeat it. From the second run onwards a bank that
+// has been on the fallback for days is indistinguishable from one that never left its own source.
+//
+// Worded as a standing condition rather than news, because that is what it is by the time it is sent
+// for the second time.
+function alertSourcesStillDown(banks) {
+  if (!banks.length) {
+    return false;
+  }
+
+  const lines = [
+    "🟡 <b>Банки на курсе НБТ</b>",
+    "",
+    ...banks.map((name) => `• ${escapeHtml(name)}`),
+    "",
+    "Их собственные источники не отвечают. Показываем официальный курс — он верный, но кассовый может отличаться."
+  ];
+
+  return notify("sources-still-down", lines.join("\n"), { force: true });
+}
+
 // Exposed for tests, which need to reset the in-memory guards between cases.
 function _resetGuards() {
   lastSentByKey.clear();
@@ -244,6 +267,7 @@ module.exports = {
   sendDailyDigest,
   alertRatesChanged,
   alertSourceChanged,
+  alertSourcesStillDown,
   _resetGuards,
   DEDUPE_WINDOW_MS,
   MAX_MESSAGES_PER_HOUR
