@@ -90,20 +90,25 @@ function directionOf(current, previous) {
  * substantiate from history now returns null and renders as nothing.
  */
 async function getTrendsByBankId() {
-  const history = await prisma.rateHistory.findMany({
-    orderBy: { recordedAt: "desc" },
-    // Two rows per bank are enough to see the last move; the cap keeps this cheap as history grows.
-    take: 200
-  });
+  // Two rows per bank, taken per bank rather than from the newest two hundred overall. That cap was
+  // shared: three busy banks held 244 of the 294 rows in the table, so quieter banks' history fell
+  // outside the window and their arrows would have vanished for no reason of their own — the more
+  // one bank moved its rates, the more likely another lost the record of moving its own.
+  //
+  // Two small queries per bank instead of one large one. There are twenty-two banks.
+  const bankIds = (await prisma.rateHistory.findMany({ distinct: ["bankId"], select: { bankId: true } })).map(
+    (row) => row.bankId
+  );
 
   const byBank = new Map();
-  for (const row of history) {
-    const list = byBank.get(row.bankId) || [];
-    if (list.length < 2) {
-      list.push(row);
-      byBank.set(row.bankId, list);
-    }
-  }
+  await Promise.all(
+    bankIds.map(async (bankId) => {
+      byBank.set(
+        bankId,
+        await prisma.rateHistory.findMany({ where: { bankId }, orderBy: { recordedAt: "desc" }, take: 2 })
+      );
+    })
+  );
 
   const trends = {};
   for (const [bankId, [current, previous]] of byBank.entries()) {

@@ -550,6 +550,32 @@ function ratesDiffer(existing, next) {
   return RATE_FIELDS.some((field) => Number(existing[field]) !== Number(next[field]));
 }
 
+// Whether a difference is a movement worth recording, as opposed to a different publisher answering
+// the same question. Every run writes the National Bank's table for all banks and then lets each
+// bank's own page overwrite its row, so a bank with both sources changed hands twice per run —
+// 9,15 from the state, 9,20 from the bank, back and forth, every fifteen minutes. Spitamen had
+// eighty history rows that way and not one of them was a rate moving.
+//
+// The cost of that is not just noise. It fires the "rate changed" alert on a rate that did not
+// change, it crowds real movement out of the history the arrows read, and it leaves the two newest
+// rows disagreeing about type — which correctly suppresses the arrow, so the bank that changes its
+// rates most visibly was the one that could never show one.
+//
+// Same reasoning already applied to rate types: comparing a counter rate against a transfer rate
+// measures the difference between two kinds of transaction, not the market. Comparing the state's
+// figure against the bank's measures the difference between two publishers.
+function isRealMovement(existing, next, sourceLabel, rateType) {
+  if (!existing) {
+    return true;
+  }
+
+  if (existing.sourceLabel !== sourceLabel || (existing.rateType || null) !== (rateType || null)) {
+    return false;
+  }
+
+  return ratesDiffer(existing, next);
+}
+
 const CURRENCY_FIELDS = {
   USD: { buy: "usdBuy", sell: "usdSell" },
   RUB: { buy: "rubBuy", sell: "rubSell" },
@@ -606,7 +632,9 @@ async function applyBankRates(slug, data) {
     return { applied: false, reason: "not in database" };
   }
 
-  const isChanged = ratesDiffer(dbBank.exchangeRate, data);
+  // The figures are always written; only the history entry is judged. A row whose numbers changed
+  // because a different source answered is a new reading, not a new rate.
+  const isChanged = isRealMovement(dbBank.exchangeRate, data, data.sourceLabel, data.rateType);
 
   const writes = [
     prisma.exchangeRate.upsert({
@@ -1049,5 +1077,8 @@ module.exports = {
   parseHumo,
   parseEskhata,
   findBankRate,
-  buildRateData
+  buildRateData,
+  // Decides what reaches the history the arrows read and what fires a change alert, from inputs that
+  // are all plain values — so the rule can be checked without a scrape or a database.
+  isRealMovement
 };
