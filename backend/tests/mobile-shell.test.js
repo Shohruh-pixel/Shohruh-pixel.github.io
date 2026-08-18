@@ -126,7 +126,17 @@ test("banks are listed in the order of the alphabet the reader is reading", () =
   // twenty-two names begin with "Бонки", so the answer is not the same list rearranged.
   const script = inlineScript();
   assert.match(script, /localeCompare\(/, "сортировка не учитывает алфавит");
-  assert.equal((script.match(/sort\(byName\(\)\)/g) || []).length, 3, "отсортированы не все три списка банков");
+  // Every list of banks goes through the same comparator, so the three cannot drift apart: two that
+  // now offer the reader a choice of order, and the converter strip, which has no such control.
+  // Counted as plain text rather than by pattern — the escaping is one more thing to get wrong.
+  const count = (haystack, needle) => haystack.split(needle).length - 1;
+  const sorted = count(script, 'sort(order())') + count(script, 'sort(byName())');
+  assert.equal(sorted, 3, "отсортированы не все три списка банков");
+
+  // Alphabetical is what order() falls back to. A reader who has chosen nothing is looking for their
+  // own bank, not the best one, and a list arranged by a number is the wrong list for that.
+  const orderFn = script.slice(script.indexOf('function order(){'));
+  assert.ok(orderFn.slice(0, 400).includes('return byName();'), 'по умолчанию список не алфавитный');
 });
 
 test("a bank chip carries enough of the name to tell it from the others", () => {

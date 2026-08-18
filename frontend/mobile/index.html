@@ -76,6 +76,12 @@ nav button.on{color:var(--acc)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
+/* Sits between the best-rate cards and the list, where the question "so what" is asked. */
+.gain{display:block;width:100%;text-align:left;border:0;font:inherit;font-size:13px;line-height:1.5;
+  color:var(--dim);background:var(--acc-wash);box-shadow:var(--acc-edge);border-radius:16px;
+  padding:11px 14px;margin:0 0 10px;cursor:pointer}
+.gain b{color:var(--text);font-family:var(--mono);font-weight:600}
+.gain span{display:block;margin-top:2px;color:var(--acc)}
 .srcbtn{display:block;width:100%;text-align:left;background:none;border:0;padding:10px 16px 0;font:inherit;font-size:12.5px;color:var(--faint)}
 .srcmore{color:var(--acc);white-space:nowrap}
 .apart{margin-top:18px}
@@ -175,7 +181,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
+  ru:{gainFor:'за',gainGet:'получите от',gainTo:'до',gainDiff:'разница',somoni:'сомони',sortName:'А-Я',sortSell:'Продать',sortBuy:'Купить',notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Лимиты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Лимиты карт',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все курсы',search:'Найти банк',
@@ -187,7 +193,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Лимиты по тарифам банков. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
+  tj:{gainFor:'барои',gainGet:'мегиред аз',gainTo:'то',gainDiff:'фарқ',somoni:'сомонӣ',sortName:'А-Я',sortSell:'Фурӯхтан',sortBuy:'Харидан',notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Лимитҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Лимитҳои кортҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳама қурбҳо',search:'Бонкро ёбед',
@@ -199,7 +205,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Лимитҳо аз рӯи тарифи бонкҳо. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
+  uz:{gainFor:"uchun",gainGet:"olasiz",gainTo:"dan",gainDiff:"farq",somoni:"somoni",sortName:"A-Z",sortSell:"Sotish",sortBuy:"Xarid",notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Limitlar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Karta limitlari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barcha kurslar',search:'Bankni toping',
@@ -219,10 +225,14 @@ let T = D[localStorage.getItem('bankrate-m-lang') || 'ru'] || D.ru;
 
 const CUR = ['USD','RUB','EUR'];
 const CUR_NAME = {USD:'Доллар США', RUB:'Российский рубль', EUR:'Евро'};
+// Somoni for reading, not for arithmetic: thousands spaced and the comma this country writes.
+// One copy, because there were two and one of them quietly stopped inserting the spaces.
+const money = (n, decimals = 2) => n.toFixed(decimals).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, about:false, typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -380,6 +390,51 @@ function abroad(value){
   return s;
 }
 
+// Named from the reader's side, which is the opposite of the column headings: someone selling
+// dollars is quoted the bank's buy rate, and wants the highest. Sorting by the heading instead
+// would put the worst bank first for the commonest thing anyone does here.
+//
+// Alphabetical stays the default. Twenty-two banks reordering themselves the moment a rate moves
+// costs a reader the position they had just learned, and most people arrive looking for their own
+// bank rather than for the best one.
+function order(){
+  if(S.sort === 'sell') return (a,b) => (val(b,S.cur,'buy') || 0) - (val(a,S.cur,'buy') || 0);
+  if(S.sort === 'buy') return (a,b) => (val(a,S.cur,'sell') || Infinity) - (val(b,S.cur,'sell') || Infinity);
+  return byName();
+}
+
+// The point of the whole thing, said in money. A column of 9,22 against 9,16 is a comparison the
+// reader has to perform; on a thousand dollars those six hundredths are sixty somoni, and that is
+// the sentence they came for. Uses the converter's amount, so the two screens agree about what is
+// being changed.
+function gainLine(){
+  const amt = parseFloat(String(S.amount || '0').replace(',','.')) || 0;
+  const buys = S.rates.map(r => val(r, S.cur, 'buy')).filter(v => v > 0);
+  if(!amt || buys.length < 2) return '';
+
+  const low = Math.min(...buys) * amt;
+  const high = Math.max(...buys) * amt;
+  const diff = high - low;
+  if(diff < 0.005) return '';
+
+  return `<button class="gain" data-tab="conv">
+    ${T.gainFor} ${fmtAmount(amt)} ${S.cur} ${T.gainGet} <b>${money(low, 0)}</b> ${T.gainTo} <b>${money(high, 0)}</b> ${T.somoni}
+    <span>${T.gainDiff} ${money(diff, diff < 10 ? 2 : 0)}</span>
+  </button>`;
+}
+
+// The typed amount as the reader left it, not reformatted: 1000 stays 1000 and 0.5 stays 0,5.
+function fmtAmount(n){
+  return String(n).replace('.', ',');
+}
+
+function sortChips(){
+  return `<div class="chips" style="padding:0 16px 10px">${
+    [['name',T.sortName],['sell',T.sortSell],['buy',T.sortBuy]]
+      .map(([k,l]) => `<button class="chip ${S.sort===k?'on':''}" data-sort="${k}">${l}</button>`).join('')
+  }</div>`;
+}
+
 const bankName = b => (S.lang === 'tj' && b.nameTj) || (S.lang === 'uz' && b.nameUz) || b.nameRu;
 
 const val = (r,c,side) => r[c.toLowerCase() + (side === 'buy' ? 'Buy' : 'Sell')];
@@ -415,17 +470,19 @@ function screenHome(){
       <div class="lbl" style="margin-top:6px">${bankName(b.buy.bank)}</div>
     </div>
   </div>
+  ${gainLine()}
   <div class="card" style="margin-top:8px;padding:16px 0">
     <div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 12px">
       <div style="font-size:17px;font-weight:600">${T.allBanks}</div>
       <button data-tab="rates" class="link">${T.more} →</button>
     </div>
+    ${sortChips()}
     <div class="row lbl" style="padding:0 16px 8px">
       <div>${T.bank}</div>
       <div style="text-align:right;flex:0 0 62px">${T.buy}</div>
       <div style="text-align:right;flex:0 0 62px">${T.sell}</div>
     </div>
-    ${[...S.rates].sort(byName()).map(r=>`
+    ${[...S.rates].sort(order()).map(r=>`
       <button class="brow" data-bank="${r.bankId}">
         <div style="flex:1;min-width:0;font-size:14.5px">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div>
         <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 73px;text-align:right">${arrow(r, S.cur.toLowerCase()+'Buy')}${fmt(val(r,S.cur,'buy'),S.cur)}</div>
@@ -469,7 +526,7 @@ function screenRates(){
   const list = S.rates
     .filter(r => !q || [r.bank.nameRu, r.bank.nameTj, r.bank.nameUz].some(n => (n || '').toLowerCase().includes(q)))
     .filter(r => !S.ownOnly || !r.sourceLabel.startsWith('НБТ'))
-    .sort(byName());
+    .sort(order());
   const b = best(S.cur);
   return `
   <div class="sub">${list.length} / ${S.rates.length}</div>
@@ -484,6 +541,7 @@ function screenRates(){
   <div class="seg">
     ${CUR.map(c=>`<button class="${c===S.cur?'on':''}" data-cur="${c}">${c}</button>`).join('')}
   </div>
+  ${sortChips()}
   <div class="row lbl" style="padding:0 16px 6px"><div></div>
     <div style="text-align:right;flex:0 0 64px">${T.buy}</div>
     <div style="text-align:right;flex:0 0 64px">${T.sell}</div></div>
@@ -509,7 +567,7 @@ function screenConv(){
     const rate = val(r, other, S.dir);
     const amt = parseFloat(String(S.amount || '0').replace(',','.')) || 0;
     const out = S.from === 'TJS' ? (rate ? amt / rate : 0) : amt * rate;
-    const grp = n => n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    const grp = n => money(n);
     return `
     <div class="card">
       <div style="display:flex;align-items:center;gap:10px">
@@ -698,10 +756,11 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort]');
   if(!t) return;
   const tabBefore = S.tab;
-  if(t.dataset.clearq){ S.q = ''; S.ownOnly = false; }
+  if(t.dataset.sort){ S.sort = t.dataset.sort; }
+  else if(t.dataset.clearq){ S.q = ''; S.ownOnly = false; }
   else if(t.dataset.about){ S.about = true; }
   else if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
   if(t.dataset.stype){ S.sheetType = t.dataset.stype; }
