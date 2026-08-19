@@ -38,6 +38,14 @@ async function exportSnapshot(file) {
     orderBy: { recordedAt: "asc" }
   });
 
+  // Per-type rates travel too. Without them a build starts with none, and a bank whose source
+  // happens not to answer during that one run loses its whole rate-type switcher — the counter,
+  // transfer and card figures vanish from its card although they were correct an hour earlier.
+  // Carrying them makes a brief outage invisible, and the freshness rule in rate.service decides
+  // when they have gone stale enough to withhold, which is the judgement that belongs there rather
+  // than in whether a single request happened to succeed.
+  const typed = await prisma.rate.findMany({ include: { bank: { select: { slug: true } } } });
+
   const payload = {
     version: 1,
     rates: rates.map((r) => ({
@@ -45,6 +53,15 @@ async function exportSnapshot(file) {
       sourceLabel: r.sourceLabel,
       updatedAt: r.updatedAt.toISOString(),
       ...Object.fromEntries(RATE_FIELDS.map((f) => [f, r[f]]))
+    })),
+    typed: typed.map((r) => ({
+      slug: r.bank.slug,
+      currency: r.currency,
+      type: r.type,
+      buy: r.buy,
+      sell: r.sell,
+      sourceLabel: r.sourceLabel,
+      updatedAt: r.updatedAt.toISOString()
     })),
     history: history
       // A row whose bank no longer exists cannot be restored and would abort the next import.
@@ -61,7 +78,7 @@ async function exportSnapshot(file) {
   // Two spaces and a trailing newline: this file is committed, and a diff of one changed rate
   // should be one changed line rather than the whole document on a single row.
   fs.writeFileSync(file, `${JSON.stringify(payload, null, 2)}\n`);
-  console.log(`[snapshot] exported ${payload.rates.length} rates and ${payload.history.length} history rows to ${file}`);
+  console.log(`[snapshot] exported ${payload.rates.length} rates, ${payload.typed.length} typed rates and ${payload.history.length} history rows to ${file}`);
 }
 
 async function importSnapshot(file) {
@@ -77,6 +94,26 @@ async function importSnapshot(file) {
   const idBySlug = new Map(banks.map((b) => [b.slug, b.id]));
 
   let restoredRates = 0;
+  let restoredTyped = 0;
+  for (const row of payload.typed || []) {
+    const bankId = idBySlug.get(row.slug);
+    if (!bankId) {
+      console.warn(`[snapshot] no bank for slug "${row.slug}", skipping its typed rate`);
+      continue;
+    }
+    // updatedAt carries @updatedAt, so Prisma stamps its own on write and the age would reset to
+    // now — which would make every restored rate look freshly confirmed and defeat the very rule
+    // this is meant to feed. Written back through raw SQL so the time the bank actually said it
+    // survives the journey.
+    const saved = await prisma.rate.upsert({
+      where: { bankId_currency_type: { bankId, currency: row.currency, type: row.type } },
+      create: { bankId, currency: row.currency, type: row.type, buy: row.buy, sell: row.sell, sourceLabel: row.sourceLabel },
+      update: { buy: row.buy, sell: row.sell, sourceLabel: row.sourceLabel }
+    });
+    await prisma.$executeRaw`UPDATE Rate SET updatedAt = ${new Date(row.updatedAt)} WHERE id = ${saved.id}`;
+    restoredTyped += 1;
+  }
+
   for (const rate of payload.rates || []) {
     const bankId = idBySlug.get(rate.slug);
     if (!bankId) {
@@ -109,7 +146,7 @@ async function importSnapshot(file) {
     await prisma.rateHistory.createMany({ data: rows });
   }
 
-  console.log(`[snapshot] restored ${restoredRates} rates and ${rows.length} history rows`);
+  console.log(`[snapshot] restored ${restoredRates} rates, ${restoredTyped} typed rates and ${rows.length} history rows`);
 }
 
 async function main() {
