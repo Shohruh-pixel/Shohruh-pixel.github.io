@@ -1,0 +1,13 @@
+name = "bankrate-tj-bot"
+main = "worker.js"
+compatibility_date = "2026-08-19"
+
+# No secrets, no storage, no bindings. The worker answers one kind of request and forgets it — the
+# reply travels back in the response body, so there is no token here and nothing to rotate.
+#
+# WEBHOOK_PATH is the only thing it needs and it is not secret in the sense a token is: it is the
+# path Telegram posts to, which stops a passer-by from making the worker answer. Set it with
+#
+#   npx wrangler secret put WEBHOOK_PATH
+#
+# and use the same value when registering the webhook.

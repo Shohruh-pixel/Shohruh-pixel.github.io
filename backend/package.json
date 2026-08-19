@@ -15,7 +15,7 @@
     "build:static": "node scripts/build-static.js",
     "snapshot:export": "node scripts/snapshot-store.js export ../data/snapshot.json",
     "snapshot:import": "node scripts/snapshot-store.js import ../data/snapshot.json",
-    "test": "node --test"
+    "test": "node --test && node --test ../bot/worker.test.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -31,4 +31,3 @@
     "nodemon": "^3.1.0"
   }
 }
-
