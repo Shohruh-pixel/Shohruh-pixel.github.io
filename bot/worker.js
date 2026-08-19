@@ -89,16 +89,23 @@ async function forward(env, message, from) {
   const who = [from.first_name, from.last_name].filter(Boolean).join(" ") || "без имени";
   const handle = from.username ? "@" + from.username : "id " + from.id;
 
-  await fetch("https://api.telegram.org/bot" + env.BOT_TOKEN + "/sendMessage", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: env.OWNER_CHAT_ID,
-      // No parse mode: a message from a stranger is not markup, and treating it as markup is how an
-      // unmatched asterisk turns into a delivery failure.
-      text: "✉️ Сообщение от " + who + " (" + handle + "):\n\n" + (message.text || "")
-    })
-  }).catch(() => {});
+  try {
+    const res = await fetch("https://api.telegram.org/bot" + env.BOT_TOKEN + "/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: env.OWNER_CHAT_ID,
+        // No parse mode: a message from a stranger is not markup, and treating it as markup is how
+        // an unmatched asterisk turns into a delivery failure.
+        text: "✉️ Сообщение от " + who + " (" + handle + "):\n\n" + (message.text || "")
+      })
+    });
+
+    const payload = await res.json().catch(() => ({}));
+    console.log(payload.ok ? "переслано владельцу" : "переслать не удалось: " + (payload.description || res.status));
+  } catch (error) {
+    console.log("переслать не удалось: " + error.message);
+  }
 }
 
 export default {
