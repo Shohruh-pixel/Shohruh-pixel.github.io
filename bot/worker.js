@@ -28,7 +28,9 @@ const TEXTS = {
       "",
       "Нажмите кнопку ниже — откроется приложение."
     ].join("\n"),
-    button: "Открыть курсы"
+    button: "Открыть курсы",
+    thanks: "Спасибо — сообщение получено. Отвечу, как только смогу.",
+    prompt: "Напишите, что не так или чего не хватает — я читаю всё."
   },
   tg: {
     body: [
@@ -38,7 +40,9 @@ const TEXTS = {
       "",
       "Тугмаи зерро пахш кунед — барнома кушода мешавад."
     ].join("\n"),
-    button: "Қурбҳоро кушоед"
+    button: "Қурбҳоро кушоед",
+    thanks: "Ташаккур — паём расид. Ҳарчи зудтар ҷавоб медиҳам.",
+    prompt: "Нависед, чӣ нодуруст аст ё чӣ намерасад — ман ҳамаашро мехонам."
   },
   uz: {
     body: [
@@ -48,7 +52,9 @@ const TEXTS = {
       "",
       "Quyidagi tugmani bosing — ilova ochiladi."
     ].join("\n"),
-    button: "Kurslarni ochish"
+    button: "Kurslarni ochish",
+    thanks: "Rahmat — xabar keldi. Imkon boricha tez javob beraman.",
+    prompt: "Nima noto'g'ri yoki nima yetishmayotganini yozing — men hammasini o'qiyman."
   }
 };
 
@@ -64,6 +70,35 @@ function pathMatches(request, env) {
     return true;
   }
   return new URL(request.url).pathname === "/" + env.WEBHOOK_PATH;
+}
+
+// Anything that is not the first command is treated as something the reader wanted to say. There is
+// nowhere else for them to say it: the app's about screen used to offer an email address, which on a
+// phone is a wall, and a private one at that.
+//
+// This is the one thing here that needs the bot's token, and it needs it because a reply and a
+// forward are two calls while the response body carries one. The reader gets the acknowledgement
+// through the body, and their words reach the owner through the API. Without the two secrets set the
+// forward silently does not happen and the reader is still thanked — the same shape as every other
+// optional path in this project, where a missing secret costs the feature and never the request.
+async function forward(env, message, from) {
+  if (!env.BOT_TOKEN || !env.OWNER_CHAT_ID) {
+    return;
+  }
+
+  const who = [from.first_name, from.last_name].filter(Boolean).join(" ") || "без имени";
+  const handle = from.username ? "@" + from.username : "id " + from.id;
+
+  await fetch("https://api.telegram.org/bot" + env.BOT_TOKEN + "/sendMessage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: env.OWNER_CHAT_ID,
+      // No parse mode: a message from a stranger is not markup, and treating it as markup is how an
+      // unmatched asterisk turns into a delivery failure.
+      text: "✉️ Сообщение от " + who + " (" + handle + "):\n\n" + (message.text || "")
+    })
+  }).catch(() => {});
 }
 
 export default {
@@ -88,13 +123,22 @@ export default {
     }
 
     const text = TEXTS[pickLanguage(message.from && message.from.language_code)];
+    const said = (message.text || "").trim();
+    const isStart = !said || said.startsWith("/start");
+
+    if (!isStart) {
+      // Sent before the reply rather than after: the reader waits either way, and a forward that
+      // fails should not take the acknowledgement with it.
+      await forward(env, message, message.from || {});
+      return Response.json({ method: "sendMessage", chat_id: message.chat.id, text: text.thanks });
+    }
 
     // The reply is the response body. Telegram reads a method call here and performs it, which is
-    // why this function needs no token and keeps no state.
+    // why the common path needs no token and keeps no state.
     return Response.json({
       method: "sendMessage",
       chat_id: message.chat.id,
-      text: text.body,
+      text: text.body + "\n\n" + text.prompt,
       reply_markup: {
         // A web_app button opens the mini app inside Telegram rather than throwing the reader out
         // to a browser — the same thing the menu button does, in the place they are already looking.

@@ -95,3 +95,84 @@ test("an edited message is answered too", async () => {
   const reply = await (await post({ edited_message: update().message })).json();
   assert.equal(reply.method, "sendMessage");
 });
+
+// Обратная связь. До неё в приложении стоял только почтовый адрес — на телефоне это стена, и адрес
+// был личный. Всё, что не первая команда, считается сказанным нам.
+
+const withFetch = async (fn) => {
+  const calls = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), body: JSON.parse(init.body) });
+    return new Response("{}", { status: 200 });
+  };
+  try {
+    await fn();
+  } finally {
+    globalThis.fetch = real;
+  }
+  return calls;
+};
+
+const say = (text, env = {}) =>
+  handler.fetch(
+    new Request("https://bot.example/", {
+      method: "POST",
+      body: JSON.stringify({ message: { chat: { id: 42 }, from: { id: 7, first_name: "Далер", username: "daler", language_code: "ru" }, text } })
+    }),
+    env
+  );
+
+test("what someone writes reaches the owner", async () => {
+  const calls = await withFetch(async () => {
+    await say("Курс Эсхаты неверный", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" });
+  });
+  assert.equal(calls.length, 1, "сообщение никуда не ушло");
+  assert.match(calls[0].url, /api\.telegram\.org\/bott\/sendMessage/);
+  assert.equal(calls[0].body.chat_id, "99");
+  assert.match(calls[0].body.text, /Курс Эсхаты неверный/);
+  assert.match(calls[0].body.text, /Далер/, "не видно, кто написал");
+});
+
+test("and the person who wrote is told it arrived", async () => {
+  let reply;
+  await withFetch(async () => {
+    reply = await (await say("Добавьте юань", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
+  });
+  assert.equal(reply.chat_id, 42);
+  assert.match(reply.text, /Спасибо/);
+});
+
+test("without the secrets they are still thanked, and nothing is sent", async () => {
+  // Same shape as everywhere else here: a missing secret costs the feature, never the request.
+  const calls = await withFetch(async () => {
+    const reply = await (await say("что-то")).json();
+    assert.match(reply.text, /Спасибо/);
+  });
+  assert.deepEqual(calls, []);
+});
+
+test("a failed forward does not swallow the acknowledgement", async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error("сеть легла"); };
+  try {
+    const reply = await (await say("привет", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
+    assert.match(reply.text, /Спасибо/);
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
+test("/start is still the welcome, not a message to the owner", async () => {
+  const calls = await withFetch(async () => {
+    const reply = await (await say("/start", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
+    assert.match(reply.text, /22 банк/);
+    assert.ok(reply.reply_markup, "кнопка пропала");
+  });
+  assert.deepEqual(calls, [], "приветствие ушло владельцу как отзыв");
+});
+
+test("the welcome now invites the reader to write", async () => {
+  const reply = await (await say("/start")).json();
+  assert.match(reply.text, /читаю|напишите/i);
+});
