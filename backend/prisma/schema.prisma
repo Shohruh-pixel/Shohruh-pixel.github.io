@@ -16,6 +16,17 @@ model Bank {
   shortName        String
   logo             String?
   isActive         Boolean           @default(true)
+  // Whether a bank lets you exchange currency without walking in, in the bank's own words. The
+  // question people actually arrive with is not "what is the rate" but "can I use it from here" —
+  // a rate you have to queue for at a counter that shuts at five is a different offer from one
+  // available at midnight from a phone.
+  //
+  // Null for every bank that does not say. Ten of the eleven read directly do not, and inferring it
+  // from the rate types they publish would be a guess wearing the clothes of a fact: a non-cash rate
+  // says which operations it applies to, not that an app exists to perform them.
+  onlineRu         String?
+  onlineTj         String?
+  onlineUz         String?
   exchangeRate     ExchangeRate?
   rates            Rate[]
   rateHistory      RateHistory[]

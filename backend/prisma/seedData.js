@@ -364,6 +364,31 @@ const publishedLimits = {
   ]
 };
 
+
+// What each bank says about exchanging currency without coming in. Read on 19.08.2026 from the pages
+// named beside each entry; every bank on this list is quoted, none is inferred.
+//
+// Only Alif says anything. The other ten read directly are silent on it, and their absence here is
+// the honest rendering of that — a blank means nobody has claimed anything, not that the answer is
+// no.
+//
+// Alif's is worded carefully because the service is not what it first looks like: the app is a
+// marketplace where two people meet at a rate one of them named, inside limits the bank sets. It is
+// not the bank selling at the rate this site shows for it, and saying "exchange in the app at 9,22"
+// would be wrong in a way that costs somebody money.
+//   https://alif.tj/ru/currencyexchange
+//   https://alif.tj/ru/bank/news/v-prilozhenii-alif-teper-mozhno-obmenivat-valyutu
+const publishedOnline = {
+  "alif-bank": {
+    onlineRu:
+      "Обмен в приложении, круглосуточно, без визита в банк — до 10 000 $ за сделку, комиссия 0,1%. Курс вы назначаете сами в рамках банка: это биржа заявок между людьми, а не курс кассы. Нужна карта Visa или Mastercard либо валютный счёт.",
+    onlineTj:
+      "Мубодила дар барнома, шабонарӯзӣ, бе рафтан ба бонк — то 10 000 $ дар як амалиёт, комиссия 0,1%. Қурбро худатон дар доираи бонк таъин мекунед: ин мубодилаи байни одамон аст, на қурби касса. Корти Visa ё Mastercard ё ҳисоби асъорӣ лозим аст.",
+    onlineUz:
+      "Ilovada ayirboshlash, kechayu kunduz, bankka bormasdan — bir amaliyotda 10 000 $ gacha, komissiya 0,1%. Kursni bank belgilagan doirada o'zingiz tanlaysiz: bu odamlar o'rtasidagi birja, kassa kursi emas. Visa yoki Mastercard kartasi yoxud valyuta hisobi kerak."
+  }
+};
+
 async function seedDatabase(prisma, options = {}) {
   const { reset = false } = options;
 
@@ -406,6 +431,10 @@ async function seedDatabase(prisma, options = {}) {
   // After the banks exist. With reset the table is cleared at the top of this function and every
   // bank with it, so anything looked up before they are recreated finds nothing and is skipped in
   // silence — which is what happened, and a local run without reset hid it.
+  for (const [slug, note] of Object.entries(publishedOnline)) {
+    await prisma.bank.updateMany({ where: { slug }, data: note });
+  }
+
   for (const [slug, limits] of Object.entries(publishedLimits)) {
     const bank = await prisma.bank.findUnique({ where: { slug }, select: { id: true } });
     if (!bank) {
