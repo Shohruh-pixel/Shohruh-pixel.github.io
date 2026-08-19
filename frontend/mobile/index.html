@@ -232,7 +232,7 @@ const money = (n, decimals = 2) => n.toFixed(decimals).replace('.', ',').replace
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, about:false, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -635,11 +635,19 @@ function screenLimits(){
   S.limits.forEach(l => { (byBank[l.bank.slug] = byBank[l.bank.slug] || []).push(l); });
 
   return `
-  <div class="sub" style="margin-top:2px">${S.limits.length} ${T.cards}</div>
-  ${Object.values(byBank).map(cards => `
-    <div class="card" style="margin-bottom:10px">
-      <div style="font-size:17px;font-weight:600;margin-bottom:2px">${bankName(cards[0].bank)}</div>
-      ${cards.map(l => `
+  <div class="sub" style="margin-top:2px">${S.limits.length} ${(S.lang === 'ru' ? plural(S.limits.length, 'карта', 'карты', 'карт') : T.cards)}</div>
+  ${Object.values(byBank).map(cards => {
+    const slug = cards[0].bank.slug;
+    const open = S.openBank === slug;
+    return `
+    <div class="card" style="margin-bottom:10px;padding:${open ? '16px' : '4px 16px'}">
+      <button data-openbank="${slug}" style="display:flex;align-items:center;gap:10px;width:100%;
+        background:none;border:0;font:inherit;color:inherit;text-align:left;padding:12px 0;cursor:pointer">
+        <div style="flex:1;font-size:17px;font-weight:600">${bankName(cards[0].bank)}</div>
+        <div class="lbl">${cards.length} ${(S.lang === 'ru' ? plural(cards.length, 'карта', 'карты', 'карт') : T.cards)}</div>
+        <div class="lbl" style="font-size:18px;transform:rotate(${open ? '90deg' : '0deg'});transition:transform .18s ease">›</div>
+      </button>
+      ${!open ? '' : cards.map(l => `
         <div style="margin-top:14px">
           <div class="lbl">${l.cardType} · ${l.cardName}</div>
           ${(() => {
@@ -668,7 +676,8 @@ function screenLimits(){
           ${l.abroadNote ? `<div class="soft" style="padding:13px 16px;margin-top:8px"><div class="lbl">${T.abroad}</div><div class="mid">${abroad(l.abroadNote)}</div></div>` : ''}
           ${l.noteRu ? `<div class="lbl" style="margin-top:10px">${S.lang==='tj'?(l.noteTj||l.noteRu):S.lang==='uz'?(l.noteUz||l.noteRu):l.noteRu}</div>` : ''}
         </div>`).join('')}
-    </div>`).join('')}
+    </div>`;
+  }).join('')}
   <div class="note">${(() => {
     const n = new Set(S.limits.map(l => l.bank.slug)).size;
     return T.limitsCoverage
@@ -803,10 +812,11 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort],[data-openbank]');
   if(!t) return;
   const tabBefore = S.tab;
-  if(t.dataset.sort){ S.sort = t.dataset.sort; }
+  if(t.dataset.openbank){ S.openBank = S.openBank === t.dataset.openbank ? null : t.dataset.openbank; }
+  else if(t.dataset.sort){ S.sort = t.dataset.sort; }
   else if(t.dataset.clearq){ S.q = ''; S.ownOnly = false; }
   else if(t.dataset.about){ S.about = true; }
   else if(t.dataset.share){ shareRate(Number(t.dataset.share)); return; }
