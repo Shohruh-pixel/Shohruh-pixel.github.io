@@ -1,0 +1,221 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Посты BankRate TJ</title>
+<body style="margin:0;background:#1a1c24;font:15px system-ui,sans-serif;color:#a4aabd;padding:24px">
+<p style="max-width:1080px;margin:0 auto 20px">Сохраните каждую картинку правой кнопкой →
+«Сохранить изображение как…». Размер 1080×1350, готово для ленты.</p>
+<div id="out" style="display:grid;gap:28px;justify-content:center"></div>
+<script>
+const POSTS = [
+  {
+    "file": "post-rub",
+    "eyebrow": "Рубль сегодня",
+    "lead": "На 50 000 рублей",
+    "figure": "1 415",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Лучший курс",
+        "0,1083",
+        "Алиф Банк"
+      ],
+      [
+        "Худший курс",
+        "0,0800",
+        "Ориёнбанк"
+      ]
+    ]
+  },
+  {
+    "file": "post-rub-soft",
+    "eyebrow": "Рубль сегодня",
+    "lead": "На 50 000 рублей",
+    "figure": "1 415",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Лучший курс",
+        "0,1083",
+        "Алиф Банк"
+      ]
+    ]
+  },
+  {
+    "file": "post-usd",
+    "eyebrow": "Доллар сегодня",
+    "lead": "На 1000 долларов",
+    "figure": "70",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Продать выгоднее",
+        "9,23",
+        "Сундук"
+      ],
+      [
+        "Худший курс",
+        "9,16",
+        "Фридом Банк Таджикистан"
+      ]
+    ]
+  },
+  {
+    "file": "post-usd-soft",
+    "eyebrow": "Доллар сегодня",
+    "lead": "На 1000 долларов",
+    "figure": "70",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Продать выгоднее",
+        "9,23",
+        "Сундук"
+      ]
+    ]
+  },
+  {
+    "file": "post-eur",
+    "eyebrow": "Евро сегодня",
+    "lead": "На 1000 евро",
+    "figure": "550",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Лучший курс",
+        "10,65",
+        "Хумо"
+      ],
+      [
+        "Худший курс",
+        "10,10",
+        "Саноатсодиротбонк"
+      ]
+    ]
+  },
+  {
+    "file": "post-eur-soft",
+    "eyebrow": "Евро сегодня",
+    "lead": "На 1000 евро",
+    "figure": "550",
+    "caption": "сомони разницы между банками",
+    "rows": [
+      [
+        "Лучший курс",
+        "10,65",
+        "Хумо"
+      ]
+    ]
+  }
+];
+
+const BG = "#0b0d15";
+const ACC = "#6ee7ff";
+const TEXT = "#f2f4fa";
+const DIM = "#a4aabd";
+const FAINT = "#8b91a4";
+const MONO = '"JetBrains Mono", ui-monospace, "SF Mono", "Roboto Mono", monospace';
+const SANS = '-apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+
+// The mark from the app icon: three ascending bars, the same figure the rates tab carries.
+function bars(x, baseY, height, gap, width) {
+  const g = document.createElement("canvas").getContext("2d");
+  return [0.45, 0.72, 1].map((f, i) => ({
+    x: x + i * (width + gap),
+    y: baseY - Math.round(height * f),
+    w: width,
+    h: Math.round(height * f)
+  }));
+}
+
+function draw(post) {
+  const W = 1080, H = 1350;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+
+  x.fillStyle = BG;
+  x.fillRect(0, 0, W, H);
+
+  // A wash of the accent behind the figure, so the number sits in light rather than on flat black.
+  const glow = x.createRadialGradient(W / 2, 620, 40, W / 2, 620, 620);
+  glow.addColorStop(0, "rgba(110,231,255,0.10)");
+  glow.addColorStop(1, "rgba(110,231,255,0)");
+  x.fillStyle = glow;
+  x.fillRect(0, 0, W, H);
+
+  x.textBaseline = "alphabetic";
+
+  // Марка и имя
+  x.fillStyle = ACC;
+  bars(84, 132, 44, 7, 13).forEach((b) => x.fillRect(b.x, b.y, b.w, b.h));
+  x.fillStyle = TEXT;
+  x.font = "600 30px " + SANS;
+  x.fillText("BankRate TJ", 154, 132);
+
+  // Тема
+  x.fillStyle = FAINT;
+  x.font = "400 32px " + SANS;
+  x.fillText(post.eyebrow.toUpperCase(), 84, 300);
+
+  // Подводка и число
+  x.fillStyle = DIM;
+  x.font = "400 52px " + SANS;
+  x.fillText(post.lead, 84, 400);
+
+  x.fillStyle = ACC;
+  let size = 168;
+  x.font = "700 " + size + "px " + MONO;
+  while (x.measureText(post.figure).width > W - 168 && size > 90) {
+    size -= 6;
+    x.font = "700 " + size + "px " + MONO;
+  }
+  x.fillText(post.figure, 84, 560);
+
+  x.fillStyle = TEXT;
+  x.font = "400 44px " + SANS;
+  x.fillText(post.caption, 84, 640);
+
+  // Две строки сравнения
+  let y = 810;
+  post.rows.forEach(([label, value, bank], i) => {
+    x.fillStyle = "rgba(242,244,250,0.05)";
+    x.beginPath();
+    x.roundRect(84, y - 66, W - 168, 150, 28);
+    x.fill();
+
+    x.fillStyle = FAINT;
+    x.font = "400 30px " + SANS;
+    x.fillText(label, 124, y - 14);
+
+    x.fillStyle = i === 0 ? ACC : TEXT;
+    x.font = "600 62px " + MONO;
+    x.fillText(value, 124, y + 52);
+
+    x.fillStyle = DIM;
+    x.font = "400 30px " + SANS;
+    const name = bank.length > 26 ? bank.slice(0, 25) + "…" : bank;
+    x.textAlign = "right";
+    x.fillText(name, W - 124, y + 52);
+    x.textAlign = "left";
+
+    y += 190;
+  });
+
+  // Подвал
+  x.fillStyle = FAINT;
+  x.font = "400 32px " + SANS;
+  x.fillText("Все 22 банка — ссылка в профиле", 84, 1268);
+
+  return c;
+}
+
+const out = document.getElementById("out");
+POSTS.forEach((post) => {
+  const c = draw(post);
+  c.style.width = "540px";
+  c.style.borderRadius = "18px";
+  c.dataset.name = post.file;
+  out.appendChild(c);
+});
+</script>
+</body>
