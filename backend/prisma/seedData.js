@@ -1,9 +1,3 @@
-const minutesAgo = (value) => {
-  const timestamp = new Date();
-  timestamp.setMinutes(timestamp.getMinutes() - value);
-  return timestamp;
-};
-
 // Withdrawal limits are not seeded, and the ones that used to be here have been removed. They were
 // written alongside placeholder rates — the same objects carried usdBuy 10.89 from a source called
 // "Mobile branch desk" — and where the rates were overwritten by the scraper within seconds of boot,
@@ -15,6 +9,21 @@ const minutesAgo = (value) => {
 // which is the answer — the file already said so about the banks added later, and the rule simply
 // had not been applied backwards to the first six.
 
+// Rates are not seeded either. Six banks used to carry placeholder figures here — 10.89 for the
+// dollar against a market at 9.20, under source labels like "Mobile branch desk" and "Cash office
+// rate" that name no real place. They were invisible in practice because CI seeds, then restores the
+// snapshot, then scrapes, so every one of them was overwritten within seconds.
+//
+// Invisible until the day it is not. A failed snapshot import or a scrape that finds nothing would
+// have published them, and they look exactly like real rates — a plausible number under a plausible
+// source is the one thing this site must never show. The same argument removed the invented
+// withdrawal limits; it applies here with more force, because a wrong rate is the whole product
+// being wrong.
+//
+// Nothing is lost by their absence. A bank with its own source is scraped within seconds of boot,
+// every other bank comes from the National Bank's table, and the snapshot carries the last known
+// figures across builds.
+
 const banks = [
   {
     slug: "alif-bank",
@@ -24,16 +33,6 @@ const banks = [
     shortName: "ALF",
     logo: "A",
     isActive: true,
-    rate: {
-      usdBuy: 10.89,
-      usdSell: 10.94,
-      rubBuy: 0.1169,
-      rubSell: 0.1182,
-      eurBuy: 11.79,
-      eurSell: 11.92,
-      sourceLabel: "Mobile branch desk",
-      updatedAt: minutesAgo(9)
-    },
   },
   {
     slug: "orienbank",
@@ -43,16 +42,6 @@ const banks = [
     shortName: "ORB",
     logo: "O",
     isActive: true,
-    rate: {
-      usdBuy: 10.91,
-      usdSell: 10.97,
-      rubBuy: 0.1171,
-      rubSell: 0.1184,
-      eurBuy: 11.82,
-      eurSell: 11.96,
-      sourceLabel: "Cash office rate",
-      updatedAt: minutesAgo(14)
-    },
   },
   {
     slug: "amonatbank",
@@ -62,16 +51,6 @@ const banks = [
     shortName: "AMN",
     logo: "AM",
     isActive: true,
-    rate: {
-      usdBuy: 10.85,
-      usdSell: 10.92,
-      rubBuy: 0.1165,
-      rubSell: 0.1179,
-      eurBuy: 11.74,
-      eurSell: 11.89,
-      sourceLabel: "Retail branch rate",
-      updatedAt: minutesAgo(18)
-    },
   },
   {
     slug: "eskhata-bank",
@@ -81,16 +60,6 @@ const banks = [
     shortName: "ESK",
     logo: "E",
     isActive: true,
-    rate: {
-      usdBuy: 10.9,
-      usdSell: 10.93,
-      rubBuy: 0.1172,
-      rubSell: 0.1181,
-      eurBuy: 11.8,
-      eurSell: 11.9,
-      sourceLabel: "Digital channel rate",
-      updatedAt: minutesAgo(6)
-    },
   },
   {
     slug: "spitamen-bank",
@@ -100,16 +69,6 @@ const banks = [
     shortName: "SPB",
     logo: "S",
     isActive: true,
-    rate: {
-      usdBuy: 10.88,
-      usdSell: 10.91,
-      rubBuy: 0.1168,
-      rubSell: 0.1178,
-      eurBuy: 11.77,
-      eurSell: 11.87,
-      sourceLabel: "Branch and app blended rate",
-      updatedAt: minutesAgo(4)
-    },
   },
   {
     slug: "dushanbe-city-bank",
@@ -119,16 +78,6 @@ const banks = [
     shortName: "DCB",
     logo: "DC",
     isActive: true,
-    rate: {
-      usdBuy: 10.87,
-      usdSell: 10.9,
-      rubBuy: 0.1166,
-      rubSell: 0.1177,
-      eurBuy: 11.76,
-      eurSell: 11.85,
-      sourceLabel: "City branch desk",
-      updatedAt: minutesAgo(12)
-    },
   }
 ];
 
@@ -399,26 +348,13 @@ async function seedDatabase(prisma, options = {}) {
   }
 
   for (const entry of banks) {
-    const { rate, limits, ...bankData } = entry;
+    const { limits, ...bankData } = entry;
 
     const bank = await prisma.bank.upsert({
       where: { slug: bankData.slug },
       update: bankData,
       create: bankData
     });
-
-    // Banks added later carry no seed rate and no limits, and that is deliberate rather than
-    // unfinished: the scraper fills their rates from the bank's own API within seconds of boot, and
-    // nobody here has their real withdrawal limits. Inventing either to make the card look complete
-    // would put a number on the site that no bank ever published — the one failure this product
-    // cannot have. An empty section is honest; a plausible fabrication is not.
-    if (rate) {
-      await prisma.exchangeRate.upsert({
-        where: { bankId: bank.id },
-        update: { ...rate, bankId: bank.id },
-        create: { ...rate, bankId: bank.id }
-      });
-    }
 
     if (limits && limits.length) {
       await prisma.withdrawalLimit.deleteMany({ where: { bankId: bank.id } });
