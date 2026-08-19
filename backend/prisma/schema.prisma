@@ -155,6 +155,11 @@ model WithdrawalLimit {
   // Banks state their limits in whatever period they choose, and forcing one into another's field
   // is how a weekly allowance becomes a daily one on somebody's screen. Every period is optional;
   // only what a bank actually published is stored, and only that is drawn.
+  // What a bank says about a card, in the words it said it, as [{value, label}]. Spitamen's card
+  // page mixes limits, fees and the price of issuing the card in one list of three highlights per
+  // card; sorting those into columns called "daily limit" and "commission" would rename the bank's
+  // own figures, which is how the fabricated set got here in the first place. Quoted instead.
+  facts        String?
   weeklyLimit  String?
   counterLimit String?
   dailyLimit   String?

@@ -209,6 +209,59 @@ banks.push(...nbtOnlyBanks);
 // is the honest rendering of a thing nobody published. Applies to the cards generally — the page does
 // not name one — so it is filed that way instead of being attached to a card it might not govern.
 const publishedLimits = {
+  // Read from https://www.spitamenbank.tj/ru/personal/products/cards/ on 19.08.2026. The bank shows
+  // three highlights per card and they are not all of a kind — a withdrawal ceiling, a fee, the cost
+  // of the card — so each is stored as the pair the page prints, value beside label, rather than
+  // sorted into columns that would rename them. Cards whose highlights say nothing about money
+  // (concierge service, lounge visits) are left out: they are real, and they are not what someone
+  // comes to this screen for.
+  "spitamen-bank": [
+    {
+      cardName: "UPI Gold / Корти Милли",
+      cardType: "UnionPay",
+      facts: [
+        { value: "До 10 000 сомони", label: "обналичивание за рубежом" },
+        { value: "Без комиссии", label: "оплата товаров и услуг" },
+        { value: "Бесплатно", label: "обслуживание до 5 лет" }
+      ]
+    },
+    {
+      cardName: "UPI Platinum / Корти Милли",
+      cardType: "UnionPay",
+      facts: [
+        { value: "До 50 000 сомони", label: "оплата товаров и услуг" },
+        { value: "Без ограничений", label: "обналичивание на территории РТ" },
+        { value: "20 сомони", label: "выпуск карты" }
+      ]
+    },
+    {
+      cardName: "Visa Gold",
+      cardType: "Visa",
+      facts: [
+        { value: "До 20 000 сомони", label: "обналичивание за рубежом" },
+        { value: "Без ограничений", label: "обналичивание на территории РТ" },
+        { value: "15 сомони", label: "выпуск карты" }
+      ]
+    },
+    {
+      cardName: "UPI Classic / Корти Милли",
+      cardType: "UnionPay",
+      facts: [
+        { value: "Всего 1%", label: "обналичивание за рубежом" },
+        { value: "Без комиссии", label: "обналичивание на территории РТ" },
+        { value: "Бесплатно", label: "обслуживание до 5 лет" }
+      ]
+    },
+    {
+      cardName: "Visa Classic",
+      cardType: "Visa",
+      facts: [
+        { value: "Без комиссии", label: "обналичивание на территории РТ" },
+        { value: "Без комиссии", label: "онлайн покупки" },
+        { value: "Бесплатно", label: "обслуживание до 5 лет" }
+      ]
+    }
+  ],
   humo: [
     {
       cardName: "Все карты",
@@ -269,7 +322,10 @@ async function seedDatabase(prisma, options = {}) {
     if (!bank) {
       continue;
     }
-    for (const limit of limits) {
+    for (const raw of limits) {
+      // SQLite has no JSON column and the shape is only ever read back at render time, so the pairs
+      // travel as text rather than earning a table of their own.
+      const limit = raw.facts ? { ...raw, facts: JSON.stringify(raw.facts) } : raw;
       const existing = await prisma.withdrawalLimit.findFirst({ where: { bankId: bank.id, cardName: limit.cardName } });
       if (existing) {
         await prisma.withdrawalLimit.update({ where: { id: existing.id }, data: limit });
