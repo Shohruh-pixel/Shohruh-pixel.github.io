@@ -663,6 +663,25 @@ a {
   background: rgba(255, 209, 102, 0.12);
 }
 
+/* Label on the left, the bank's own figure on the right: these are sentences the bank wrote, not
+   cells of a table we designed, so they read across rather than stacking into columns. */
+.limit-facts {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.limit-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.limit-facts strong {
+  text-align: right;
+}
+
 .limit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));

@@ -60,6 +60,8 @@ export default {
     abroad: "Xorijda",
     dailyLimit: "Kunlik limit",
     monthlyLimit: "Oylik limit",
+    weeklyLimit: "Haftalik limit",
+    counterLimit: "Kassada va agentlarda",
     commission: "Komissiya",
     favorites: "Saralangan",
     selectedBank: "Hisob uchun bank",
@@ -157,11 +159,11 @@ export default {
   },
   limits: {
     missingNote: "Limitlar ularni e'lon qiladigan banklar uchun ko'rsatilgan. Qolganlari uchun hozircha ma'lumot yo'q.",
-    title: "Naqd yechish limitlari",
+    title: "Bank kartalari",
     subtitle: "Turli bank kartalari bo'yicha kunlik va oylik limitlarni solishtiring.",
     disclaimerTitle: "Muhim",
     disclaimerBody: "Iltimos, limitlarni bank bilan tekshiring. Ma'lumot tarif va karta turiga bog'liq bo'lishi mumkin.",
-    noResultsTitle: "Limitlar topilmadi",
+    noResultsTitle: "Kartalar topilmadi",
     noResultsDescription: "Filtrlarni tozalang yoki boshqa bankni tanlang."
   },
   favorites: {
