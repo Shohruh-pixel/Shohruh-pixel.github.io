@@ -231,21 +231,6 @@ async function seedDatabase(prisma, options = {}) {
     await prisma.bank.deleteMany();
   }
 
-  for (const [slug, limits] of Object.entries(publishedLimits)) {
-    const bank = await prisma.bank.findUnique({ where: { slug }, select: { id: true } });
-    if (!bank) {
-      continue;
-    }
-    for (const limit of limits) {
-      const existing = await prisma.withdrawalLimit.findFirst({ where: { bankId: bank.id, cardName: limit.cardName } });
-      if (existing) {
-        await prisma.withdrawalLimit.update({ where: { id: existing.id }, data: limit });
-      } else {
-        await prisma.withdrawalLimit.create({ data: { bankId: bank.id, ...limit } });
-      }
-    }
-  }
-
   for (const entry of banks) {
     const { rate, limits, ...bankData } = entry;
 
@@ -273,6 +258,24 @@ async function seedDatabase(prisma, options = {}) {
       await prisma.withdrawalLimit.createMany({
         data: limits.map((limit) => ({ ...limit, bankId: bank.id }))
       });
+    }
+  }
+
+  // After the banks exist. With reset the table is cleared at the top of this function and every
+  // bank with it, so anything looked up before they are recreated finds nothing and is skipped in
+  // silence — which is what happened, and a local run without reset hid it.
+  for (const [slug, limits] of Object.entries(publishedLimits)) {
+    const bank = await prisma.bank.findUnique({ where: { slug }, select: { id: true } });
+    if (!bank) {
+      continue;
+    }
+    for (const limit of limits) {
+      const existing = await prisma.withdrawalLimit.findFirst({ where: { bankId: bank.id, cardName: limit.cardName } });
+      if (existing) {
+        await prisma.withdrawalLimit.update({ where: { id: existing.id }, data: limit });
+      } else {
+        await prisma.withdrawalLimit.create({ data: { bankId: bank.id, ...limit } });
+      }
     }
   }
 
