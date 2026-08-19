@@ -772,10 +772,26 @@ function sheetHtml(){
       </div>`;
     }).join('')}
 
-    ${lim ? `<div class="row" style="margin-top:14px">
-      <div class="soft" style="padding:13px 16px"><div class="lbl">${T.perDay}</div><div class="mid n">${lim.dailyLimit}</div></div>
-      <div class="soft" style="padding:13px 16px"><div class="lbl">${T.fee}</div><div class="mid n">${lim.commission}</div></div>
-    </div>` : ''}
+    ${(() => {
+      // Only what the bank published. These two boxes used to render whatever the record held,
+      // which after the invented figures were removed meant the word "null" twice on five banks'
+      // cards. Same fix as the cards screen and the desktop card; this one was missed because a
+      // bank sheet is not where anybody looks for a withdrawal limit.
+      if(!lim) return '';
+      let facts = [];
+      try { facts = lim.facts ? JSON.parse(lim.facts) : []; } catch(e){}
+      const boxes = [
+        [T.perDay, lim.dailyLimit], [T.perWeek, lim.weeklyLimit],
+        [T.atCounter, lim.counterLimit], [T.fee, lim.commission]
+      ].filter(([, v]) => v).slice(0, 2);
+      // A card's own highlights stand in when it publishes no limit at all — two of the three
+      // facts, because this is a summary and the whole list lives on the cards screen.
+      const pairs = boxes.length ? boxes : facts.slice(0, 2).map(f => [f.label, f.value]);
+      if(!pairs.length) return '';
+      return `<div class="row" style="margin-top:14px">${pairs.map(([label, value]) =>
+        `<div class="soft" style="padding:13px 16px"><div class="lbl">${label}</div><div class="mid n">${value}</div></div>`
+      ).join('')}</div>`;
+    })()}
 
     ${(() => {
       // Under the rates and above the buttons: the reader is looking at a figure and deciding
