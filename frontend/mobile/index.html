@@ -167,6 +167,12 @@ body.tg header{height:48px}
 body.tg header .ttl{font-size:18px}
 header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:13px;
   color:#c8cddb;background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+/* Square, because it holds a mark rather than a word, and in the accent colour: this is the one
+   control here that asks something of the reader rather than answering them, and it has to be
+   findable without being loud. */
+#shareapp{width:34px;padding:0;display:flex;align-items:center;justify-content:center;
+  color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
+#shareapp svg{width:17px;height:17px}
 /* Currencies are one segmented control, not loose chips: the three are a single choice. */
 .seg{display:flex;gap:6px;padding:3px;border-radius:999px;background:var(--glass-soft);
   box-shadow:var(--edge);margin-bottom:14px}
@@ -178,7 +184,9 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <body>
 
 <div class="blob"></div>
-<header><div class="ttl" id="ttl"></div><button id="lang" title="Язык"></button></header>
+<header><div class="ttl" id="ttl"></div>
+<button id="shareapp" data-shareapp="1" aria-label="Порекомендовать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M12 4 8.2 7.8M12 4l3.8 3.8"/><path d="M5 13.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-5.5"/></svg></button>
+<button id="lang" title="Язык"></button></header>
 <main id="app"><div class="sub" style="margin-top:40px">Загружаю курсы…</div></main>
 
 <nav id="nav"></nav>
