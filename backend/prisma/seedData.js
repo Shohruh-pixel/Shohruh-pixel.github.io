@@ -209,6 +209,65 @@ banks.push(...nbtOnlyBanks);
 // is the honest rendering of a thing nobody published. Applies to the cards generally — the page does
 // not name one — so it is filed that way instead of being attached to a card it might not govern.
 const publishedLimits = {
+  // Read from the card pages under https://alif.tj/ru/cards on 19.08.2026 — one page per card, four
+  // facts each, quoted as the page states them.
+  //
+  // Alif also publishes a tariff PDF with the daily withdrawal limits in it, and it is not used. Its
+  // text extracts with the Cyrillic row labels missing: the numbers survive and the words naming
+  // them do not, so every figure would have to be matched to a row by guessing which one it belongs
+  // to. Numbers about money, assigned by guesswork, is the thing this screen was cleaned out for.
+  "alif-bank": [
+    {
+      cardName: "Visa Gold",
+      cardType: "Visa",
+      facts: [
+        { value: "Бесплатно", label: "первая карта, если нет Visa Platinum, Infinite или Mastercard" },
+        { value: "От 200 сомони в месяц", label: "оплат — и обслуживание бесплатно после первого года" },
+        { value: "До 7 лет", label: "срок действия" },
+        { value: "С / ₽ / $", label: "валюты счёта" }
+      ]
+    },
+    {
+      cardName: "Visa Platinum",
+      cardType: "Visa",
+      facts: [
+        { value: "300 сомони", label: "стоимость карты" },
+        { value: "От 500 сомони в месяц", label: "оплат — и обслуживание бесплатно после первого года" },
+        { value: "До 7 лет", label: "срок действия" },
+        { value: "С / ₽ / $", label: "валюты счёта" }
+      ]
+    },
+    {
+      cardName: "Visa Infinite",
+      cardType: "Visa",
+      facts: [
+        { value: "2 000 сомони", label: "первая карта, дополнительная — 2 500" },
+        { value: "От 5 000 сомони в месяц", label: "оплат — и обслуживание бесплатно после первого года" },
+        { value: "До 7 лет", label: "срок действия" },
+        { value: "С / ₽ / $", label: "валюты счёта" }
+      ]
+    },
+    {
+      cardName: "Mastercard Platinum",
+      cardType: "Mastercard",
+      facts: [
+        { value: "Бесплатно", label: "первая карта, если нет других карт Visa или Mastercard" },
+        { value: "От 500 сомони в месяц", label: "оплат — и обслуживание бесплатно после первого года" },
+        { value: "До 7 лет", label: "срок действия" },
+        { value: "С / $ / €", label: "валюты счёта" }
+      ]
+    },
+    {
+      cardName: "Visa Business",
+      cardType: "Visa",
+      facts: [
+        { value: "Бесплатно", label: "первая карта, дополнительная — 100 сомони" },
+        { value: "От 500 сомони в месяц", label: "оплат — и обслуживание бесплатно после первого года" },
+        { value: "До 5 лет", label: "срок действия" },
+        { value: "С / € / $", label: "валюты счёта" }
+      ]
+    }
+  ],
   // Read from https://www.spitamenbank.tj/ru/personal/products/cards/ on 19.08.2026. The bank shows
   // three highlights per card and they are not all of a kind — a withdrawal ceiling, a fee, the cost
   // of the card — so each is stored as the pair the page prints, value beside label, rather than
