@@ -126,12 +126,19 @@ test("banks are listed in the order of the alphabet the reader is reading", () =
   // twenty-two names begin with "Бонки", so the answer is not the same list rearranged.
   const script = inlineScript();
   assert.match(script, /localeCompare\(/, "сортировка не учитывает алфавит");
-  // Every list of banks goes through the same comparator, so the three cannot drift apart: two that
-  // now offer the reader a choice of order, and the converter strip, which has no such control.
-  // Counted as plain text rather than by pattern — the escaping is one more thing to get wrong.
+  // Two lists go through the shared comparator: the banks screen, which offers the reader a choice
+  // of order, and the converter's strip, which has none and stays alphabetical. Counted as plain
+  // text rather than by pattern — the escaping is one more thing to get wrong.
   const count = (haystack, needle) => haystack.split(needle).length - 1;
   const sorted = count(script, 'sort(order())') + count(script, 'sort(byName())');
-  assert.equal(sorted, 3, "отсортированы не все три списка банков");
+  assert.equal(sorted, 2, "списки банков сортируются не через общий компаратор");
+
+  // The home screen is the exception and deliberately so: it shows the few best rates rather than a
+  // catalogue, and "the best five in alphabetical order" is not a thing anyone wants. It sorts by
+  // what the bank pays and cuts the list — which is what stops that screen from being a second copy
+  // of the banks screen.
+  assert.match(script, /HOME_ROWS/, "главная снова показывает весь список");
+  assert.ok(script.includes("slice(0, HOME_ROWS)"), "главная не ограничивает список");
 
   // Alphabetical is what order() falls back to. A reader who has chosen nothing is looking for their
   // own bank, not the best one, and a list arranged by a number is the wrong list for that.
