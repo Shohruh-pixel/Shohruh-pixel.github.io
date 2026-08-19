@@ -150,6 +150,11 @@ jobs:
             git push
           fi
 
+      - name: Fill in what Telegram shows before Start
+        # A bot with no description opens as a blank screen with one button, which reads as a dead
+        # end rather than a service. Idempotent like the step below, and never fails the build.
+        run: node backend/scripts/set-telegram-profile.js
+
       - name: Point Telegram's menu button at the mini app
         # Idempotent, so it runs every time rather than once by hand: Telegram stores the last value
         # and setting the same one again changes nothing. Never fails the build — see the script.
