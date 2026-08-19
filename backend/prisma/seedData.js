@@ -209,6 +209,36 @@ banks.push(...nbtOnlyBanks);
 // is the honest rendering of a thing nobody published. Applies to the cards generally — the page does
 // not name one — so it is filed that way instead of being attached to a card it might not govern.
 const publishedLimits = {
+  // Found through the sites' own sitemaps rather than by following links — two banks keep their card
+  // pages outside the navigation, where the earlier crawls could not reach them.
+  //
+  // https://zudamal.tj/ru/karti/ on 19.08.2026. Three facts and no limits; the percentages elsewhere
+  // on their site are loan rates, which belong to a different question.
+  zudamal: [
+    {
+      cardName: "Корти Милли",
+      cardType: "Корти Милли",
+      facts: [
+        { value: "Бесплатно", label: "оформление карты" },
+        { value: "Бесплатно", label: "обслуживание дебетовой карты" },
+        { value: "30 сомони в год", label: "СМС-оповещение" }
+      ]
+    }
+  ],
+
+  // https://eskhata.com/card/korti-milli/ on 19.08.2026. The bank states the term and nothing else
+  // about money, so the term is all that is recorded — one true line rather than a card padded out
+  // to look as informative as its neighbours.
+  "eskhata-bank": [
+    {
+      cardName: "Корти Милли",
+      cardType: "Корти Милли",
+      facts: [
+        { value: "До 5 лет", label: "срок действия персонифицированной карты" },
+        { value: "18 месяцев", label: "срок действия неперсонифицированной карты" }
+      ]
+    }
+  ],
   // Read from the card pages under https://alif.tj/ru/cards on 19.08.2026 — one page per card, four
   // facts each, quoted as the page states them.
   //
