@@ -2,8 +2,10 @@ name = "bankrate-tj-bot"
 main = "worker.js"
 compatibility_date = "2026-08-19"
 
-# No secrets, no storage, no bindings. The worker answers one kind of request and forgets it — the
-# reply travels back in the response body, so there is no token here and nothing to rotate.
+# No token, by design. Every reply travels back in the response body of the request Telegram sent,
+# so there is no credential here to leak or rotate. What people write is kept in storage and read on
+# demand with /otzyvy — the owner asks instead of being told, which is the whole cost of not holding
+# a token.
 #
 # WEBHOOK_PATH is the only thing it needs and it is not secret in the sense a token is: it is the
 # path Telegram posts to, which stops a passer-by from making the worker answer. Set it with
@@ -12,8 +14,13 @@ compatibility_date = "2026-08-19"
 #
 # and use the same value when registering the webhook.
 
-# Логи хранятся, а не только текут мимо в wrangler tail. Пересылка отзыва может отказать тихо —
-# неверный токен, человек, не начавший диалог с ботом, — и разбирать это по живому потоку значит
-# успевать нажать в нужную секунду. Здесь они лежат и ждут.
+# Логи хранятся, а не только текут мимо в wrangler tail. Запись отзыва может отказать тихо, и
+# разбирать это по живому потоку значит успевать нажать в нужную секунду. Здесь они лежат и ждут.
 [observability]
 enabled = true
+
+# Отзывы: из формы в приложении и из чата с ботом. Cloudflare сам стирает их через 120 дней, так что
+# команды «удалить» нет — и промахнуться ею тоже нельзя.
+[[kv_namespaces]]
+binding = "FEEDBACK"
+id = "c7fc3d7793d54a8a844fcdc2e5aa23cc"

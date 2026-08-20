@@ -98,81 +98,237 @@ test("an edited message is answered too", async () => {
 
 // Обратная связь. До неё в приложении стоял только почтовый адрес — на телефоне это стена, и адрес
 // был личный. Всё, что не первая команда, считается сказанным нам.
+//
+// Токена у воркера нет, поэтому отзыв никуда не отправляется в момент написания: он ложится в
+// хранилище, а владелец забирает его командой. Проверяется здесь именно это — что написанное не
+// теряется и что забрать его может только владелец.
 
-const withFetch = async (fn) => {
-  const calls = [];
-  const real = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    calls.push({ url: String(url), body: JSON.parse(init.body) });
-    return new Response("{}", { status: 200 });
+// Хранилище Cloudflare, какое нужно этим тестам: положить, перечислить с метаданными. Ключи в
+// настоящем KV перечисляются по алфавиту — здесь так же, иначе «сначала новые» проверялось бы
+// против выдумки.
+const fakeKV = () => {
+  const store = new Map();
+  return {
+    store,
+    async put(key, value, opts = {}) {
+      store.set(key, { value, metadata: opts.metadata, ttl: opts.expirationTtl });
+    },
+    async list({ prefix = "", limit = 1000 } = {}) {
+      const keys = [...store.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .sort()
+        .slice(0, limit)
+        .map((name) => ({ name, metadata: store.get(name).metadata }));
+      return { keys, list_complete: true };
+    }
   };
-  try {
-    await fn();
-  } finally {
-    globalThis.fetch = real;
-  }
-  return calls;
 };
 
-const say = (text, env = {}) =>
+const values = (kv) => [...kv.store.values()].map((v) => JSON.parse(v.value));
+
+const say = (text, env = {}, chatId = 42) =>
   handler.fetch(
     new Request("https://bot.example/", {
       method: "POST",
-      body: JSON.stringify({ message: { chat: { id: 42 }, from: { id: 7, first_name: "Далер", username: "daler", language_code: "ru" }, text } })
+      body: JSON.stringify({
+        message: {
+          chat: { id: chatId },
+          from: { id: 7, first_name: "Далер", username: "daler", language_code: "ru" },
+          text
+        }
+      })
     }),
     env
   );
 
-test("what someone writes reaches the owner", async () => {
-  const calls = await withFetch(async () => {
-    await say("Курс Эсхаты неверный", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" });
-  });
-  assert.equal(calls.length, 1, "сообщение никуда не ушло");
-  assert.match(calls[0].url, /api\.telegram\.org\/bott\/sendMessage/);
-  assert.equal(calls[0].body.chat_id, "99");
-  assert.match(calls[0].body.text, /Курс Эсхаты неверный/);
-  assert.match(calls[0].body.text, /Далер/, "не видно, кто написал");
+const submit = (body, env = {}, method = "POST") =>
+  handler.fetch(
+    new Request("https://bot.example/feedback", {
+      method,
+      headers: { "content-type": "application/json" },
+      body: method === "POST" ? JSON.stringify(body) : undefined
+    }),
+    env
+  );
+
+test("what someone writes in the chat is kept", async () => {
+  const FEEDBACK = fakeKV();
+  await say("Курс Эсхаты неверный", { FEEDBACK });
+
+  const kept = values(FEEDBACK);
+  assert.equal(kept.length, 1, "сообщение не сохранилось");
+  assert.match(kept[0].text, /Курс Эсхаты неверный/);
+  assert.match(kept[0].name, /Далер/, "не видно, кто написал");
+  assert.match(kept[0].name, /@daler/, "не видно, как ответить");
+  assert.equal(kept[0].source, "chat");
 });
 
 test("and the person who wrote is told it arrived", async () => {
-  let reply;
-  await withFetch(async () => {
-    reply = await (await say("Добавьте юань", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
-  });
+  const reply = await (await say("Добавьте юань", { FEEDBACK: fakeKV() })).json();
   assert.equal(reply.chat_id, 42);
   assert.match(reply.text, /Спасибо/);
 });
 
-test("without the secrets they are still thanked, and nothing is sent", async () => {
-  // Same shape as everywhere else here: a missing secret costs the feature, never the request.
-  const calls = await withFetch(async () => {
-    const reply = await (await say("что-то")).json();
-    assert.match(reply.text, /Спасибо/);
-  });
-  assert.deepEqual(calls, []);
+test("without storage they are still thanked", async () => {
+  // Тот же порядок, что и везде здесь: отсутствующая настройка стоит возможности, но не ответа.
+  // Человек написал — он услышит спасибо, даже если положить некуда.
+  const reply = await (await say("что-то")).json();
+  assert.match(reply.text, /Спасибо/);
 });
 
-test("a failed forward does not swallow the acknowledgement", async () => {
+test("nothing is sent anywhere — the worker holds no token", async () => {
+  const calls = [];
   const real = globalThis.fetch;
-  globalThis.fetch = async () => { throw new Error("сеть легла"); };
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    return new Response("{}", { status: 200 });
+  };
   try {
-    const reply = await (await say("привет", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
-    assert.match(reply.text, /Спасибо/);
+    await say("проверка", { FEEDBACK: fakeKV(), OWNER_CHAT_ID: "99" });
+    await submit({ name: "Аня", text: "проверка" }, { FEEDBACK: fakeKV(), OWNER_CHAT_ID: "99" });
   } finally {
     globalThis.fetch = real;
   }
+  assert.deepEqual(calls, [], "воркер куда-то ходил, хотя ходить ему нечем");
 });
 
-test("/start is still the welcome, not a message to the owner", async () => {
-  const calls = await withFetch(async () => {
-    const reply = await (await say("/start", { BOT_TOKEN: "t", OWNER_CHAT_ID: "99" })).json();
-    assert.match(reply.text, /22 банк/);
-    assert.ok(reply.reply_markup, "кнопка пропала");
-  });
-  assert.deepEqual(calls, [], "приветствие ушло владельцу как отзыв");
+test("/start is still the welcome, not something someone said", async () => {
+  const FEEDBACK = fakeKV();
+  const reply = await (await say("/start", { FEEDBACK })).json();
+  assert.match(reply.text, /22 банк/);
+  assert.ok(reply.reply_markup, "кнопка пропала");
+  assert.deepEqual(values(FEEDBACK), [], "приветствие легло в отзывы");
 });
 
-test("the welcome now invites the reader to write", async () => {
+test("the welcome invites the reader to write", async () => {
   const reply = await (await say("/start")).json();
   assert.match(reply.text, /читаю|напишите/i);
+});
+
+// Форма внутри приложения. Ради неё всё и затевалось: выйти из приложения, найти чат и набрать
+// текст — три шага, которых человек не сделает.
+
+test("the form's submission is kept", async () => {
+  const FEEDBACK = fakeKV();
+  const res = await submit({ name: "Аня", text: "Нет банка Арванд" }, { FEEDBACK });
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { ok: true });
+
+  const kept = values(FEEDBACK);
+  assert.equal(kept.length, 1);
+  assert.equal(kept[0].name, "Аня");
+  assert.equal(kept[0].text, "Нет банка Арванд");
+  assert.equal(kept[0].source, "app", "не отличить отзыв из приложения от чата");
+});
+
+test("a submission without a name is still kept", async () => {
+  // Имя необязательно. Требовать его — терять тех, кто не хочет называться, а сказать им есть что.
+  const FEEDBACK = fakeKV();
+  const res = await submit({ text: "Курс НБТ отстаёт" }, { FEEDBACK });
+  assert.equal(res.status, 200);
+  assert.equal(values(FEEDBACK)[0].name, "");
+});
+
+test("an empty submission is refused, and nothing is kept", async () => {
+  const FEEDBACK = fakeKV();
+  const res = await submit({ name: "Аня", text: "   " }, { FEEDBACK });
+  assert.equal(res.status, 400);
+  assert.deepEqual(values(FEEDBACK), []);
+});
+
+test("the form answers a preflight", async () => {
+  // Приложение живёт на другом домене, поэтому браузер сначала спрашивает разрешения. Без ответа
+  // сюда не дойдёт ни один отзыв.
+  const res = await submit(null, {}, "OPTIONS");
+  assert.equal(res.status, 204);
+  assert.equal(res.headers.get("access-control-allow-origin"), "*");
+});
+
+test("without storage the form says so rather than thanking falsely", async () => {
+  const res = await submit({ name: "Аня", text: "проверка" }, {});
+  assert.equal(res.status, 503);
+  assert.deepEqual(await res.json(), { ok: false });
+});
+
+test("what is written is kept whole, however long", async () => {
+  const FEEDBACK = fakeKV();
+  const long = "а".repeat(900);
+  await submit({ text: long }, { FEEDBACK });
+
+  const [kept] = values(FEEDBACK);
+  assert.equal(kept.text.length, 900, "текст обрезали при записи");
+
+  const meta = [...FEEDBACK.store.values()][0].metadata;
+  assert.ok(meta.t.length < 300, "превью не сокращено — метаданные не влезут");
+  assert.match(meta.t, /…$/);
+});
+
+test("entries expire on their own", async () => {
+  // Отсюда нет команды «удалить», по которой можно промахнуться: Cloudflare стирает сам.
+  const FEEDBACK = fakeKV();
+  await submit({ text: "проверка" }, { FEEDBACK });
+  const { ttl } = [...FEEDBACK.store.values()][0];
+  assert.ok(ttl > 30 * 24 * 60 * 60, "срок хранения слишком короткий");
+});
+
+// Как владелец читает накопленное.
+
+test("the owner sees what people wrote", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ name: "Аня", text: "Нет банка Арванд" }, { FEEDBACK });
+  await say("Курс Эсхаты неверный", { FEEDBACK });
+
+  const reply = await (await say("/otzyvy", { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.match(reply.text, /Нет банка Арванд/);
+  assert.match(reply.text, /Курс Эсхаты неверный/);
+  assert.match(reply.text, /Аня/);
+  assert.match(reply.text, /из приложения/);
+  assert.match(reply.text, /из чата/);
+});
+
+test("the newest is first — the owner should not scroll to find it", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ text: "первое" }, { FEEDBACK });
+  await submit({ text: "второе" }, { FEEDBACK });
+  await submit({ text: "третье" }, { FEEDBACK });
+
+  const reply = await (await say("/otzyvy", { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.ok(
+    reply.text.indexOf("третье") < reply.text.indexOf("первое"),
+    "старое показано раньше нового"
+  );
+});
+
+test("a stranger asking does not see other people's messages", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ name: "Аня", text: "Нет банка Арванд" }, { FEEDBACK });
+
+  const reply = await (await say("/otzyvy", { FEEDBACK, OWNER_CHAT_ID: "99" }, 42)).json();
+  assert.doesNotMatch(reply.text, /Арванд/, "чужие отзывы показаны постороннему");
+  assert.match(reply.text, /Спасибо/, "команда постороннего — тоже сказанное нам");
+});
+
+test("without an owner set, nobody is the owner", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ text: "Нет банка Арванд" }, { FEEDBACK });
+
+  const reply = await (await say("/otzyvy", { FEEDBACK }, 42)).json();
+  assert.doesNotMatch(reply.text, /Арванд/);
+});
+
+test("an empty store says so plainly", async () => {
+  const reply = await (await say("/otzyvy", { FEEDBACK: fakeKV(), OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.match(reply.text, /пока нет/);
+});
+
+test("the digest stays inside what Telegram will send", async () => {
+  // 4096 символов — предел одного сообщения. Двадцать длинных отзывов не должны его пробить.
+  const FEEDBACK = fakeKV();
+  for (let i = 0; i < 20; i++) {
+    await submit({ name: "Читатель " + i, text: "б".repeat(500) }, { FEEDBACK });
+  }
+  const reply = await (await say("/otzyvy", { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.ok(reply.text.length < 4096, "сообщение длиннее, чем Telegram примет: " + reply.text.length);
+  assert.match(reply.text, /Отзывы: 20/, "не видно, сколько всего");
 });

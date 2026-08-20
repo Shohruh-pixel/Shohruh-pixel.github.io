@@ -1,4 +1,5 @@
-// Answers /start, so that opening the bot is not a blank screen with nothing to do.
+// Answers /start, so that opening the bot is not a blank screen with nothing to do, and keeps what
+// people write so it does not fall on the floor.
 //
 // The description this project already sets is only visible *before* Start is pressed. After that
 // the chat is empty and the only way in is a small button beside the message field that people do
@@ -8,9 +9,13 @@
 // site is files on a static host. This is the smallest thing that can listen — one function, on
 // Cloudflare's free plan, doing nothing but answering.
 //
-// It holds no token. Telegram accepts a method call written into the *response body* of the webhook
-// request, so the reply travels back down the connection that delivered the update. There is no
-// secret here to leak and nothing to rotate.
+// It holds no token, and that is a deliberate constraint rather than an accident. Telegram accepts a
+// method call written into the *response body* of the webhook request, so every reply travels back
+// down the connection that delivered the update. What a token would buy is the one thing that is not
+// a reply — pushing a notification to the owner the moment feedback arrives — and the price is a
+// credential that has to live somewhere, be rotated when it leaks, and be set correctly by hand.
+// Feedback is written to storage instead and read on demand with /otzyvy. The owner asks rather than
+// is told; nothing is lost, and there is no secret here to leak.
 //
 // Deploying it: see README.md in this folder.
 
@@ -72,44 +77,146 @@ function pathMatches(request, env) {
   return new URL(request.url).pathname === "/" + env.WEBHOOK_PATH;
 }
 
-// Anything that is not the first command is treated as something the reader wanted to say. There is
-// nowhere else for them to say it: the app's about screen used to offer an email address, which on a
-// phone is a wall, and a private one at that.
-//
-// This is the one thing here that needs the bot's token, and it needs it because a reply and a
-// forward are two calls while the response body carries one. The reader gets the acknowledgement
-// through the body, and their words reach the owner through the API. Without the two secrets set the
-// forward silently does not happen and the reader is still thanked — the same shape as every other
-// optional path in this project, where a missing secret costs the feature and never the request.
-async function forward(env, message, from) {
-  if (!env.BOT_TOKEN || !env.OWNER_CHAT_ID) {
-    return;
+// Bounded on purpose. The form's endpoint is open — it has to be, the app is a static page with no
+// login — so the only real protection is that abusing it costs the abuser effort and gains them
+// nothing but a rude entry in a list only the owner reads.
+const MAX_NAME = 80;
+const MAX_TEXT = 2000;
+
+// Long enough that a slow week loses nothing, short enough that the store does not become an
+// archive nobody asked for. Cloudflare expires these itself, so there is no delete command to
+// mis-aim.
+const KEEP_DAYS = 120;
+
+// The preview lives in the key's metadata, which arrives with the listing. Rendering /otzyvy from
+// metadata alone is one storage operation for the whole list instead of one per entry; the cap is
+// what keeps every entry inside the 1024 bytes metadata is allowed, Cyrillic being two bytes a
+// letter.
+const PREVIEW = 220;
+
+function shorten(text, limit) {
+  return text.length > limit ? text.slice(0, limit - 1) + "…" : text;
+}
+
+// Dushanbe is UTC+5 year round — no daylight saving to get wrong. Written out by hand because the
+// worker's Intl has no guarantee of carrying the zone database.
+function whenInDushanbe(at) {
+  const d = new Date(at + 5 * 60 * 60 * 1000);
+  const pad = (n) => String(n).padStart(2, "0");
+  return pad(d.getUTCDate()) + "." + pad(d.getUTCMonth() + 1) + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+}
+
+// Keys sort lexicographically in a listing, so the timestamp is padded to a fixed width and the
+// listing is reversed to put the newest first. The random tail is there because two people can
+// write in the same millisecond and the second one should not overwrite the first.
+function keyFor(at) {
+  const suffix = crypto.randomUUID().slice(0, 8);
+  return "fb:" + String(at).padStart(15, "0") + ":" + suffix;
+}
+
+async function remember(env, entry) {
+  if (!env.FEEDBACK) {
+    // The binding is missing — a deploy that skipped the storage. Saying so out loud beats a
+    // silent drop, because the reader is about to be thanked either way.
+    console.log("отзыв не сохранён: нет хранилища");
+    return false;
   }
 
-  const who = [from.first_name, from.last_name].filter(Boolean).join(" ") || "без имени";
-  const handle = from.username ? "@" + from.username : "id " + from.id;
+  const at = Date.now();
 
   try {
-    const res = await fetch("https://api.telegram.org/bot" + env.BOT_TOKEN + "/sendMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: env.OWNER_CHAT_ID,
-        // No parse mode: a message from a stranger is not markup, and treating it as markup is how
-        // an unmatched asterisk turns into a delivery failure.
-        text: "✉️ Сообщение от " + who + " (" + handle + "):\n\n" + (message.text || "")
-      })
+    await env.FEEDBACK.put(keyFor(at), JSON.stringify({ ...entry, at }), {
+      expirationTtl: KEEP_DAYS * 24 * 60 * 60,
+      metadata: { n: entry.name, t: shorten(entry.text, PREVIEW), a: at, s: entry.source }
     });
-
-    const payload = await res.json().catch(() => ({}));
-    console.log(payload.ok ? "переслано владельцу" : "переслать не удалось: " + (payload.description || res.status));
+    console.log("отзыв сохранён (" + entry.source + ")");
+    return true;
   } catch (error) {
-    console.log("переслать не удалось: " + error.message);
+    console.log("отзыв не сохранён: " + error.message);
+    return false;
   }
+}
+
+// What the owner sees when they ask. Telegram cuts a message at 4096 characters, so the list is
+// bounded twice: by how many entries are read and by how much of each is shown.
+const SHOW = 12;
+
+async function digest(env) {
+  if (!env.FEEDBACK) {
+    return "Хранилище не подключено — отзывы сейчас негде держать.";
+  }
+
+  let listing;
+  try {
+    listing = await env.FEEDBACK.list({ prefix: "fb:", limit: 200 });
+  } catch (error) {
+    return "Не удалось прочитать отзывы: " + error.message;
+  }
+
+  if (!listing.keys.length) {
+    return "Отзывов пока нет.";
+  }
+
+  const newest = listing.keys.slice().reverse();
+  const lines = newest.slice(0, SHOW).map((key, i) => {
+    const m = key.metadata || {};
+    const who = m.n || "без имени";
+    const where = m.s === "app" ? "из приложения" : "из чата";
+    return i + 1 + ". " + who + " · " + (m.a ? whenInDushanbe(m.a) : "?") + " · " + where + "\n" + (m.t || "");
+  });
+
+  const head = newest.length > SHOW
+    ? "Отзывы: " + newest.length + ", последние " + SHOW
+    : "Отзывы: " + newest.length;
+
+  return head + "\n\n" + lines.join("\n\n");
+}
+
+// The app's own feedback form posts here. Leaving the app to type in a chat is a step most people
+// will not take, and the ones who would are not the ones with something to report.
+async function handleFeedback(request, env) {
+  const cors = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS"
+  };
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: cors });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch (error) {
+    return Response.json({ ok: false }, { status: 400, headers: cors });
+  }
+
+  const text = String(body.text || "").trim().slice(0, MAX_TEXT);
+  const name = String(body.name || "").trim().slice(0, MAX_NAME);
+
+  if (!text) {
+    return Response.json({ ok: false }, { status: 400, headers: cors });
+  }
+
+  const kept = await remember(env, { name, text, source: "app" });
+  if (!kept) {
+    // Told it failed rather than thanked for nothing. A false thank-you is worse than an error,
+    // because the reader stops wondering whether it arrived and never writes again.
+    return Response.json({ ok: false }, { status: 503, headers: cors });
+  }
+
+  return Response.json({ ok: true }, { headers: cors });
 }
 
 export default {
   async fetch(request, env) {
+    // The form's own address, separate from the webhook path: Telegram owns that one, and mixing a
+    // browser endpoint into it would mean every stray request became a malformed update.
+    if (new URL(request.url).pathname === "/feedback") {
+      return handleFeedback(request, env);
+    }
+
     if (request.method !== "POST" || !pathMatches(request, env)) {
       // Anything else — a browser, a scanner, a mistyped URL — gets nothing to work with.
       return new Response("ok", { status: 200 });
@@ -131,17 +238,32 @@ export default {
 
     const text = TEXTS[pickLanguage(message.from && message.from.language_code)];
     const said = (message.text || "").trim();
-    const isStart = !said || said.startsWith("/start");
 
-    if (!isStart) {
-      // Sent before the reply rather than after: the reader waits either way, and a forward that
-      // fails should not take the acknowledgement with it.
-      await forward(env, message, message.from || {});
+    // Only the owner, and only from their own chat. Without this check the command would hand
+    // everyone else's messages to whoever typed it.
+    const isOwner = env.OWNER_CHAT_ID && String(message.chat.id) === String(env.OWNER_CHAT_ID);
+    if (isOwner && said.startsWith("/otzyvy")) {
+      return Response.json({ method: "sendMessage", chat_id: message.chat.id, text: await digest(env) });
+    }
+
+    if (said && !said.startsWith("/start")) {
+      // Kept before the reply rather than after: the reader waits either way, and storage failing
+      // should not take the acknowledgement with it.
+      const from = message.from || {};
+      const who = [from.first_name, from.last_name].filter(Boolean).join(" ");
+      const handle = from.username ? "@" + from.username : "id " + from.id;
+
+      await remember(env, {
+        name: (who || "без имени") + " (" + handle + ")",
+        text: said.slice(0, MAX_TEXT),
+        source: "chat"
+      });
+
       return Response.json({ method: "sendMessage", chat_id: message.chat.id, text: text.thanks });
     }
 
     // The reply is the response body. Telegram reads a method call here and performs it, which is
-    // why the common path needs no token and keeps no state.
+    // why nothing in this worker needs a token and nothing has to be rotated.
     return Response.json({
       method: "sendMessage",
       chat_id: message.chat.id,

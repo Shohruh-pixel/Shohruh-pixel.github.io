@@ -170,3 +170,72 @@ test("iOS gets a real icon", () => {
   // iPhone ignores the manifest; without this tag an added-to-home-screen app is a screenshot.
   assert.match(HTML, /rel="apple-touch-icon"/);
 });
+
+// Тело sendFeedback и ничего больше. Функция объявлена последней в своей группе, поэтому конец —
+// первая закрывающая скобка в начале строки.
+function feedbackBody(script) {
+  const from = script.indexOf("async function sendFeedback");
+  assert.ok(from !== -1, "функции отправки отзыва нет");
+  const body = script.slice(from);
+  const end = body.indexOf("\n}\n");
+  assert.ok(end !== -1, "не видно, где заканчивается функция отправки");
+  return body.slice(0, end + 2);
+}
+
+// Форма отзыва. До неё кнопка «написать нам» закрывала приложение и высаживала человека в чат с
+// ботом — набрать всё заново в другом месте соглашались единицы.
+
+test("the form asks here, instead of sending the reader elsewhere", () => {
+  const script = inlineScript();
+  assert.doesNotMatch(script, /function writeToUs/, "кнопка всё ещё уводит из приложения");
+  assert.match(script, /id="wtext"/, "негде написать отзыв");
+  assert.match(script, /id="wname"/, "негде назваться");
+  assert.match(script, /data-send="1"/, "нечем отправить");
+});
+
+test("the name is optional and the text is not", () => {
+  // Требовать имя — терять тех, кому есть что сказать, но кто не хочет называться. Пустой отзыв,
+  // наоборот, отправлять некуда: он не сообщает ничего.
+  const script = inlineScript();
+  const send = feedbackBody(script);
+  assert.match(send, /if\(!text\)\{/, "пустой отзыв уходит как есть");
+  assert.doesNotMatch(send.slice(0, send.indexOf("try {")), /if\(!name\)/, "имя требуется");
+});
+
+test("a send that fails keeps what was typed", () => {
+  // Перерисовка стёрла бы текстовое поле, и «попробуйте ещё раз» означало бы «наберите заново».
+  const script = inlineScript();
+  const send = feedbackBody(script);
+  const rescue = send.slice(send.indexOf("} catch"));
+  assert.doesNotMatch(rescue, /render\(\)/, "после неудачи экран перерисовывается вместе с текстом");
+  assert.match(rescue, /btn\.disabled = false/, "кнопка осталась заблокированной — повторить нечем");
+  assert.match(rescue, /T\.writeFail/, "человеку не сказали, что не отправилось");
+});
+
+test("tapping send twice does not send twice", () => {
+  const script = inlineScript();
+  const send = feedbackBody(script);
+  const before = send.indexOf("fetch(FEEDBACK_URL");
+  assert.ok(before !== -1, "отзыв никуда не отправляется");
+  assert.ok(send.slice(0, before).includes("btn.disabled = true"), "кнопка блокируется только после отправки");
+});
+
+test("closing the sheet forgets the form", () => {
+  // Иначе «О проекте» открывается на вчерашней благодарности или на половине набранного текста,
+  // которого уже нет.
+  const script = inlineScript();
+  const closings = script.split("\n").filter((line) => line.includes("S.about = false"));
+  assert.ok(closings.length >= 3, "мест, где лист закрывается, стало меньше — проверка устарела");
+  for (const line of closings) {
+    assert.match(line, /S\.write = null/, "лист закрывается, а форма остаётся: " + line.trim());
+  }
+});
+
+test("the only place the app talks to is the one that keeps feedback", () => {
+  // Приложение — статическая страница, и каждый чужой адрес в ней надо уметь назвать. Их два:
+  // собственные данные и обработчик отзывов.
+  const script = inlineScript();
+  const external = [...script.matchAll(/fetch\((?:'|")(https?:\/\/[^'"]+)/g)].map((m) => m[1]);
+  assert.deepEqual(external, [], "адрес зашит прямо в вызов, мимо константы");
+  assert.match(script, /const FEEDBACK_URL = 'https:\/\/[^']+\/feedback'/, "адрес обработчика потерялся");
+});

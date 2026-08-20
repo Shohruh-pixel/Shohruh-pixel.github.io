@@ -9,6 +9,18 @@
         "dev"
       ],
       "port": 3000
+    },
+    {
+      "name": "static",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4319",
+        "--directory",
+        "frontend/dist-static"
+      ],
+      "port": 4319
     }
   ]
 }

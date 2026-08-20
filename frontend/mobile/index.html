@@ -64,8 +64,12 @@ h1{font-size:26px;font-weight:600;margin:18px 0 4px}
 .bank .nm{font-size:14.5px}
 .bank .v{font-size:15px;text-align:right;min-width:75px}
 .best{color:var(--acc)}
-input,select{width:100%;height:50px;border-radius:var(--rad);border:0;padding:0 16px;font:inherit;
+input,select,textarea{width:100%;height:50px;border-radius:var(--rad);border:0;padding:0 16px;font:inherit;
   color:var(--text);background:var(--glass-soft);box-shadow:var(--edge);outline:none}
+textarea{height:auto;min-height:104px;padding:14px 16px;line-height:1.45;resize:none}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+/* Пока отправляем, кнопка не должна выглядеть нажимаемой: второе нажатие — второй отзыв. */
+.pill[disabled]{opacity:.55}
 input.n{font-size:19px}
 nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
   padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(11,13,21,.92);
@@ -194,7 +198,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{writeUs:'Написать в чат',shareApp:'Порекомендовать',shareAppText:'Курсы валют 22 банков Таджикистана в одном месте — видно, где выгоднее продать доллар или рубль. Обновляются каждые 3 часа, бесплатно.',onlineTitle:'Можно не идти в банк',limitsCoverage:'О своих картах рассказывают {n} {bank} из {all}. Остальные не публикуют ни условий, ни лимитов — спрашивайте в своём банке.',perWeek:'В неделю',atCounter:'В кассе и у агентов',limitsEmpty:'Пока нечего показать',limitsWhy:'Банки Таджикистана не публикуют лимиты снятия — ни на сайтах, ни в тарифах, которые можно прочитать. Раньше здесь стояли цифры, которых не называл ни один банк; мы их убрали. Уточняйте лимит в своём банке.',updatedAll:'Курсы обновлены',gainFor:'за',gainGet:'получите от',gainTo:'до',gainDiff:'разница',somoni:'сомони',sortName:'А-Я',sortSell:'Продать',sortBuy:'Купить',notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'Напишите в бот — я читаю всё: ошибка в курсе, пропущенный банк, что стоит добавить. Или письмом: shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Карты',
+  ru:{writeUs:'Написать нам',writeName:'Как вас зовут',writeNamePh:'Необязательно',writeText:'Что скажете',writeTextPh:'Ошибка в курсе, пропущенный банк, что стоит добавить',writeSend:'Отправить',writeSending:'Отправляем…',writeCancel:'Отмена',writeDone:'Запрос принят',writeDoneNote:'Спасибо за обратную связь.',writeEmpty:'Напишите пару слов — без текста отправлять нечего.',writeFail:'Не отправилось. Проверьте связь и попробуйте ещё раз.',shareApp:'Порекомендовать',shareAppText:'Курсы валют 22 банков Таджикистана в одном месте — видно, где выгоднее продать доллар или рубль. Обновляются каждые 3 часа, бесплатно.',onlineTitle:'Можно не идти в банк',limitsCoverage:'О своих картах рассказывают {n} {bank} из {all}. Остальные не публикуют ни условий, ни лимитов — спрашивайте в своём банке.',perWeek:'В неделю',atCounter:'В кассе и у агентов',limitsEmpty:'Пока нечего показать',limitsWhy:'Банки Таджикистана не публикуют лимиты снятия — ни на сайтах, ни в тарифах, которые можно прочитать. Раньше здесь стояли цифры, которых не называл ни один банк; мы их убрали. Уточняйте лимит в своём банке.',updatedAll:'Курсы обновлены',gainFor:'за',gainGet:'получите от',gainTo:'до',gainDiff:'разница',somoni:'сомони',sortName:'А-Я',sortSell:'Продать',sortBuy:'Купить',notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'Напишите нам прямо здесь — я читаю всё: ошибка в курсе, пропущенный банк, что стоит добавить. Или письмом: shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Карты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Карты банков',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все {all}',search:'Найти банк',
@@ -206,7 +210,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Показано только то, что банк опубликовал сам. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{writeUs:'Ба чат нависед',shareApp:'Тавсия додан',shareAppText:'Қурби асъори 22 бонки Тоҷикистон дар як ҷо — маълум аст, ки дар кадом бонк фурӯхтани доллар ё рубл фоидаовартар аст. Ҳар 3 соат нав мешавад, ройгон.',onlineTitle:'Ба бонк рафтан лозим нест',limitsCoverage:'Дар бораи кортҳои худ {n} бонк аз {all} нақл мекунад. Дигарон на шартҳо, на лимитҳоро нашр намекунанд — дар бонки худ пурсед.',perWeek:'Дар як ҳафта',atCounter:'Дар касса ва агентҳо',limitsEmpty:'Ҳоло чизе нест',limitsWhy:'Бонкҳои Тоҷикистон лимити гирифтани пулро нашр намекунанд — на дар сомонаҳо, на дар тарофаҳо. Пештар дар ин ҷо рақамҳое буданд, ки ҳеҷ бонк нагуфтааст; мо онҳоро тоза кардем. Лимитро дар бонки худ пурсед.',updatedAll:'Қурбҳо нав шуданд',gainFor:'барои',gainGet:'мегиред аз',gainTo:'то',gainDiff:'фарқ',somoni:'сомонӣ',sortName:'А-Я',sortSell:'Фурӯхтан',sortBuy:'Харидан',notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'Ба бот нависед — ман ҳамаашро мехонам: хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим. Ё бо почта: shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Кортҳо',
+  tj:{writeUs:'Ба мо нависед',writeName:'Номи шумо',writeNamePh:'Ихтиёрӣ',writeText:'Чӣ мегӯед',writeTextPh:'Хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим',writeSend:'Фиристодан',writeSending:'Мефиристем…',writeCancel:'Бекор кардан',writeDone:'Дархост қабул шуд',writeDoneNote:'Ташаккур барои назаратон.',writeEmpty:'Ду калима нависед — бе матн фиристодан чизе нест.',writeFail:'Фиристода нашуд. Алоқаро санҷед ва боз кӯшиш кунед.',shareApp:'Тавсия додан',shareAppText:'Қурби асъори 22 бонки Тоҷикистон дар як ҷо — маълум аст, ки дар кадом бонк фурӯхтани доллар ё рубл фоидаовартар аст. Ҳар 3 соат нав мешавад, ройгон.',onlineTitle:'Ба бонк рафтан лозим нест',limitsCoverage:'Дар бораи кортҳои худ {n} бонк аз {all} нақл мекунад. Дигарон на шартҳо, на лимитҳоро нашр намекунанд — дар бонки худ пурсед.',perWeek:'Дар як ҳафта',atCounter:'Дар касса ва агентҳо',limitsEmpty:'Ҳоло чизе нест',limitsWhy:'Бонкҳои Тоҷикистон лимити гирифтани пулро нашр намекунанд — на дар сомонаҳо, на дар тарофаҳо. Пештар дар ин ҷо рақамҳое буданд, ки ҳеҷ бонк нагуфтааст; мо онҳоро тоза кардем. Лимитро дар бонки худ пурсед.',updatedAll:'Қурбҳо нав шуданд',gainFor:'барои',gainGet:'мегиред аз',gainTo:'то',gainDiff:'фарқ',somoni:'сомонӣ',sortName:'А-Я',sortSell:'Фурӯхтан',sortBuy:'Харидан',notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'Ҳамин ҷо ба мо нависед — ман ҳамаашро мехонам: хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим. Ё бо почта: shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Кортҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Кортҳои бонкҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳамаи {all}',search:'Бонкро ёбед',
@@ -218,7 +222,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Танҳо он чизе нишон дода мешавад, ки худи бонк нашр кардааст. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{writeUs:"Chatga yozing",shareApp:"Tavsiya qilish",shareAppText:"Tojikiston 22 bankining valyuta kurslari bir joyda — dollar yoki rublni qayerda sotish foydaliroq ekani ko'rinadi. Har 3 soatda yangilanadi, bepul.",onlineTitle:"Bankka borish shart emas",limitsCoverage:"O'z kartalari haqida {all} bankdan {n} tasi ma'lumot beradi. Qolganlari na shartlarni, na limitlarni e'lon qiladi — o'z bankingizda so'rang.",perWeek:"Haftasiga",atCounter:"Kassada va agentlarda",limitsEmpty:"Hozircha hech narsa yo'q",limitsWhy:"Tojikiston banklari yechish limitlarini e'lon qilmaydi — na saytlarda, na tariflarda. Ilgari bu yerda hech bir bank aytmagan raqamlar turardi; biz ularni olib tashladik. Limitni o'z bankingizda so'rang.",updatedAll:"Kurslar yangilandi",gainFor:"uchun",gainGet:"olasiz",gainTo:"dan",gainDiff:"farq",somoni:"somoni",sortName:"A-Z",sortSell:"Sotish",sortBuy:"Xarid",notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"Botga yozing — men hammasini o'qiyman: kursdagi xato, tushib qolgan bank, nima qo'shish kerak. Yoki pochta bilan: shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Kartalar',
+  uz:{writeUs:"Bizga yozing",writeName:"Ismingiz",writeNamePh:"Majburiy emas",writeText:"Nima deysiz",writeTextPh:"Kursdagi xato, tushib qolgan bank, nima qo'shish kerak",writeSend:"Yuborish",writeSending:"Yuborilmoqda…",writeCancel:"Bekor qilish",writeDone:"So'rov qabul qilindi",writeDoneNote:"Fikringiz uchun rahmat.",writeEmpty:"Bir necha so'z yozing — matnsiz yuborishga hech narsa yo'q.",writeFail:"Yuborilmadi. Aloqani tekshirib, yana urinib ko'ring.",shareApp:"Tavsiya qilish",shareAppText:"Tojikiston 22 bankining valyuta kurslari bir joyda — dollar yoki rublni qayerda sotish foydaliroq ekani ko'rinadi. Har 3 soatda yangilanadi, bepul.",onlineTitle:"Bankka borish shart emas",limitsCoverage:"O'z kartalari haqida {all} bankdan {n} tasi ma'lumot beradi. Qolganlari na shartlarni, na limitlarni e'lon qiladi — o'z bankingizda so'rang.",perWeek:"Haftasiga",atCounter:"Kassada va agentlarda",limitsEmpty:"Hozircha hech narsa yo'q",limitsWhy:"Tojikiston banklari yechish limitlarini e'lon qilmaydi — na saytlarda, na tariflarda. Ilgari bu yerda hech bir bank aytmagan raqamlar turardi; biz ularni olib tashladik. Limitni o'z bankingizda so'rang.",updatedAll:"Kurslar yangilandi",gainFor:"uchun",gainGet:"olasiz",gainTo:"dan",gainDiff:"farq",somoni:"somoni",sortName:"A-Z",sortSell:"Sotish",sortBuy:"Xarid",notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"Shu yerda bizga yozing — men hammasini o'qiyman: kursdagi xato, tushib qolgan bank, nima qo'shish kerak. Yoki pochta bilan: shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Kartalar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Bank kartalari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barchasi {all}',search:'Bankni toping',
@@ -245,7 +249,7 @@ const money = (n, decimals = 2) => n.toFixed(decimals).replace('.', ',').replace
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, about:false, openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, write:null, openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -331,7 +335,7 @@ function initTelegram(){
   try { tg.setBottomBarColor('#0b0d15'); } catch(e){}
   // Newer clients only: without it a scroll that starts at the top drags the app closed.
   try { tg.disableVerticalSwipes(); } catch(e){}
-  try { tg.BackButton.onClick(() => { S.sheet = null; S.about = false; render(); }); } catch(e){}
+  try { tg.BackButton.onClick(() => { S.sheet = null; S.about = false; S.write = null; render(); }); } catch(e){}
 
   // A reader who has never touched the language button gets the language of their Telegram account
   // rather than Russian. An explicit choice always wins — it is stored, and this never overrides it.
@@ -372,17 +376,76 @@ function sendOut(text, url){
 // Inside Telegram the link is the bot, not the website: a t.me address opens the app in the place
 // the reader already is, while a website address sends them out to a browser. Outside Telegram the
 // website is the one that works.
-function writeToUs(){
-  const tg = TG();
-  if(tg && tg.close){
-    // Closing is what "write to us" means from in here. The button used to ask Telegram to open a
-    // link to this very bot — the one whose mini app is on screen — and Telegram quietly does
-    // nothing with that, so the button appeared broken. Closing puts the reader back in the chat
-    // they opened this from, with the keyboard and the bot's invitation to write already on screen.
-    haptic();
-    try { tg.close(); return; } catch(e){}
+
+// Отзыв пишут здесь, а не в чате. Кнопка раньше закрывала приложение и высаживала человека в
+// переписку с ботом: это работало, но требовало от него набрать всё заново в другом месте, и
+// большинство на этом останавливалось. Форма спрашивает то же самое там, где человек уже стоит.
+//
+// Отзыв уходит в хранилище на стороне обработчика. Токена бота нигде нет — ни здесь, ни там, —
+// поэтому уведомление не прилетает само: владелец забирает накопленное командой /otzyvy.
+const FEEDBACK_URL = 'https://bankrate-tj-bot.shohruhmahkamov28.workers.dev/feedback';
+
+function writeHtml(){
+  if(S.write === 'done') return `
+    <div class="apart"><b>${T.writeDone}</b><span>${T.writeDoneNote}</span></div>`;
+
+  if(S.write) return `
+    <div style="margin-top:20px">
+      <label class="lbl" for="wname">${T.writeName}</label>
+      <input id="wname" maxlength="80" autocomplete="name" placeholder="${T.writeNamePh}" style="margin:6px 0 14px">
+      <label class="lbl" for="wtext">${T.writeText}</label>
+      <textarea id="wtext" maxlength="2000" placeholder="${T.writeTextPh}" style="margin-top:6px"></textarea>
+      <div id="wmsg" class="lbl" style="margin-top:8px;min-height:17px"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="pill" data-writecancel="1">${T.writeCancel}</button>
+        <button class="pill on" id="wsend" data-send="1">${T.writeSend}</button>
+      </div>
+    </div>`;
+
+  return `
+    <div class="row" style="margin-top:20px">
+      <button class="pill" data-write="1">${T.writeUs}</button>
+      <button class="pill on" data-shareapp="1">${T.shareApp}</button>
+    </div>`;
+}
+
+async function sendFeedback(){
+  const nameEl = document.getElementById('wname');
+  const textEl = document.getElementById('wtext');
+  const msg = document.getElementById('wmsg');
+  const btn = document.getElementById('wsend');
+  if(!textEl || !btn) return;
+
+  const text = (textEl.value || '').trim();
+  if(!text){
+    msg.style.color = '#ffd166';
+    msg.textContent = T.writeEmpty;
+    textEl.focus();
+    return;
   }
-  window.open('https://t.me/BankrateTJ_bot', '_blank', 'noopener');
+
+  msg.textContent = '';
+  btn.textContent = T.writeSending;
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(FEEDBACK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: (nameEl && nameEl.value || '').trim(), text })
+    });
+    if(!res.ok) throw new Error(res.status);
+    haptic();
+    S.write = 'done';
+    render();
+  } catch(e){
+    // Ничего не перерисовываем: написанное остаётся на экране. Иначе «попробуйте ещё раз»
+    // означает «наберите заново», а второй раз никто не набирает.
+    msg.style.color = '#f87171';
+    msg.textContent = T.writeFail;
+    btn.textContent = T.writeSend;
+    btn.disabled = false;
+  }
 }
 
 function shareApp(){
@@ -754,10 +817,7 @@ function aboutHtml(){
     ${part(T.aboutRiskT, T.aboutRiskB)}
     ${part(T.aboutDataT, T.aboutDataB)}
     ${part(T.aboutContactT, T.aboutContactB)}
-    <div class="row" style="margin-top:20px">
-      <button class="pill" data-write="1">${T.writeUs}</button>
-      <button class="pill on" data-shareapp="1">${T.shareApp}</button>
-    </div>
+    ${writeHtml()}
   </div>`;
 }
 
@@ -882,10 +942,12 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort],[data-openbank],[data-shareapp],[data-write]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort],[data-openbank],[data-shareapp],[data-write],[data-send],[data-writecancel]');
   if(!t) return;
   const tabBefore = S.tab;
-  if(t.dataset.write){ writeToUs(); return; }
+  if(t.dataset.send){ sendFeedback(); return; }
+  if(t.dataset.write){ S.write = 'form'; render(); setTimeout(() => { const f = document.getElementById('wtext'); if(f) f.focus(); }, 60); return; }
+  if(t.dataset.writecancel){ S.write = null; render(); return; }
   if(t.dataset.shareapp){ shareApp(); return; }
   if(t.dataset.openbank){ S.openBank = S.openBank === t.dataset.openbank ? null : t.dataset.openbank; }
   else if(t.dataset.sort){ S.sort = t.dataset.sort; }
@@ -915,7 +977,7 @@ document.addEventListener('click', e => {
   else if(t.dataset.bank2) S.bank = Number(t.dataset.bank2);
   else if(t.dataset.dir) S.dir = S.dir === 'buy' ? 'sell' : 'buy';
   else if(t.dataset.swapcur){ const i = ['TJS',...CUR].indexOf(S.from); S.from = ['TJS',...CUR][(i+1) % 4]; }
-  else if(t.dataset.close){ S.sheet = null; S.about = false; }
+  else if(t.dataset.close){ S.sheet = null; S.about = false; S.write = null; }
   else if(t.dataset.use){ S.bank = Number(t.dataset.use); S.sheet = null; S.tab = 'conv'; }
   else if(t.dataset.tab) S.tab = t.dataset.tab;
   else if(t.dataset.cur) S.cur = t.dataset.cur;
@@ -955,7 +1017,7 @@ document.getElementById('lang').addEventListener('click', () => {
   render();
 });
 
-document.addEventListener('keydown', e => { if(e.key === 'Escape' && (S.sheet != null || S.about)){ S.sheet = null; S.about = false; render(); } });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && (S.sheet != null || S.about)){ S.sheet = null; S.about = false; S.write = null; render(); } });
 
 document.addEventListener('change', e => {
   if(e.target.id === 'bank'){ S.bank = Number(e.target.value); render(); }
