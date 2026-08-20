@@ -11,3 +11,9 @@ compatibility_date = "2026-08-19"
 #   npx wrangler secret put WEBHOOK_PATH
 #
 # and use the same value when registering the webhook.
+
+# Логи хранятся, а не только текут мимо в wrangler tail. Пересылка отзыва может отказать тихо —
+# неверный токен, человек, не начавший диалог с ботом, — и разбирать это по живому потоку значит
+# успевать нажать в нужную секунду. Здесь они лежат и ждут.
+[observability]
+enabled = true
