@@ -332,3 +332,83 @@ test("the digest stays inside what Telegram will send", async () => {
   assert.ok(reply.text.length < 4096, "сообщение длиннее, чем Telegram примет: " + reply.text.length);
   assert.match(reply.text, /Отзывы: 20/, "не видно, сколько всего");
 });
+
+// Владельцу нечем сообщить об отзыве в момент, когда его написали: на запрос из браузера ответить в
+// теле некому, а звонить самому — это токен. Значит, сказать надо тогда, когда он сам открыл чат.
+
+test("opening the bot tells the owner how much is waiting", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ text: "первое" }, { FEEDBACK });
+  await submit({ text: "второе" }, { FEEDBACK });
+
+  const reply = await (await say("/start", { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.match(reply.text, /Отзывов: 2/, "владелец не видит, что его ждут");
+  assert.match(reply.text, /\/otzyvy/, "не сказано, чем забрать");
+  assert.match(reply.text, /22 банк/, "приветствие пропало");
+});
+
+test("an empty store says so too, rather than staying silent", async () => {
+  // Молчание неотличимо от поломки: владелец не знает, отзывов нет или бот сломался.
+  const reply = await (await say("/start", { FEEDBACK: fakeKV(), OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.match(reply.text, /Отзывов пока нет/);
+});
+
+test("a stranger's welcome says nothing about feedback", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ text: "чужое" }, { FEEDBACK });
+
+  const reply = await (await say("/start", { FEEDBACK, OWNER_CHAT_ID: "99" }, 42)).json();
+  assert.doesNotMatch(reply.text, /Отзывов/, "постороннему показали чужую кухню");
+});
+
+test("a secret typed with a stray newline still names the owner", async () => {
+  // Секрет вставляют руками, и перенос строки на конце превращает владельца в постороннего молча:
+  // приходит «спасибо», а список не приходит никогда.
+  const FEEDBACK = fakeKV();
+  await submit({ text: "Нет банка Арванд" }, { FEEDBACK });
+
+  const reply = await (await say("/otzyvy", { FEEDBACK, OWNER_CHAT_ID: "99\n" }, 99)).json();
+  assert.match(reply.text, /Арванд/, "владелец с лишним переносом строки перестал быть владельцем");
+});
+
+test("the command is recognised however it is spelled", async () => {
+  const FEEDBACK = fakeKV();
+  await submit({ text: "Нет банка Арванд" }, { FEEDBACK });
+
+  for (const cmd of ["/otzyvy", "/otziv", "/otzivi", "/otzyv", "/feedback", "/Otzyvy", "/otzyvy@BankrateTJ_bot"]) {
+    const reply = await (await say(cmd, { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+    assert.match(reply.text, /Арванд/, "не опознано: " + cmd);
+  }
+});
+
+test("a word that merely starts like the command is still a message", async () => {
+  const FEEDBACK = fakeKV();
+  const reply = await (await say("отзывы где", { FEEDBACK, OWNER_CHAT_ID: "99" }, 99)).json();
+  assert.match(reply.text, /Спасибо/, "обычный текст принят за команду");
+  assert.equal(values(FEEDBACK).length, 1, "сказанное не сохранилось");
+});
+
+test("a webhook path with a stray newline still matches", async () => {
+  // Перенос строки в адресе — отказ без единого признака отказа: путь не совпадает, воркер отвечает
+  // «ok» на всё, Telegram видит успех и не повторяет, а бот молчит. Снаружи это неотличимо от
+  // сломанного бота, и искать нечего — в журнале успех.
+  const reply = await handler
+    .fetch(
+      new Request("https://bot.example/tayna", {
+        method: "POST",
+        body: JSON.stringify(update())
+      }),
+      { WEBHOOK_PATH: "tayna\n" }
+    )
+    .then((r) => r.json());
+
+  assert.equal(reply.method, "sendMessage", "обновление по верному адресу осталось без ответа");
+});
+
+test("the wrong path is still ignored", async () => {
+  const res = await handler.fetch(
+    new Request("https://bot.example/ne-ta", { method: "POST", body: JSON.stringify(update()) }),
+    { WEBHOOK_PATH: "tayna" }
+  );
+  assert.equal(await res.text(), "ok", "воркер ответил на запрос по чужому адресу");
+});

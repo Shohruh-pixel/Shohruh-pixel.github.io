@@ -74,7 +74,10 @@ function pathMatches(request, env) {
   if (!env.WEBHOOK_PATH) {
     return true;
   }
-  return new URL(request.url).pathname === "/" + env.WEBHOOK_PATH;
+  // .trim(): секрет вставляют руками или подают по конвейеру, и перенос строки на конце попадает
+  // в значение. Тогда путь не совпадает никогда, воркер отвечает "ok" на всё, Telegram доволен, а
+  // бот молчит — отказ без единого признака отказа.
+  return new URL(request.url).pathname === "/" + String(env.WEBHOOK_PATH).trim();
 }
 
 // Bounded on purpose. The form's endpoint is open — it has to be, the app is a static page with no
@@ -172,6 +175,18 @@ async function digest(env) {
   return head + "\n\n" + lines.join("\n\n");
 }
 
+async function pending(env) {
+  if (!env.FEEDBACK) {
+    return 0;
+  }
+  try {
+    const listing = await env.FEEDBACK.list({ prefix: "fb:", limit: 200 });
+    return listing.keys.length;
+  } catch (error) {
+    return 0;
+  }
+}
+
 // The app's own feedback form posts here. Leaving the app to type in a chat is a step most people
 // will not take, and the ones who would are not the ones with something to report.
 async function handleFeedback(request, env) {
@@ -241,8 +256,11 @@ export default {
 
     // Only the owner, and only from their own chat. Without this check the command would hand
     // everyone else's messages to whoever typed it.
-    const isOwner = env.OWNER_CHAT_ID && String(message.chat.id) === String(env.OWNER_CHAT_ID);
-    if (isOwner && said.startsWith("/otzyvy")) {
+    const isOwner = env.OWNER_CHAT_ID && String(message.chat.id) === String(env.OWNER_CHAT_ID).trim();
+
+    // Несколько написаний: команда набирается редко и по памяти, а промах молча уходит в отзывы —
+    // владелец видит «спасибо» и не понимает, почему списка нет.
+    if (isOwner && /^\/(otzyvy|otziv|otzivi|otzyv|feedback)/i.test(said)) {
       return Response.json({ method: "sendMessage", chat_id: message.chat.id, text: await digest(env) });
     }
 
@@ -262,12 +280,21 @@ export default {
       return Response.json({ method: "sendMessage", chat_id: message.chat.id, text: text.thanks });
     }
 
+    // Уведомить владельца в момент отзыва нечем — на запрос из браузера ответить в теле некому.
+    // Значит, сказать надо тогда, когда он сам сюда пришёл: открыть бота он всё равно открывает, а
+    // команду можно и не вспомнить.
+    let waiting = "";
+    if (isOwner) {
+      const n = await pending(env);
+      waiting = n ? "\n\n📥 Отзывов: " + n + " — /otzyvy" : "\n\n📥 Отзывов пока нет.";
+    }
+
     // The reply is the response body. Telegram reads a method call here and performs it, which is
     // why nothing in this worker needs a token and nothing has to be rotated.
     return Response.json({
       method: "sendMessage",
       chat_id: message.chat.id,
-      text: text.body + "\n\n" + text.prompt,
+      text: text.body + "\n\n" + text.prompt + waiting,
       reply_markup: {
         // A web_app button opens the mini app inside Telegram rather than throwing the reader out
         // to a browser — the same thing the menu button does, in the place they are already looking.
