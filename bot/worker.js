@@ -110,11 +110,22 @@ function whenInDushanbe(at) {
 }
 
 // Keys sort lexicographically in a listing, so the timestamp is padded to a fixed width and the
-// listing is reversed to put the newest first. The random tail is there because two people can
-// write in the same millisecond and the second one should not overwrite the first.
+// listing is reversed to put the newest first.
+//
+// A millisecond is not fine enough to order by on its own: two entries written inside the same one
+// sorted by their random tails, which is to say arbitrarily, and the newest could appear below the
+// oldest. The counter breaks those ties in the order they were actually written — it only counts
+// within one instance of the worker, but entries landing in the same millisecond on two different
+// instances is a tie nobody can perceive anyway.
+//
+// The random tail stays: without it, two writes in the same millisecond on two instances would take
+// the same key and the second would erase the first.
+let seq = 0;
+
 function keyFor(at) {
+  seq = (seq + 1) % 1000000;
   const suffix = crypto.randomUUID().slice(0, 8);
-  return "fb:" + String(at).padStart(15, "0") + ":" + suffix;
+  return "fb:" + String(at).padStart(15, "0") + ":" + String(seq).padStart(6, "0") + ":" + suffix;
 }
 
 async function remember(env, entry) {
@@ -233,6 +244,13 @@ export default {
     }
 
     if (request.method !== "POST" || !pathMatches(request, env)) {
+      // Сказано вслух, потому что молчание здесь неотличимо от исправной работы: путь разошёлся с
+      // тем, что знает Telegram, воркер отвечает "ok", Telegram видит успех — и в журнале пусто.
+      // Один раз это уже стоило получаса поисков вслепую. Сам путь не печатается: он и есть защита.
+      if (request.method === "POST") {
+        console.log("обновление пришло не по тому пути — путь в Cloudflare и в Telegram разошлись");
+      }
+
       // Anything else — a browser, a scanner, a mistyped URL — gets nothing to work with.
       return new Response("ok", { status: 200 });
     }
