@@ -17,7 +17,17 @@
 <style>
 /* Values are the mock's own, read out of its editable parameters rather than sampled from a
    screenshot. Everything is a film of the text colour over a near-black ground: no solid fills,
-   because a screen of eight bank cards has to read as one surface, not eight boxes. */
+   because a screen of eight bank cards has to read as one surface, not eight boxes.
+
+   Every colour in the app is named here and nowhere else. That is what makes a second theme
+   possible at all: while a shade was written into the rule that used it, changing the ground meant
+   finding all of them, and the ones that got missed are exactly the ones nobody notices until a
+   reader is looking at white text on white.
+
+   The light theme is not this one lightened. Inverting a film of light over black gives a film of
+   black over white, which reads as grey mud — so light gets its own decisions: white cards over a
+   softly tinted ground, and darker green, red, amber and cyan, because the dark theme's versions
+   are chosen to glow on black and vanish on white. */
 :root{
   --bg:#0b0d15; --glass:rgba(242,244,250,.05); --glass-soft:rgba(242,244,250,.032);
   --edge:inset 0 1px 0 rgba(242,244,250,.09), 0 0 0 1px rgba(242,244,250,.055);
@@ -26,6 +36,72 @@
   --acc-edge:inset 0 1px 0 rgba(110,231,255,.3), 0 0 0 1px rgba(110,231,255,.34), 0 0 22px rgba(110,231,255,.16);
   --text:#f2f4fa; --dim:#a4aabd; --faint:#8b91a4; --rad:22px;
   --mono:"JetBrains Mono",ui-monospace,"SF Mono","Roboto Mono",monospace;
+
+  --nav-bg:rgba(11,13,21,.92); --head-bg:rgba(11,13,21,.7);
+  --hair:rgba(242,244,250,.06);
+  --btn-text:#c8cddb;
+  --sheet-bg:#12141d;
+  --sheet-shadow:0 -20px 46px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,244,250,.09);
+  --scrim:rgba(5,6,10,.62);
+  --grab:rgba(242,244,250,.18);
+  --blob:rgba(110,231,255,.22);
+  /* Muted rather than pure red and green: these sit beside the figure they describe and must not
+     outshout it, and a screen of twenty-two rows of saturated colour is unreadable. */
+  --up:#4ade80; --down:#f87171;
+  /* Amber rather than red: the figure is published and real, it is just the state's average and
+     not what the counter quotes. Red would claim it is wrong. */
+  --warn:#ffd166; --warn-wash:rgba(255,209,102,.12); --warn-edge:rgba(255,209,102,.3);
+}
+
+/* Читается как отдельная тема, а не как осветлённая тёмная. Карточки — белые поверхности на слегка
+   подкрашенном фоне: так восемь карточек по-прежнему складываются в одну плоскость, а чёрная плёнка
+   по белому дала бы восемь серых пятен.
+
+   Цвета акцента, роста, падения и предупреждения здесь темнее: те подобраны светиться на чёрном и
+   на белом исчезают. Каждый проверен на контраст к фону — не меньше 4.5:1, иначе цифру курса
+   придётся угадывать. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --glass:rgba(255,255,255,.92); --glass-soft:rgba(255,255,255,.62);
+    --edge:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.075);
+    --edge-lit:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.09), 0 20px 46px rgba(20,26,45,.13);
+    --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
+    --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
+    --text:#0e1220; --dim:#4d5468; --faint:#656b7d;
+
+    --nav-bg:rgba(244,246,251,.92); --head-bg:rgba(244,246,251,.72);
+    --hair:rgba(14,18,32,.09);
+    --btn-text:#3c4356;
+    --sheet-bg:#ffffff;
+    --sheet-shadow:0 -20px 46px rgba(20,26,45,.18), inset 0 1px 0 rgba(255,255,255,1);
+    --scrim:rgba(20,26,45,.35);
+    --grab:rgba(14,18,32,.18);
+    --blob:rgba(14,116,144,.12);
+    --up:#0f7a36; --down:#c8342f;
+    --warn:#8a5a00; --warn-wash:rgba(138,90,0,.1); --warn-edge:rgba(138,90,0,.28);
+  }
+}
+
+/* Выбранное вручную перекрывает и систему, и Telegram — в обе стороны. Поэтому светлая тема описана
+   дважды: один раз для тех, у кого так стоит в системе, и один раз для тех, кто нажал кнопку. */
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --glass:rgba(255,255,255,.92); --glass-soft:rgba(255,255,255,.62);
+  --edge:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.075);
+  --edge-lit:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.09), 0 20px 46px rgba(20,26,45,.13);
+  --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
+  --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
+  --text:#0e1220; --dim:#4d5468; --faint:#656b7d;
+
+  --nav-bg:rgba(244,246,251,.92); --head-bg:rgba(244,246,251,.72);
+  --hair:rgba(14,18,32,.09);
+  --btn-text:#3c4356;
+  --sheet-bg:#ffffff;
+  --sheet-shadow:0 -20px 46px rgba(20,26,45,.18), inset 0 1px 0 rgba(255,255,255,1);
+  --scrim:rgba(20,26,45,.35);
+  --grab:rgba(14,18,32,.18);
+  --blob:rgba(14,116,144,.12);
+  --up:#0f7a36; --down:#c8342f;
+  --warn:#8a5a00; --warn-wash:rgba(138,90,0,.1); --warn-edge:rgba(138,90,0,.28);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{overscroll-behavior:none}
@@ -72,8 +148,8 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .pill[disabled]{opacity:.55}
 input.n{font-size:19px}
 nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(11,13,21,.92);
-  backdrop-filter:blur(16px);box-shadow:0 -1px 0 rgba(242,244,250,.06)}
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--nav-bg);
+  backdrop-filter:blur(16px);box-shadow:0 -1px 0 var(--hair)}
 nav button{border:0;background:none;font:inherit;font-size:11.5px;color:var(--faint);padding:8px 0 6px;
   display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:52px}
 nav button.on{color:var(--acc)}
@@ -98,15 +174,11 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .apart span{display:block;margin-top:5px;font-size:13px;line-height:1.5;color:var(--dim)}
 .mv{width:7px;height:7px;margin-right:4px;fill:currentColor;display:inline-block;
   vertical-align:middle;position:relative;top:-1px}
-/* Muted rather than pure red and green: these sit beside the figure they describe and must not
-   outshout it, and a screen of twenty-two rows of saturated colour is unreadable. */
-.mv.up{color:#4ade80}
-.mv.down{color:#f87171}
-.stale{font-size:12.5px;color:#ffd166;background:var(--glass-soft);box-shadow:var(--edge);border-radius:14px;padding:9px 12px;margin-bottom:14px}
-/* Amber rather than red: the figure is published and real, it is just the state's average and
-   not what the counter quotes. Red would claim it is wrong. */
+.mv.up{color:var(--up)}
+.mv.down{color:var(--down)}
+.stale{font-size:12.5px;color:var(--warn);background:var(--glass-soft);box-shadow:var(--edge);border-radius:14px;padding:9px 12px;margin-bottom:14px}
 .nbtbadge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;
-  color:#ffd166;background:rgba(255,209,102,.12);box-shadow:0 0 0 1px rgba(255,209,102,.3)}
+  color:var(--warn);background:var(--warn-wash);box-shadow:0 0 0 1px var(--warn-edge)}
 /* A marked bank keeps its place in the list rather than jumping to the top. On a list of eight the
    reorder costs more than it saves: the reader loses the position they had just learned. */
 .fav{display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--acc);
@@ -133,15 +205,15 @@ nav button.on span.cap{background:var(--acc-wash);box-shadow:var(--acc-edge)}
 /* The sheet answers "what exactly does this bank offer" without leaving the list behind — the page
    stays visible and dimmed underneath, so closing it returns the reader exactly where they were
    rather than to a screen they have to re-orient in. */
-.scrim{position:fixed;inset:0;background:rgba(5,6,10,.62);backdrop-filter:blur(2px);z-index:40;
+.scrim{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(2px);z-index:40;
   animation:fade .2s ease both}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:#12141d;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--sheet-bg);
   border-radius:26px 26px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));
-  box-shadow:0 -20px 46px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,244,250,.09);
+  box-shadow:var(--sheet-shadow);
   max-height:88vh;overflow-y:auto;animation:up .26s cubic-bezier(.2,.8,.2,1) both}
-.grab{width:36px;height:4px;border-radius:999px;background:rgba(242,244,250,.18);margin:0 auto 14px}
+.grab{width:36px;height:4px;border-radius:999px;background:var(--grab);margin:0 auto 14px}
 .srow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;padding:11px 0;
-  box-shadow:inset 0 -1px 0 rgba(242,244,250,.05)}
+  box-shadow:inset 0 -1px 0 var(--hair)}
 .srow .v{min-width:62px;text-align:right;font-size:15px}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -151,7 +223,7 @@ nav button.on span.cap{background:var(--acc-wash);box-shadow:var(--acc-edge)}
 /* The mock keeps one soft accent glow behind the top-left corner — the single piece of colour on
    the ground, sized and blurred so it reads as depth rather than as decoration. */
 .blob{position:fixed;width:360px;height:360px;left:-120px;top:-110px;border-radius:50%;
-  background:radial-gradient(circle, rgba(110,231,255,.22), transparent 70%);filter:blur(80px);
+  background:radial-gradient(circle, var(--blob), transparent 70%);filter:blur(80px);
   pointer-events:none;z-index:-1}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 #app{animation:rise .3s ease backwards}
@@ -161,16 +233,19 @@ header{height:56px;display:flex;align-items:center;gap:8px;padding:0 20px;positi
      screen. The blur is what makes it work: at 20px whatever scrolls underneath dissolves into
      colour, so the title stays readable over a column of moving figures instead of colliding with
      them the way plain transparency would. */
-  background:rgba(11,13,21,.7);backdrop-filter:blur(20px) saturate(140%);
+  background:var(--head-bg);backdrop-filter:blur(20px) saturate(140%);
   -webkit-backdrop-filter:blur(20px) saturate(140%);
-  z-index:10;margin:0 -16px;box-shadow:0 1px 0 rgba(242,244,250,.07)}
+  z-index:10;margin:0 -16px;box-shadow:0 1px 0 var(--hair)}
 header .ttl{flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.03em}
 /* Telegram names the app above this, so the bar is shorter here — but it still says which screen
    you are on, which is the one thing Telegram's own bar does not. */
 body.tg header{height:48px}
 body.tg header .ttl{font-size:18px}
+#theme{width:34px;padding:0;display:flex;align-items:center;justify-content:center}
+#theme svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
 header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:13px;
-  color:#c8cddb;background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+  color:var(--btn-text);background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
 /* Square, because it holds a mark rather than a word, and in the accent colour: this is the one
    control here that asks something of the reader rather than answering them, and it has to be
    findable without being loud. */
@@ -190,6 +265,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <div class="blob"></div>
 <header><div class="ttl" id="ttl"></div>
 <button id="shareapp" data-shareapp="1" aria-label="Порекомендовать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M12 4 8.2 7.8M12 4l3.8 3.8"/><path d="M5 13.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-5.5"/></svg></button>
+<button id="theme" title="Тема"></button>
 <button id="lang" title="Язык"></button></header>
 <main id="app"><div class="sub" style="margin-top:40px">Загружаю курсы…</div></main>
 
@@ -198,7 +274,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
 <script>
 const LANGS = ['ru','tj','uz'];
 const D = {
-  ru:{writeUs:'Написать нам',writeName:'Как вас зовут',writeNamePh:'Необязательно',writeText:'Что скажете',writeTextPh:'Ошибка в курсе, пропущенный банк, что стоит добавить',writeSend:'Отправить',writeSending:'Отправляем…',writeCancel:'Отмена',writeDone:'Запрос принят',writeDoneNote:'Спасибо за обратную связь.',writeEmpty:'Напишите пару слов — без текста отправлять нечего.',writeFail:'Не отправилось. Проверьте связь и попробуйте ещё раз.',shareApp:'Порекомендовать',shareAppText:'Курсы валют 22 банков Таджикистана в одном месте — видно, где выгоднее продать доллар или рубль. Обновляются каждые 3 часа, бесплатно.',onlineTitle:'Можно не идти в банк',limitsCoverage:'О своих картах рассказывают {n} {bank} из {all}. Остальные не публикуют ни условий, ни лимитов — спрашивайте в своём банке.',perWeek:'В неделю',atCounter:'В кассе и у агентов',limitsEmpty:'Пока нечего показать',limitsWhy:'Банки Таджикистана не публикуют лимиты снятия — ни на сайтах, ни в тарифах, которые можно прочитать. Раньше здесь стояли цифры, которых не называл ни один банк; мы их убрали. Уточняйте лимит в своём банке.',updatedAll:'Курсы обновлены',gainFor:'за',gainGet:'получите от',gainTo:'до',gainDiff:'разница',somoni:'сомони',sortName:'А-Я',sortSell:'Продать',sortBuy:'Купить',notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'Напишите нам прямо здесь — я читаю всё: ошибка в курсе, пропущенный банк, что стоит добавить. Или письмом: shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Карты',
+  ru:{writeUs:'Написать нам',themeTitle:'Оформление',themeAuto:'Как в системе',themeLight:'Светлое',themeDark:'Тёмное',writeName:'Как вас зовут',writeNamePh:'Необязательно',writeText:'Что скажете',writeTextPh:'Ошибка в курсе, пропущенный банк, что стоит добавить',writeSend:'Отправить',writeSending:'Отправляем…',writeCancel:'Отмена',writeDone:'Запрос принят',writeDoneNote:'Спасибо за обратную связь.',writeEmpty:'Напишите пару слов — без текста отправлять нечего.',writeFail:'Не отправилось. Проверьте связь и попробуйте ещё раз.',shareApp:'Порекомендовать',shareAppText:'Курсы валют 22 банков Таджикистана в одном месте — видно, где выгоднее продать доллар или рубль. Обновляются каждые 3 часа, бесплатно.',onlineTitle:'Можно не идти в банк',limitsCoverage:'О своих картах рассказывают {n} {bank} из {all}. Остальные не публикуют ни условий, ни лимитов — спрашивайте в своём банке.',perWeek:'В неделю',atCounter:'В кассе и у агентов',limitsEmpty:'Пока нечего показать',limitsWhy:'Банки Таджикистана не публикуют лимиты снятия — ни на сайтах, ни в тарифах, которые можно прочитать. Раньше здесь стояли цифры, которых не называл ни один банк; мы их убрали. Уточняйте лимит в своём банке.',updatedAll:'Курсы обновлены',gainFor:'за',gainGet:'получите от',gainTo:'до',gainDiff:'разница',somoni:'сомони',sortName:'А-Я',sortSell:'Продать',sortBuy:'Купить',notFound:'Ничего не найдено',notFoundHint:'Проверьте написание или посмотрите весь список.',showAll:'Показать все',loadFailed:'Не удалось загрузить курсы',aboutTitle:'О проекте',aboutWhatT:'Что это',aboutWhatB:'Независимый справочник курсов банков Таджикистана. Мы не банк и не обменный пункт: денег не меняем и комиссию с обмена не получаем.',aboutSrcT:'Откуда курсы',aboutSrcB:'С сайтов самих банков. Где банк курс не публикует — из таблицы Национального банка, и такой курс помечен. Обновление каждые 3 часа.',aboutRiskT:'Ответственность',aboutRiskB:'Курсы справочные и не являются офертой. Банк может изменить курс в любой момент, а в кассе он может отличаться. Перед крупным обменом уточните в банке.',aboutDataT:'Данные',aboutDataB:'Регистрации нет, имена и телефоны не собираем, сторонних счётчиков нет. Избранное и язык хранятся только на вашем телефоне.',aboutContactT:'Связь',aboutContactB:'Напишите нам прямо здесь — я читаю всё: ошибка в курсе, пропущенный банк, что стоит добавить. Или письмом: shoxruxmahkamov05@gmail.com',share:'Поделиться',justNow:'только что',minAgo:'мин назад',hAgo:'ч назад',dAgo:'дн назад',offline:'Нет связи',updatedAgo:'Курсы обновлены',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Переводы',cash:'В кассе',card:'Картой',noncash:'Безналичными',legal:'Юрлицам',loan:'Погашение',nbt:'Курс НБТ'},ownOnly:'Свой курс',official:'официальный курс',officialNote:'Банк не публикует свой курс — показан официальный курс НБТ. В кассе он может отличаться.',navHome:'Курс',navRates:'Банки',navConv:'Счёт',navLimits:'Карты',
     titleHome:'Курс сегодня',titleRates:'Банки',titleConv:'Конвертер',titleLimits:'Карты банков',
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все {all}',search:'Найти банк',
@@ -210,7 +286,7 @@ const D = {
     ownAtm:'Свои банкоматы',otherAtm:'Другие банкоматы',abroad:'За рубежом',
     limitsNote:'Показано только то, что банк опубликовал сам. Перед крупным снятием уточните в банке.',
     source:'Курсы с сайтов самих банков. Обновляются каждые 3 часа.'},
-  tj:{writeUs:'Ба мо нависед',writeName:'Номи шумо',writeNamePh:'Ихтиёрӣ',writeText:'Чӣ мегӯед',writeTextPh:'Хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим',writeSend:'Фиристодан',writeSending:'Мефиристем…',writeCancel:'Бекор кардан',writeDone:'Дархост қабул шуд',writeDoneNote:'Ташаккур барои назаратон.',writeEmpty:'Ду калима нависед — бе матн фиристодан чизе нест.',writeFail:'Фиристода нашуд. Алоқаро санҷед ва боз кӯшиш кунед.',shareApp:'Тавсия додан',shareAppText:'Қурби асъори 22 бонки Тоҷикистон дар як ҷо — маълум аст, ки дар кадом бонк фурӯхтани доллар ё рубл фоидаовартар аст. Ҳар 3 соат нав мешавад, ройгон.',onlineTitle:'Ба бонк рафтан лозим нест',limitsCoverage:'Дар бораи кортҳои худ {n} бонк аз {all} нақл мекунад. Дигарон на шартҳо, на лимитҳоро нашр намекунанд — дар бонки худ пурсед.',perWeek:'Дар як ҳафта',atCounter:'Дар касса ва агентҳо',limitsEmpty:'Ҳоло чизе нест',limitsWhy:'Бонкҳои Тоҷикистон лимити гирифтани пулро нашр намекунанд — на дар сомонаҳо, на дар тарофаҳо. Пештар дар ин ҷо рақамҳое буданд, ки ҳеҷ бонк нагуфтааст; мо онҳоро тоза кардем. Лимитро дар бонки худ пурсед.',updatedAll:'Қурбҳо нав шуданд',gainFor:'барои',gainGet:'мегиред аз',gainTo:'то',gainDiff:'фарқ',somoni:'сомонӣ',sortName:'А-Я',sortSell:'Фурӯхтан',sortBuy:'Харидан',notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'Ҳамин ҷо ба мо нависед — ман ҳамаашро мехонам: хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим. Ё бо почта: shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Кортҳо',
+  tj:{writeUs:'Ба мо нависед',themeTitle:'Намуд',themeAuto:'Мисли система',themeLight:'Равшан',themeDark:'Торик',writeName:'Номи шумо',writeNamePh:'Ихтиёрӣ',writeText:'Чӣ мегӯед',writeTextPh:'Хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим',writeSend:'Фиристодан',writeSending:'Мефиристем…',writeCancel:'Бекор кардан',writeDone:'Дархост қабул шуд',writeDoneNote:'Ташаккур барои назаратон.',writeEmpty:'Ду калима нависед — бе матн фиристодан чизе нест.',writeFail:'Фиристода нашуд. Алоқаро санҷед ва боз кӯшиш кунед.',shareApp:'Тавсия додан',shareAppText:'Қурби асъори 22 бонки Тоҷикистон дар як ҷо — маълум аст, ки дар кадом бонк фурӯхтани доллар ё рубл фоидаовартар аст. Ҳар 3 соат нав мешавад, ройгон.',onlineTitle:'Ба бонк рафтан лозим нест',limitsCoverage:'Дар бораи кортҳои худ {n} бонк аз {all} нақл мекунад. Дигарон на шартҳо, на лимитҳоро нашр намекунанд — дар бонки худ пурсед.',perWeek:'Дар як ҳафта',atCounter:'Дар касса ва агентҳо',limitsEmpty:'Ҳоло чизе нест',limitsWhy:'Бонкҳои Тоҷикистон лимити гирифтани пулро нашр намекунанд — на дар сомонаҳо, на дар тарофаҳо. Пештар дар ин ҷо рақамҳое буданд, ки ҳеҷ бонк нагуфтааст; мо онҳоро тоза кардем. Лимитро дар бонки худ пурсед.',updatedAll:'Қурбҳо нав шуданд',gainFor:'барои',gainGet:'мегиред аз',gainTo:'то',gainDiff:'фарқ',somoni:'сомонӣ',sortName:'А-Я',sortSell:'Фурӯхтан',sortBuy:'Харидан',notFound:'Чизе ёфт нашуд',notFoundHint:'Навиштро санҷед ё тамоми рӯйхатро бинед.',showAll:'Ҳамаро нишон диҳед',loadFailed:'Қурбҳоро бор кардан нашуд',aboutTitle:'Дар бораи лоиҳа',aboutWhatT:'Ин чист',aboutWhatB:'Маълумотномаи мустақили қурби бонкҳои Тоҷикистон. Мо бонк ё нуқтаи мубодила нестем: пул иваз намекунем ва аз мубодила фоида намегирем.',aboutSrcT:'Қурбҳо аз куҷо',aboutSrcB:'Аз сомонаҳои худи бонкҳо. Агар бонк қурбро нашр накунад — аз ҷадвали Бонки миллӣ, чунин қурб нишона дорад. Ҳар 3 соат нав мешавад.',aboutRiskT:'Масъулият',aboutRiskB:'Қурбҳо маълумотӣ буда, оферта нестанд. Бонк метавонад қурбро дар ҳар лаҳза иваз кунад, дар касса он метавонад фарқ кунад. Пеш аз мубодилаи калон дар бонк аниқ кунед.',aboutDataT:'Маълумот',aboutDataB:'Бақайдгирӣ нест, ном ва телефон ҷамъ намекунем, ҳисобкунакҳои беруна нестанд. Баргузидаҳо ва забон танҳо дар телефони шумо нигоҳ дошта мешаванд.',aboutContactT:'Тамос',aboutContactB:'Ҳамин ҷо ба мо нависед — ман ҳамаашро мехонам: хатогӣ дар қурб, бонки фаромӯшшуда, чӣ илова кардан лозим. Ё бо почта: shoxruxmahkamov05@gmail.com',share:'Фиристодан',justNow:'ҳозир',minAgo:'дақ пеш',hAgo:'соат пеш',dAgo:'рӯз пеш',offline:'Алоқа нест',updatedAgo:'Қурбҳо нав шуданд',typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'Интиқолҳо',cash:'Дар касса',card:'Бо корт',noncash:'Ғайринақдӣ',legal:'Шахсони ҳуқуқӣ',loan:'Пардохти қарз',nbt:'Қурби БМТ'},ownOnly:'Қурби худӣ',official:'қурби расмӣ',officialNote:'Бонк қурби худро нашр намекунад — қурби расмии БМТ нишон дода шудааст. Дар касса метавонад фарқ кунад.',navHome:'Қурб',navRates:'Бонкҳо',navConv:'Ҳисоб',navLimits:'Кортҳо',
     titleHome:'Қурби имрӯз',titleRates:'Бонкҳо',titleConv:'Табдилдиҳанда',titleLimits:'Кортҳои бонкҳо',
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳамаи {all}',search:'Бонкро ёбед',
@@ -222,7 +298,7 @@ const D = {
     ownAtm:'Банкоматҳои худӣ',otherAtm:'Банкоматҳои дигар',abroad:'Дар хориҷа',
     limitsNote:'Танҳо он чизе нишон дода мешавад, ки худи бонк нашр кардааст. Пеш аз гирифтани маблағи калон бо бонк муайян кунед.',
     source:'Қурбҳо аз сомонаҳои худи бонкҳо. Ҳар 3 соат нав мешаванд.'},
-  uz:{writeUs:"Bizga yozing",writeName:"Ismingiz",writeNamePh:"Majburiy emas",writeText:"Nima deysiz",writeTextPh:"Kursdagi xato, tushib qolgan bank, nima qo'shish kerak",writeSend:"Yuborish",writeSending:"Yuborilmoqda…",writeCancel:"Bekor qilish",writeDone:"So'rov qabul qilindi",writeDoneNote:"Fikringiz uchun rahmat.",writeEmpty:"Bir necha so'z yozing — matnsiz yuborishga hech narsa yo'q.",writeFail:"Yuborilmadi. Aloqani tekshirib, yana urinib ko'ring.",shareApp:"Tavsiya qilish",shareAppText:"Tojikiston 22 bankining valyuta kurslari bir joyda — dollar yoki rublni qayerda sotish foydaliroq ekani ko'rinadi. Har 3 soatda yangilanadi, bepul.",onlineTitle:"Bankka borish shart emas",limitsCoverage:"O'z kartalari haqida {all} bankdan {n} tasi ma'lumot beradi. Qolganlari na shartlarni, na limitlarni e'lon qiladi — o'z bankingizda so'rang.",perWeek:"Haftasiga",atCounter:"Kassada va agentlarda",limitsEmpty:"Hozircha hech narsa yo'q",limitsWhy:"Tojikiston banklari yechish limitlarini e'lon qilmaydi — na saytlarda, na tariflarda. Ilgari bu yerda hech bir bank aytmagan raqamlar turardi; biz ularni olib tashladik. Limitni o'z bankingizda so'rang.",updatedAll:"Kurslar yangilandi",gainFor:"uchun",gainGet:"olasiz",gainTo:"dan",gainDiff:"farq",somoni:"somoni",sortName:"A-Z",sortSell:"Sotish",sortBuy:"Xarid",notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"Shu yerda bizga yozing — men hammasini o'qiyman: kursdagi xato, tushib qolgan bank, nima qo'shish kerak. Yoki pochta bilan: shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Kartalar',
+  uz:{writeUs:"Bizga yozing",themeTitle:"Ko'rinish",themeAuto:"Tizimdagidek",themeLight:"Yorug'",themeDark:"Qorong'i",writeName:"Ismingiz",writeNamePh:"Majburiy emas",writeText:"Nima deysiz",writeTextPh:"Kursdagi xato, tushib qolgan bank, nima qo'shish kerak",writeSend:"Yuborish",writeSending:"Yuborilmoqda…",writeCancel:"Bekor qilish",writeDone:"So'rov qabul qilindi",writeDoneNote:"Fikringiz uchun rahmat.",writeEmpty:"Bir necha so'z yozing — matnsiz yuborishga hech narsa yo'q.",writeFail:"Yuborilmadi. Aloqani tekshirib, yana urinib ko'ring.",shareApp:"Tavsiya qilish",shareAppText:"Tojikiston 22 bankining valyuta kurslari bir joyda — dollar yoki rublni qayerda sotish foydaliroq ekani ko'rinadi. Har 3 soatda yangilanadi, bepul.",onlineTitle:"Bankka borish shart emas",limitsCoverage:"O'z kartalari haqida {all} bankdan {n} tasi ma'lumot beradi. Qolganlari na shartlarni, na limitlarni e'lon qiladi — o'z bankingizda so'rang.",perWeek:"Haftasiga",atCounter:"Kassada va agentlarda",limitsEmpty:"Hozircha hech narsa yo'q",limitsWhy:"Tojikiston banklari yechish limitlarini e'lon qilmaydi — na saytlarda, na tariflarda. Ilgari bu yerda hech bir bank aytmagan raqamlar turardi; biz ularni olib tashladik. Limitni o'z bankingizda so'rang.",updatedAll:"Kurslar yangilandi",gainFor:"uchun",gainGet:"olasiz",gainTo:"dan",gainDiff:"farq",somoni:"somoni",sortName:"A-Z",sortSell:"Sotish",sortBuy:"Xarid",notFound:"Hech narsa topilmadi",notFoundHint:"Yozilishini tekshiring yoki butun ro'yxatni ko'ring.",showAll:"Hammasini ko'rsatish",loadFailed:"Kurslarni yuklab bo'lmadi",aboutTitle:"Loyiha haqida",aboutWhatT:"Bu nima",aboutWhatB:"Tojikiston banklari kurslarining mustaqil ma'lumotnomasi. Biz bank yoki ayirboshlash shoxobchasi emasmiz: pul almashtirmaymiz va almashuvdan foiz olmaymiz.",aboutSrcT:"Kurslar qayerdan",aboutSrcB:"Banklarning o'z saytlaridan. Bank kursni e'lon qilmasa — Milliy bank jadvalidan, bunday kurs belgilanadi. Har 3 soatda yangilanadi.",aboutRiskT:"Javobgarlik",aboutRiskB:"Kurslar ma'lumot uchun, oferta emas. Bank kursni istalgan vaqtda o'zgartirishi mumkin, kassada u farq qilishi mumkin. Katta almashuvdan oldin bankda aniqlang.",aboutDataT:"Ma'lumotlar",aboutDataB:"Ro'yxatdan o'tish yo'q, ism va telefon yig'maymiz, tashqi hisoblagichlar yo'q. Saralanganlar va til faqat telefoningizda saqlanadi.",aboutContactT:"Aloqa",aboutContactB:"Shu yerda bizga yozing — men hammasini o'qiyman: kursdagi xato, tushib qolgan bank, nima qo'shish kerak. Yoki pochta bilan: shoxruxmahkamov05@gmail.com",share:'Ulashish',justNow:"hozir",minAgo:"daq oldin",hAgo:"soat oldin",dAgo:"kun oldin",offline:"Aloqa yo'q",updatedAgo:"Kurslar yangilandi",typeOrder:['transfer','cash','card','noncash','legal','loan'],types:{transfer:'O\'tkazmalar',cash:'Kassada',card:'Karta bilan',noncash:'Naqdsiz',legal:'Yuridik shaxslar',loan:'Kredit to\'lovi',nbt:'MBT kursi'},ownOnly:'O\'z kursi',official:'rasmiy kurs',officialNote:'Bank o\'z kursini e\'lon qilmaydi — MBT rasmiy kursi ko\'rsatilgan. Kassada farq qilishi mumkin.',navHome:'Kurs',navRates:'Banklar',navConv:'Hisob',navLimits:'Kartalar',
     titleHome:'Bugungi kurs',titleRates:'Banklar',titleConv:'Konverter',titleLimits:'Bank kartalari',
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barchasi {all}',search:'Bankni toping',
@@ -249,7 +325,7 @@ const money = (n, decimals = 2) => n.toFixed(decimals).replace('.', ',').replace
 const fmt = (v,c) => v == null ? '—' : v.toFixed(c === 'RUB' ? 4 : 2).replace('.', ',');
 const el = h => { const d = document.createElement('div'); d.innerHTML = h; return d; };
 
-const S = { online: navigator.onLine, about:false, write:null, openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
+const S = { online: navigator.onLine, about:false, write:null, theme: localStorage.getItem('bankrate-m-theme') || 'auto', openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
 async function load(){
   const [r,l,ty] = await Promise.all([
@@ -327,12 +403,11 @@ function initTelegram(){
   document.body.classList.add('tg');
   try { tg.ready(); tg.expand(); } catch(e){}
 
-  // The palette here is a deliberate dark one, chosen so eight bank cards read as a single surface.
-  // Repainting it to follow a light Telegram theme would undo that; matching Telegram's own chrome
-  // to the app is the way round that keeps the design intact.
-  try { tg.setHeaderColor('#0b0d15'); tg.setBackgroundColor('#0b0d15'); } catch(e){}
-  // Telegram paints its bottom bar white by default, which reads as a broken strip under a dark app.
-  try { tg.setBottomBarColor('#0b0d15'); } catch(e){}
+  // Раньше здесь стоял чёрный намертво: тема была одна, и красить хром Telegram под неё было
+  // единственным способом не получить чужую полосу над приложением. Теперь цвет берётся из темы, а
+  // сама тема — из настройки Telegram, если человек не выбрал иначе.
+  applyTheme();
+  try { tg.onEvent('themeChanged', () => { if(S.theme === 'auto') applyTheme(); }); } catch(e){}
   // Newer clients only: without it a scroll that starts at the top drags the app closed.
   try { tg.disableVerticalSwipes(); } catch(e){}
   try { tg.BackButton.onClick(() => { S.sheet = null; S.about = false; S.write = null; render(); }); } catch(e){}
@@ -385,6 +460,62 @@ function sendOut(text, url){
 // поэтому уведомление не прилетает само: владелец забирает накопленное командой /otzyvy.
 const FEEDBACK_URL = 'https://bankrate-tj-bot.shohruhmahkamov28.workers.dev/feedback';
 
+// Тема. Тёмная остаётся той, ради которой всё рисовалось, но читать с телефона на солнце по ней
+// тяжело, а кому-то тяжело всегда — поэтому светлая не «упрощённый вариант», а равная.
+//
+// По умолчанию — как у человека уже стоит, и спрашивать не надо. Внутри Telegram это не системная
+// настройка: Telegram держит свою, и она может расходиться с телефоном, поэтому его мнение
+// спрашивается первым. Нажатие на кнопку перекрывает и то и другое навсегда — до следующего
+// нажатия.
+const THEME_BG = { dark:'#0b0d15', light:'#f4f6fb' };
+
+function systemTheme(){
+  const tg = TG();
+  if(tg && tg.colorScheme) return tg.colorScheme === 'light' ? 'light' : 'dark';
+  if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+  return 'dark';
+}
+
+const activeTheme = () => (S.theme === 'auto' ? systemTheme() : S.theme);
+
+const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2.4v2.1M12 19.5v2.1M4.6 4.6l1.5 1.5M17.9 17.9l1.5 1.5M2.4 12h2.1M19.5 12h2.1M4.6 19.4l1.5-1.5M17.9 6.1l1.5-1.5"/>';
+const MOON = '<path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/>';
+
+function applyTheme(){
+  const t = activeTheme();
+
+  // Проставляется всегда, даже в «как в системе». Без атрибута решает медиазапрос, а он смотрит на
+  // телефон — внутри Telegram этого мало: там своя настройка, и она бывает другой. Медиазапрос при
+  // этом не лишний: он красит первый кадр до того, как выполнится этот скрипт, иначе на светлом
+  // телефоне приложение открывается вспышкой чёрного.
+  document.documentElement.dataset.theme = t;
+
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', THEME_BG[t]);
+
+  const btn = document.getElementById('theme');
+  if(btn){
+    // Рисуется то, что получится по нажатию, а не то, что сейчас: кнопка — это действие.
+    btn.innerHTML = '<svg viewBox="0 0 24 24">' + (t === 'dark' ? SUN : MOON) + '</svg>';
+    if(T && T.themeTitle) btn.setAttribute('aria-label', T.themeTitle);
+  }
+
+  const tg = TG();
+  if(tg){
+    // Хром Telegram красится под приложение, иначе его полосы сверху и снизу выглядят чужими.
+    try { tg.setHeaderColor(THEME_BG[t]); tg.setBackgroundColor(THEME_BG[t]); } catch(e){}
+    try { tg.setBottomBarColor(THEME_BG[t]); } catch(e){}
+  }
+}
+
+function setTheme(choice){
+  S.theme = choice;
+  localStorage.setItem('bankrate-m-theme', choice);
+  haptic();
+  applyTheme();
+  render();
+}
+
 function writeHtml(){
   if(S.write === 'done') return `
     <div class="apart"><b>${T.writeDone}</b><span>${T.writeDoneNote}</span></div>`;
@@ -418,7 +549,7 @@ async function sendFeedback(){
 
   const text = (textEl.value || '').trim();
   if(!text){
-    msg.style.color = '#ffd166';
+    msg.style.color = 'var(--warn)';
     msg.textContent = T.writeEmpty;
     textEl.focus();
     return;
@@ -441,7 +572,7 @@ async function sendFeedback(){
   } catch(e){
     // Ничего не перерисовываем: написанное остаётся на экране. Иначе «попробуйте ещё раз»
     // означает «наберите заново», а второй раз никто не набирает.
-    msg.style.color = '#f87171';
+    msg.style.color = 'var(--down)';
     msg.textContent = T.writeFail;
     btn.textContent = T.writeSend;
     btn.disabled = false;
@@ -699,7 +830,7 @@ function screenConv(){
       <div style="display:flex;justify-content:flex-end;margin-top:10px">
         <button class="chip" data-dir="1">⇵ ${S.dir === 'buy' ? T.buy : T.sell}</button>
       </div>
-      <div style="height:1px;background:rgba(242,244,250,.06);margin:14px 0"></div>
+      <div style="height:1px;background:var(--hair);margin:14px 0"></div>
       <div style="display:flex;align-items:center;gap:10px">
         <div style="flex:1;min-width:0">
           <div class="lbl" style="color:var(--acc)">${T.iGet}</div>
@@ -816,6 +947,11 @@ function aboutHtml(){
     ${part(T.aboutSrcT, T.aboutSrcB)}
     ${part(T.aboutRiskT, T.aboutRiskB)}
     ${part(T.aboutDataT, T.aboutDataB)}
+    <div class="apart"><b>${T.themeTitle}</b></div>
+    <div class="chips" style="margin-top:8px">${
+      [['auto',T.themeAuto],['light',T.themeLight],['dark',T.themeDark]]
+        .map(([k,l]) => `<button class="chip ${S.theme===k?'on':''}" data-settheme="${k}">${l}</button>`).join('')
+    }</div>
     ${part(T.aboutContactT, T.aboutContactB)}
     ${writeHtml()}
   </div>`;
@@ -834,7 +970,7 @@ function sheetHtml(){
     <div class="grab"></div>
     <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.02em">${bankName(r.bank)}</div><button class="favbtn" data-share="${r.bankId}" aria-label="${T.share}">↗</button><button class="favbtn ${S.favs.includes(r.bankId)?'on':''}" data-fav="${r.bankId}" aria-label="${S.favs.includes(r.bankId)?T.unfav:T.fav}">${S.favs.includes(r.bankId)?'★':'☆'}</button></div>
     <div class="lbl" style="margin:4px 0 14px">${T.updated} ${ago(r.updatedAt)}</div>
-    ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:#ffd166;margin:-8px 0 14px">${T.officialNote}</div>` : ''}
+    ${r.sourceLabel.startsWith('НБТ') ? `<div class="lbl" style="color:var(--warn);margin:-8px 0 14px">${T.officialNote}</div>` : ''}
 
     ${(() => {
       const byCur = S.typed[r.bank.slug] || {};
@@ -942,9 +1078,10 @@ function render(){
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort],[data-openbank],[data-shareapp],[data-write],[data-send],[data-writecancel]');
+  const t = e.target.closest('[data-tab],[data-cur],[data-bank],[data-from],[data-cmp],[data-close],[data-use],[data-key],[data-bank2],[data-dir],[data-swapcur],[data-fav],[data-own],[data-stype],[data-share],[data-about],[data-clearq],[data-sort],[data-openbank],[data-shareapp],[data-write],[data-send],[data-writecancel],[data-settheme]');
   if(!t) return;
   const tabBefore = S.tab;
+  if(t.dataset.settheme){ setTheme(t.dataset.settheme); return; }
   if(t.dataset.send){ sendFeedback(); return; }
   if(t.dataset.write){ S.write = 'form'; render(); setTimeout(() => { const f = document.getElementById('wtext'); if(f) f.focus(); }, 60); return; }
   if(t.dataset.writecancel){ S.write = null; render(); return; }
@@ -1009,6 +1146,21 @@ document.addEventListener('input', e => {
   if(e.target.id === 'amt'){ S.amount = e.target.value; const v = e.target.value;
     render(); const f = document.getElementById('amt'); if(f){ f.value = v; f.focus(); } }
 });
+// Переключает между светлым и тёмным, а не по кругу через «как в системе»: третье состояние на
+// кнопке без подписи не читается. Полный выбор — в «О проекте».
+document.getElementById('theme').addEventListener('click', () => {
+  setTheme(activeTheme() === 'dark' ? 'light' : 'dark');
+});
+
+// Пока выбор не сделан, приложение следует за тем, что человек меняет снаружи — и днём, и когда
+// телефон сам переключается вечером.
+if(window.matchMedia){
+  try {
+    window.matchMedia('(prefers-color-scheme: light)')
+      .addEventListener('change', () => { if(S.theme === 'auto') applyTheme(); });
+  } catch(e){}
+}
+
 document.getElementById('lang').addEventListener('click', () => {
   S.lang = LANGS[(LANGS.indexOf(S.lang) + 1) % LANGS.length];
   localStorage.setItem('bankrate-m-lang', S.lang);
@@ -1033,6 +1185,10 @@ window.addEventListener('offline', () => { S.online = false; render(); });
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
+
+// Вне Telegram сюда никто не звал: initTelegram выполняется только внутри него. Медиазапрос красит
+// первый кадр и без этого, но атрибут, цвет строки состояния и значок на кнопке ставятся здесь.
+applyTheme();
 
 load().catch(() => {
   document.getElementById('app').innerHTML = `<div class="card" style="margin-top:40px">${T.loadFailed}</div>`;

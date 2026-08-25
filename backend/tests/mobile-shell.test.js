@@ -239,3 +239,130 @@ test("the only place the app talks to is the one that keeps feedback", () => {
   assert.deepEqual(external, [], "адрес зашит прямо в вызов, мимо константы");
   assert.match(script, /const FEEDBACK_URL = 'https:\/\/[^']+\/feedback'/, "адрес обработчика потерялся");
 });
+
+// Две темы. Тёмная — та, ради которой всё рисовалось; светлая нужна тем, кому с тёмной неудобно, и
+// потому она равная, а не осветлённая копия.
+//
+// Светлая тема ломается тише всех: она выглядит правдоподобно и при этом не читается. Поэтому здесь
+// не «есть ли светлый вариант», а считается контраст — то единственное, что отличает тему от набора
+// приятных цветов.
+
+function paletteBlock(selector) {
+  const at = HTML.indexOf(selector);
+  assert.ok(at !== -1, "нет блока палитры: " + selector);
+  const open = HTML.indexOf("{", at);
+  const close = HTML.indexOf("}", open);
+  return HTML.slice(open + 1, close);
+}
+
+function tokens(block) {
+  const found = {};
+  for (const m of block.matchAll(/--([a-z-]+)\s*:\s*([^;]+);/g)) {
+    found[m[1]] = m[2].trim();
+  }
+  return found;
+}
+
+// Плоские цвета — те, у которых можно спросить контраст. Тени и градиенты держат по несколько
+// цветов сразу и меряются глазом, а не числом.
+const FLAT = ["text", "dim", "faint", "acc", "up", "down", "warn", "btn-text"];
+
+function luminance(colour) {
+  let rgb;
+  if (colour.startsWith("#")) {
+    let h = colour.slice(1);
+    if (h.length === 3) {
+      h = h.split("").map((c) => c + c).join("");
+    }
+    rgb = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  } else {
+    rgb = colour.match(/[\d.]+/g).slice(0, 3).map(Number);
+  }
+  const lin = rgb.map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+}
+
+function contrast(a, b) {
+  const x = luminance(a);
+  const y = luminance(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+test("both themes name the same things", () => {
+  // Токен, забытый в одной теме, не ломается заметно: он молча наследует значение другой, и текст
+  // оказывается почти того же цвета, что фон под ним.
+  const dark = tokens(paletteBlock(":root{"));
+  const light = tokens(paletteBlock(':root[data-theme="light"]{'));
+
+  const missing = Object.keys(dark).filter((k) => !(k in light) && k !== "rad" && k !== "mono");
+  assert.deepEqual(missing, [], "в светлой теме не заданы: " + missing.join(", "));
+});
+
+test("every colour in the light theme is readable on its own ground", () => {
+  const light = tokens(paletteBlock(':root[data-theme="light"]{'));
+  const bg = light.bg;
+
+  for (const name of FLAT) {
+    assert.ok(light[name], "нет цвета --" + name);
+    const r = contrast(light[name], bg);
+    assert.ok(r >= 4.5, "--" + name + " на светлом фоне даёт " + r.toFixed(2) + ":1, нужно 4.5");
+  }
+});
+
+test("the dark theme did not drift while the light one was added", () => {
+  // Тёмная тема существовала до токенов, и вынос цветов в переменные не должен был сдвинуть ни один.
+  const dark = tokens(paletteBlock(":root{"));
+  assert.equal(dark.bg, "#0b0d15");
+  assert.equal(dark.text, "#f2f4fa");
+  assert.equal(dark.acc, "#6ee7ff");
+
+  for (const name of FLAT) {
+    const r = contrast(dark[name], dark.bg);
+    assert.ok(r >= 4.5, "--" + name + " на тёмном фоне даёт " + r.toFixed(2) + ":1");
+  }
+});
+
+test("no colour is written into the rule that uses it", () => {
+  // Пока цвет живёт в правиле, вторая тема невозможна: сменить фон значит найти их все, а те, что
+  // не нашлись, обнаруживает уже читатель — по белому тексту на белом.
+  const styles = HTML.slice(HTML.indexOf("<style>"), HTML.indexOf("</style>"));
+  const rules = styles.slice(styles.indexOf("*{margin"));
+  const stray = rules.match(/#[0-9a-fA-F]{3,8}\b|rgba?\(\s*\d/g) || [];
+  assert.deepEqual(stray, [], "цвет зашит мимо палитры: " + stray.join(", "));
+});
+
+test("the first frame follows the system, before any script runs", () => {
+  // Скрипт ставит атрибут, но выполняется он после разбора страницы. Без медиазапроса приложение на
+  // светлом телефоне открывается вспышкой чёрного.
+  assert.match(HTML, /@media \(prefers-color-scheme: light\)/, "первый кадр всегда тёмный");
+  assert.match(HTML, /:root:not\(\[data-theme="dark"\]\)/, "выбранная тёмная тема проиграет системе");
+});
+
+test("a choice outranks both the system and Telegram", () => {
+  assert.match(HTML, /:root\[data-theme="light"\]/, "светлую нельзя выбрать вручную");
+  const script = inlineScript();
+  assert.match(script, /localStorage\.setItem\('bankrate-m-theme'/, "выбор не переживёт закрытие");
+  assert.match(script, /localStorage\.getItem\('bankrate-m-theme'\) \|\| 'auto'/, "по умолчанию не «как в системе»");
+});
+
+test("inside Telegram the theme follows Telegram, not the phone", () => {
+  // Telegram держит свою настройку темы, и она может расходиться с системной. Медиазапрос про неё
+  // не знает — спрашивать надо клиента.
+  const script = inlineScript();
+  const fn = script.slice(script.indexOf("function systemTheme()"));
+  const body = fn.slice(0, fn.indexOf("\n}"));
+  assert.ok(
+    body.indexOf("colorScheme") < body.indexOf("matchMedia"),
+    "телефон спрашивают раньше Telegram"
+  );
+});
+
+test("Telegram's own chrome is painted to match whichever theme is on", () => {
+  // Раньше чёрный стоял намертво: полоса Telegram над светлым приложением читается как поломка.
+  const script = inlineScript();
+  assert.doesNotMatch(script, /setHeaderColor\('#/, "цвет полосы Telegram зашит");
+  assert.match(script, /setHeaderColor\(THEME_BG\[t\]\)/, "полоса Telegram не следует за темой");
+});
