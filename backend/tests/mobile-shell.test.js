@@ -372,3 +372,73 @@ test("Telegram's own chrome is painted to match whichever theme is on", () => {
   assert.doesNotMatch(script, /setHeaderColor\('#/, "цвет полосы Telegram зашит");
   assert.match(script, /setHeaderColor\(THEME_BG\[t\]\)/, "полоса Telegram не следует за темой");
 });
+
+// Свежесть курсов. Это продукт про деньги: человек читает цифру и идёт с ней в банк. Курс,
+// отставший на несколько часов, ещё примерно верен; недельный курс — это уже не курс, и сказать об
+// этом надо словами, а не оттенком.
+
+// bannerHtml берётся из исходника и выполняется с подставленным окружением: ради одной функции
+// поднимать браузер не нужно, а проверять её регулярным выражением — значит проверять текст, а не
+// поведение.
+function banner(hoursOld, { online = true, lang = "ru" } = {}) {
+  const script = inlineScript();
+  const from = script.indexOf("const STALE_MS");
+  assert.ok(from !== -1, "порогов свежести нет");
+  const to = script.indexOf("\n}", script.indexOf("function bannerHtml"));
+  assert.ok(to !== -1, "не видно, где заканчивается bannerHtml");
+
+  const source = script.slice(from, to + 2);
+  const updatedAt = new Date(Date.now() - hoursOld * 3600 * 1000).toISOString();
+
+  const T = {
+    ru: { updatedAgo: "Курсы обновлены", offline: "Нет связи", staleHard: "Обновление остановилось" },
+    tj: { updatedAgo: "Қурбҳо нав шуданд", offline: "Алоқа нест", staleHard: "Навсозӣ қатъ шудааст" },
+    uz: { updatedAgo: "Kurslar yangilandi", offline: "Aloqa yo'q", staleHard: "Yangilanish to'xtagan" }
+  }[lang];
+
+  const build = new Function(
+    "S", "T", "ago",
+    source + "\nreturn bannerHtml();"
+  );
+  return build({ rates: [{ updatedAt }], online }, T, () => "давно");
+}
+
+test("fresh rates say nothing at all", () => {
+  // Баннер, который висит всегда, перестают читать — и он не сработает тогда, когда понадобится.
+  assert.equal(banner(1), "");
+});
+
+test("a few hours late is mentioned, quietly", () => {
+  const html = banner(6);
+  assert.match(html, /Курсы обновлены/, "о задержке не сказано");
+  assert.doesNotMatch(html, /hard/, "один пропущенный цикл поднял тревогу");
+  assert.doesNotMatch(html, /Обновление остановилось/, "один пропущенный цикл объявлен поломкой");
+});
+
+test("a day or more says plainly not to rely on it", () => {
+  // Восемь пропущенных циклов подряд. Тот, кто собрался менять деньги по недельному курсу, должен
+  // узнать об этом словами, а не догадаться по оттенку.
+  const html = banner(30);
+  assert.match(html, /hard/, "недельный курс подан тем же тоном, что часовой");
+  assert.match(html, /Обновление остановилось/, "не сказано, что делать");
+});
+
+test("the warning arrives in the reader's own language", () => {
+  for (const [lang, needle] of [["tj", /Навсозӣ/], ["uz", /Yangilanish/]]) {
+    assert.match(banner(30, { lang }), needle, "не переведено: " + lang);
+  }
+});
+
+test("offline with old figures warns about the figures, not the connection alone", () => {
+  // Отсутствие связи объясняет, почему цифры старые, но не делает их годными. Кэш недельной
+  // давности выглядит настоящим и ничем себя не выдаёт.
+  const html = banner(30, { online: false });
+  assert.match(html, /Нет связи/);
+  assert.match(html, /Обновление остановилось/, "старый кэш подан как просто отсутствие связи");
+});
+
+test("offline with fresh figures does not cry stale", () => {
+  const html = banner(1, { online: false });
+  assert.match(html, /Нет связи/);
+  assert.doesNotMatch(html, /Обновление остановилось/);
+});
