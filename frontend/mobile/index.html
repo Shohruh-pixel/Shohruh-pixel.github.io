@@ -35,6 +35,10 @@
   --acc:#6ee7ff; --acc-wash:rgba(110,231,255,.1);
   --acc-edge:inset 0 1px 0 rgba(110,231,255,.3), 0 0 0 1px rgba(110,231,255,.34), 0 0 22px rgba(110,231,255,.16);
   --text:#f2f4fa; --dim:#a4aabd; --faint:#8b91a4; --rad:22px;
+  /* Отдельно от --glass-soft: на то, что нажимают, нужна заливка плотнее панели под ним, а
+     пассивной панели она не нужна вовсе. Одним значением эти два случая не покрыть. */
+  --control:rgba(242,244,250,.085);
+  --control-edge:inset 0 1px 0 rgba(242,244,250,.13), 0 0 0 1px rgba(242,244,250,.1);
   --mono:"JetBrains Mono",ui-monospace,"SF Mono","Roboto Mono",monospace;
 
   --nav-bg:rgba(11,13,21,.92); --head-bg:rgba(11,13,21,.7);
@@ -68,6 +72,8 @@
     --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
     --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
     --text:#0e1220; --dim:#4d5468; --faint:#656b7d;
+    --control:rgba(14,18,32,.055);
+    --control-edge:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 1px rgba(14,18,32,.115);
 
     --nav-bg:rgba(244,246,251,.92); --head-bg:rgba(244,246,251,.72);
     --hair:rgba(14,18,32,.09);
@@ -91,6 +97,8 @@
   --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
   --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
   --text:#0e1220; --dim:#4d5468; --faint:#656b7d;
+    --control:rgba(14,18,32,.055);
+    --control-edge:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 1px rgba(14,18,32,.115);
 
   --nav-bg:rgba(244,246,251,.92); --head-bg:rgba(244,246,251,.72);
   --hair:rgba(14,18,32,.09);
@@ -127,12 +135,12 @@ h1{font-size:26px;font-weight:600;margin:18px 0 4px}
 .mid{font-size:16px;margin-top:5px}
 .pill{height:50px;border-radius:999px;border:0;font:inherit;font-size:15px;display:flex;
   align-items:center;justify-content:center;gap:8px;cursor:pointer;
-  color:var(--dim);background:var(--glass-soft);box-shadow:var(--edge)}
+  color:var(--dim);background:var(--control);box-shadow:var(--control-edge)}
 .pill.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;height:38px;padding:0 16px;border-radius:999px;border:0;font:inherit;font-size:13.5px;
-  color:var(--dim);background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+  color:var(--dim);background:var(--control);box-shadow:var(--control-edge);cursor:pointer}
 .chip.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
 .bank{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:14px 16px;
   background:var(--glass);border-radius:var(--rad);box-shadow:var(--edge);margin-bottom:8px;width:100%;
@@ -141,7 +149,7 @@ h1{font-size:26px;font-weight:600;margin:18px 0 4px}
 .bank .v{font-size:15px;text-align:right;min-width:75px}
 .best{color:var(--acc)}
 input,select,textarea{width:100%;height:50px;border-radius:var(--rad);border:0;padding:0 16px;font:inherit;
-  color:var(--text);background:var(--glass-soft);box-shadow:var(--edge);outline:none}
+  color:var(--text);background:var(--control);box-shadow:var(--control-edge);outline:none}
 textarea{height:auto;min-height:104px;padding:14px 16px;line-height:1.45;resize:none}
 input::placeholder,textarea::placeholder{color:var(--faint)}
 /* Пока отправляем, кнопка не должна выглядеть нажимаемой: второе нажатие — второй отзыв. */
@@ -183,7 +191,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
    reorder costs more than it saves: the reader loses the position they had just learned. */
 .fav{display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--acc);
   margin-left:7px;vertical-align:middle}
-.favbtn{width:34px;height:34px;border-radius:999px;border:0;background:var(--glass-soft);
+.favbtn{width:34px;height:34px;border-radius:999px;border:0;background:var(--control);
   box-shadow:var(--edge);color:var(--dim);font-size:15px;cursor:pointer;flex:0 0 auto}
 .favbtn.on{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
 /* The amount is typed on a keypad the page owns rather than the system keyboard. On a phone the
@@ -245,7 +253,7 @@ body.tg header .ttl{font-size:18px}
 #theme svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
 header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inherit;font-size:13px;
-  color:var(--btn-text);background:var(--glass-soft);box-shadow:var(--edge);cursor:pointer}
+  color:var(--btn-text);background:var(--control);box-shadow:var(--control-edge);cursor:pointer}
 /* Square, because it holds a mark rather than a word, and in the accent colour: this is the one
    control here that asks something of the reader rather than answering them, and it has to be
    findable without being loud. */
@@ -253,7 +261,7 @@ header button{height:34px;padding:0 14px;border-radius:999px;border:0;font:inher
   color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
 #shareapp svg{width:17px;height:17px}
 /* Currencies are one segmented control, not loose chips: the three are a single choice. */
-.seg{display:flex;gap:6px;padding:3px;border-radius:999px;background:var(--glass-soft);
+.seg{display:flex;gap:6px;padding:3px;border-radius:999px;background:var(--control);
   box-shadow:var(--edge);margin-bottom:14px}
 .seg button{flex:1;height:38px;border-radius:999px;border:0;font:inherit;font-size:13.5px;
   color:var(--dim);background:none;cursor:pointer}

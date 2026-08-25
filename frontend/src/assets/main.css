@@ -472,8 +472,8 @@ a {
 .mode-button,
 .view-switch-button,
 .language-button {
-  border: 1px solid var(--border);
-  background: var(--film-1);
+  border: 1px solid var(--control-edge);
+  background: var(--control);
   color: var(--text-soft);
   border-radius: 999px;
   padding: 10px 14px;
