@@ -62,9 +62,9 @@
    придётся угадывать. */
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
-    --bg:#f4f6fb; --glass:rgba(255,255,255,.92); --glass-soft:rgba(255,255,255,.62);
-    --edge:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.075);
-    --edge-lit:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.09), 0 20px 46px rgba(20,26,45,.13);
+    --bg:#f4f6fb; --glass:#ffffff; --glass-soft:rgba(14,18,32,.055);
+    --edge:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 1px rgba(14,18,32,.115);
+    --edge-lit:inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 1px rgba(14,18,32,.14), 0 20px 46px rgba(20,26,45,.13);
     --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
     --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
     --text:#0e1220; --dim:#4d5468; --faint:#656b7d;
@@ -85,9 +85,9 @@
 /* Выбранное вручную перекрывает и систему, и Telegram — в обе стороны. Поэтому светлая тема описана
    дважды: один раз для тех, у кого так стоит в системе, и один раз для тех, кто нажал кнопку. */
 :root[data-theme="light"]{
-  --bg:#f4f6fb; --glass:rgba(255,255,255,.92); --glass-soft:rgba(255,255,255,.62);
-  --edge:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.075);
-  --edge-lit:inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(14,18,32,.09), 0 20px 46px rgba(20,26,45,.13);
+  --bg:#f4f6fb; --glass:#ffffff; --glass-soft:rgba(14,18,32,.055);
+  --edge:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 1px rgba(14,18,32,.115);
+  --edge-lit:inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 1px rgba(14,18,32,.14), 0 20px 46px rgba(20,26,45,.13);
   --acc:#0e7490; --acc-wash:rgba(14,116,144,.085);
   --acc-edge:inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(14,116,144,.26), 0 0 18px rgba(14,116,144,.1);
   --text:#0e1220; --dim:#4d5468; --faint:#656b7d;

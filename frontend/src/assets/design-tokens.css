@@ -125,10 +125,11 @@
     --surface: #ffffff;
     --surface-raised: #ffffff;
     --surface-high: #ffffff;
-    --glass: rgba(255, 255, 255, 0.92);
-    --glass-soft: rgba(255, 255, 255, 0.62);
-    --edge: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.075);
-    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.09),
+    --glass: #ffffff;
+    /* Из чернил, а не из света: кнопка цвета подложки — не кнопка. */
+    --glass-soft: rgba(14, 18, 32, 0.055);
+    --edge: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 0 0 1px rgba(14, 18, 32, 0.115);
+    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(14, 18, 32, 0.14),
       0 20px 46px rgba(20, 26, 45, 0.13);
 
     --text: #0e1220;
@@ -150,10 +151,10 @@
     --danger-edge: #f0b7b4;
 
     --edge-line: rgba(14, 18, 32, 0.09);
-    --film-1: rgba(14, 18, 32, 0.035);
-    --film-2: rgba(14, 18, 32, 0.045);
-    --film-3: rgba(14, 18, 32, 0.06);
-    --film-4: rgba(14, 18, 32, 0.08);
+    --film-1: rgba(14, 18, 32, 0.05);
+    --film-2: rgba(14, 18, 32, 0.06);
+    --film-3: rgba(14, 18, 32, 0.08);
+    --film-4: rgba(14, 18, 32, 0.1);
 
     --accent-2: #1b5fd0;
     --accent-line: rgba(14, 116, 144, 0.42);
@@ -199,10 +200,11 @@
     --surface: #ffffff;
     --surface-raised: #ffffff;
     --surface-high: #ffffff;
-    --glass: rgba(255, 255, 255, 0.92);
-    --glass-soft: rgba(255, 255, 255, 0.62);
-    --edge: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.075);
-    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.09),
+    --glass: #ffffff;
+    /* Из чернил, а не из света: кнопка цвета подложки — не кнопка. */
+    --glass-soft: rgba(14, 18, 32, 0.055);
+    --edge: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 0 0 1px rgba(14, 18, 32, 0.115);
+    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(14, 18, 32, 0.14),
       0 20px 46px rgba(20, 26, 45, 0.13);
 
     --text: #0e1220;
@@ -224,10 +226,10 @@
     --danger-edge: #f0b7b4;
 
     --edge-line: rgba(14, 18, 32, 0.09);
-    --film-1: rgba(14, 18, 32, 0.035);
-    --film-2: rgba(14, 18, 32, 0.045);
-    --film-3: rgba(14, 18, 32, 0.06);
-    --film-4: rgba(14, 18, 32, 0.08);
+    --film-1: rgba(14, 18, 32, 0.05);
+    --film-2: rgba(14, 18, 32, 0.06);
+    --film-3: rgba(14, 18, 32, 0.08);
+    --film-4: rgba(14, 18, 32, 0.1);
 
     --accent-2: #1b5fd0;
     --accent-line: rgba(14, 116, 144, 0.42);
