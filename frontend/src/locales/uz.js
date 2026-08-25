@@ -40,6 +40,9 @@ export default {
     contactText: "Kursda xatolik topsangiz yoki bank qo'shmoqchi bo'lsangiz — yozing: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    themeAuto: "Avto",
+    themeLight: "Yorug'",
+    themeDark: "Qorong'i",
     mobileHint: "Telefon uchun yengil versiya bor — 160 KB o'rniga 31 KB",
     mobileOpen: "Ochish",
     mobileDismiss: "Yashirish",

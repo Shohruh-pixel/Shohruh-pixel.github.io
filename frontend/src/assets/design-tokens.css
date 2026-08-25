@@ -62,3 +62,202 @@
      which is the entire task this product exists for. */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
 }
+
+/* Всё, что раньше было записано прямо в правилах main.css. Пока цвет живёт в правиле, второй темы
+   не существует: сменить фон значит найти их все, а ненайденные обнаруживает читатель — по белому
+   тексту на белом. */
+:root {
+  --edge-line: rgba(242, 244, 250, 0.055);
+  --film-1: rgba(255, 255, 255, 0.04);
+  --film-2: rgba(255, 255, 255, 0.05);
+  --film-3: rgba(255, 255, 255, 0.06);
+  --film-4: rgba(255, 255, 255, 0.07);
+
+  --accent-2: #2d7cff;
+  --accent-line: rgba(102, 227, 255, 0.4);
+  --accent-wash-2: rgba(102, 227, 255, 0.14);
+  --accent-wash-3: rgba(103, 224, 255, 0.18);
+  --accent-wash-4: rgba(102, 227, 255, 0.12);
+  --accent-2-wash: rgba(45, 124, 255, 0.22);
+  /* Тушь по заливке акцентом. На светлой теме заливка светлеет, и тушь становится почти чёрной —
+     но остаётся тушью, а не текстом основного цвета: заливка ярче любого фона в обеих темах. */
+  --on-accent: #03101e;
+
+  --grad-accent: linear-gradient(135deg, rgba(102, 227, 255, 0.9), rgba(45, 124, 255, 0.78));
+  --grad-accent-strong: linear-gradient(135deg, rgba(102, 227, 255, 0.82), rgba(45, 124, 255, 0.82));
+  --grad-accent-mid: linear-gradient(135deg, rgba(102, 227, 255, 0.24), rgba(45, 124, 255, 0.3));
+  --grad-accent-tint: linear-gradient(135deg, rgba(102, 227, 255, 0.18), rgba(45, 124, 255, 0.08));
+  --grad-accent-lift: linear-gradient(135deg, var(--accent), #8af0ff);
+  --grad-hero-tint: linear-gradient(120deg, rgba(102, 227, 255, 0.16), transparent 48%);
+  --grad-hero: linear-gradient(180deg, rgba(20, 38, 63, 0.88), rgba(10, 23, 41, 0.74));
+  --shimmer: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+
+  --warn: #ffd166;
+  --warn-wash: rgba(255, 209, 102, 0.12);
+  --warn-edge: rgba(255, 209, 102, 0.35);
+  --warn-edge-soft: rgba(255, 209, 102, 0.3);
+
+  --good-wash: rgba(59, 247, 193, 0.1);
+  --good-wash-2: rgba(59, 247, 193, 0.12);
+
+  --sky-line: rgba(56, 189, 248, 0.45);
+  --sky-line-on: rgba(56, 189, 248, 0.85);
+  --sky-wash: rgba(56, 189, 248, 0.16);
+  --chip-edge: rgba(148, 163, 184, 0.28);
+  --chip-bg: rgba(15, 23, 42, 0.35);
+}
+
+/* Светлая тема. Не осветлённая тёмная: плёнка света по чёрному, вывернутая наизнанку, даёт плёнку
+   чёрного по белому, а это серая муть. Здесь свои решения — белые поверхности на слегка
+   подкрашенном фоне, и свои зелёный, красный, янтарный и бирюзовый: те подобраны светиться на
+   чёрном и на белом исчезают.
+
+   Написана дважды: под медиазапросом — чтобы первый кадр совпал с системой ещё до того, как
+   выполнится скрипт, и под атрибутом — чтобы выбранное вручную перекрывало систему в обе стороны. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --bg: #f4f6fb;
+    --bg-deep: #e9edf6;
+    /* Перекрывается в main.css через --glass, но задан и здесь: правило, которое держится на том,
+       что кто-то другой не забудет его перекрыть, держится на удаче. */
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-high: #ffffff;
+    --glass: rgba(255, 255, 255, 0.92);
+    --glass-soft: rgba(255, 255, 255, 0.62);
+    --edge: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.075);
+    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.09),
+      0 20px 46px rgba(20, 26, 45, 0.13);
+
+    --text: #0e1220;
+    --text-bright: #05070f;
+    --text-muted: #4d5468;
+    --text-dim: #656b7d;
+    --text-faint: #686e7d;
+
+    --accent: #0e7490;
+    --accent-mint: #0f7a4a;
+    --accent-violet: #6d3fd4;
+    --accent-pink: #b3306e;
+    --accent-wash: rgba(14, 116, 144, 0.085);
+    --accent-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(14, 116, 144, 0.26),
+      0 0 18px rgba(14, 116, 144, 0.1);
+
+    --danger: #c8342f;
+    --danger-bg: #fdeceb;
+    --danger-edge: #f0b7b4;
+
+    --edge-line: rgba(14, 18, 32, 0.09);
+    --film-1: rgba(14, 18, 32, 0.035);
+    --film-2: rgba(14, 18, 32, 0.045);
+    --film-3: rgba(14, 18, 32, 0.06);
+    --film-4: rgba(14, 18, 32, 0.08);
+
+    --accent-2: #1b5fd0;
+    --accent-line: rgba(14, 116, 144, 0.42);
+    --accent-wash-2: rgba(14, 116, 144, 0.11);
+    --accent-wash-3: rgba(14, 116, 144, 0.13);
+    --accent-wash-4: rgba(14, 116, 144, 0.1);
+    --accent-2-wash: rgba(27, 95, 208, 0.12);
+    /* Заливка акцентом на светлой теме тёмная, поэтому тушь по ней — белая. */
+    --on-accent: #ffffff;
+
+    --grad-accent: linear-gradient(135deg, rgba(12, 106, 132, 0.96), rgba(27, 95, 208, 0.92));
+    --grad-accent-strong: linear-gradient(135deg, rgba(12, 106, 132, 0.96), rgba(27, 95, 208, 0.96));
+    --grad-accent-mid: linear-gradient(135deg, rgba(14, 116, 144, 0.16), rgba(27, 95, 208, 0.14));
+    --grad-accent-tint: linear-gradient(135deg, rgba(14, 116, 144, 0.1), rgba(27, 95, 208, 0.05));
+    --grad-accent-lift: linear-gradient(135deg, #0e7490, #1b5fd0);
+    --grad-hero-tint: linear-gradient(120deg, rgba(14, 116, 144, 0.1), transparent 48%);
+    --grad-hero: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(233, 237, 246, 0.88));
+    --shimmer: linear-gradient(90deg, rgba(14, 18, 32, 0.04), rgba(14, 18, 32, 0.1), rgba(14, 18, 32, 0.04));
+
+    --warn: #8a5a00;
+    --warn-wash: rgba(138, 90, 0, 0.1);
+    --warn-edge: rgba(138, 90, 0, 0.3);
+    --warn-edge-soft: rgba(138, 90, 0, 0.26);
+
+    --good-wash: rgba(15, 122, 74, 0.1);
+    --good-wash-2: rgba(15, 122, 74, 0.12);
+
+    --sky-line: rgba(14, 116, 144, 0.45);
+    --sky-line-on: rgba(14, 116, 144, 0.85);
+    --sky-wash: rgba(14, 116, 144, 0.14);
+    --chip-edge: rgba(14, 18, 32, 0.16);
+    --chip-bg: rgba(255, 255, 255, 0.7);
+  }
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --bg: #f4f6fb;
+    --bg-deep: #e9edf6;
+    /* Перекрывается в main.css через --glass, но задан и здесь: правило, которое держится на том,
+       что кто-то другой не забудет его перекрыть, держится на удаче. */
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-high: #ffffff;
+    --glass: rgba(255, 255, 255, 0.92);
+    --glass-soft: rgba(255, 255, 255, 0.62);
+    --edge: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.075);
+    --edge-lit: inset 0 1px 0 rgba(255, 255, 255, 1), 0 0 0 1px rgba(14, 18, 32, 0.09),
+      0 20px 46px rgba(20, 26, 45, 0.13);
+
+    --text: #0e1220;
+    --text-bright: #05070f;
+    --text-muted: #4d5468;
+    --text-dim: #656b7d;
+    --text-faint: #686e7d;
+
+    --accent: #0e7490;
+    --accent-mint: #0f7a4a;
+    --accent-violet: #6d3fd4;
+    --accent-pink: #b3306e;
+    --accent-wash: rgba(14, 116, 144, 0.085);
+    --accent-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(14, 116, 144, 0.26),
+      0 0 18px rgba(14, 116, 144, 0.1);
+
+    --danger: #c8342f;
+    --danger-bg: #fdeceb;
+    --danger-edge: #f0b7b4;
+
+    --edge-line: rgba(14, 18, 32, 0.09);
+    --film-1: rgba(14, 18, 32, 0.035);
+    --film-2: rgba(14, 18, 32, 0.045);
+    --film-3: rgba(14, 18, 32, 0.06);
+    --film-4: rgba(14, 18, 32, 0.08);
+
+    --accent-2: #1b5fd0;
+    --accent-line: rgba(14, 116, 144, 0.42);
+    --accent-wash-2: rgba(14, 116, 144, 0.11);
+    --accent-wash-3: rgba(14, 116, 144, 0.13);
+    --accent-wash-4: rgba(14, 116, 144, 0.1);
+    --accent-2-wash: rgba(27, 95, 208, 0.12);
+    /* Заливка акцентом на светлой теме тёмная, поэтому тушь по ней — белая. */
+    --on-accent: #ffffff;
+
+    --grad-accent: linear-gradient(135deg, rgba(12, 106, 132, 0.96), rgba(27, 95, 208, 0.92));
+    --grad-accent-strong: linear-gradient(135deg, rgba(12, 106, 132, 0.96), rgba(27, 95, 208, 0.96));
+    --grad-accent-mid: linear-gradient(135deg, rgba(14, 116, 144, 0.16), rgba(27, 95, 208, 0.14));
+    --grad-accent-tint: linear-gradient(135deg, rgba(14, 116, 144, 0.1), rgba(27, 95, 208, 0.05));
+    --grad-accent-lift: linear-gradient(135deg, #0e7490, #1b5fd0);
+    --grad-hero-tint: linear-gradient(120deg, rgba(14, 116, 144, 0.1), transparent 48%);
+    --grad-hero: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(233, 237, 246, 0.88));
+    --shimmer: linear-gradient(90deg, rgba(14, 18, 32, 0.04), rgba(14, 18, 32, 0.1), rgba(14, 18, 32, 0.04));
+
+    --warn: #8a5a00;
+    --warn-wash: rgba(138, 90, 0, 0.1);
+    --warn-edge: rgba(138, 90, 0, 0.3);
+    --warn-edge-soft: rgba(138, 90, 0, 0.26);
+
+    --good-wash: rgba(15, 122, 74, 0.1);
+    --good-wash-2: rgba(15, 122, 74, 0.12);
+
+    --sky-line: rgba(14, 116, 144, 0.45);
+    --sky-line-on: rgba(14, 116, 144, 0.85);
+    --sky-wash: rgba(14, 116, 144, 0.14);
+    --chip-edge: rgba(14, 18, 32, 0.16);
+    --chip-bg: rgba(255, 255, 255, 0.7);
+}

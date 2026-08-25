@@ -40,6 +40,9 @@ export default {
     contactText: "Хатогӣ ёфтед ё бонк илова кардан мехоҳед — нависед: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    themeAuto: "Худкор",
+    themeLight: "Равшан",
+    themeDark: "Торик",
     mobileHint: "Барои телефон варианти сабук ҳаст — 31 КБ ба ҷои 160",
     mobileOpen: "Кушодан",
     mobileDismiss: "Пинҳон кардан",

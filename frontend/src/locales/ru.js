@@ -40,6 +40,9 @@ export default {
     contactText: "Нашли ошибку в курсе или хотите добавить банк — напишите: shoxruxmahkamov05@gmail.com"
   },
   common: {
+    themeAuto: "Авто",
+    themeLight: "Светлая",
+    themeDark: "Тёмная",
     mobileHint: "Есть быстрая версия для телефона — 31 КБ вместо 160",
     mobileOpen: "Открыть",
     mobileDismiss: "Скрыть",

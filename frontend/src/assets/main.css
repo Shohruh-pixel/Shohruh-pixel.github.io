@@ -17,11 +17,11 @@
   --surface: var(--glass);
   --surface-strong: var(--surface-raised);
   --surface-soft: var(--glass-soft);
-  --border: rgba(242, 244, 250, 0.055);
+  --border: var(--edge-line);
   --text-soft: var(--text-muted);
   --accent-strong: var(--accent);
   --success: var(--accent-mint);
-  --warning: #ffd166;
+  --warning: var(--warn);
   /* Depth comes from the edge treatment, not from a large ambient shadow — on a ground this dark a
      wide soft shadow is invisible and only costs paint time. */
   --shadow: var(--edge);
@@ -76,7 +76,7 @@ a {
   left: -30px;
   width: 160px;
   height: 160px;
-  background: rgba(103, 224, 255, 0.18);
+  background: var(--accent-wash-3);
 }
 
 .orb-two {
@@ -84,7 +84,7 @@ a {
   right: -40px;
   width: 220px;
   height: 220px;
-  background: rgba(45, 124, 255, 0.22);
+  background: var(--accent-2-wash);
   animation-delay: -4s;
 }
 
@@ -93,7 +93,7 @@ a {
   left: 22%;
   width: 190px;
   height: 190px;
-  background: rgba(59, 247, 193, 0.1);
+  background: var(--good-wash);
   animation-delay: -8s;
 }
 
@@ -132,8 +132,8 @@ a {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(102, 227, 255, 0.9), rgba(45, 124, 255, 0.78));
-  color: #03101e;
+  background: var(--grad-accent);
+  color: var(--on-accent);
   font-weight: 800;
 }
 
@@ -179,7 +179,7 @@ a {
 .desktop-nav-link.active,
 .desktop-nav-link:hover {
   color: var(--text);
-  background: rgba(102, 227, 255, 0.14);
+  background: var(--accent-wash-2);
 }
 
 /* Amber rather than red: the site is still useful offline, the figures are simply older than they
@@ -192,8 +192,8 @@ a {
   margin: 0 auto 16px;
   padding: 12px 16px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 209, 102, 0.35);
-  background: rgba(255, 209, 102, 0.12);
+  border: 1px solid var(--warn-edge);
+  background: var(--warn-wash);
   color: var(--warning);
   font-size: 0.9rem;
   position: relative;
@@ -282,12 +282,12 @@ a {
 }
 
 .button-link.primary {
-  color: #051120;
-  background: linear-gradient(135deg, var(--accent), #8af0ff);
+  color: var(--on-accent);
+  background: var(--grad-accent-lift);
 }
 
 .button-link.secondary {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--film-3);
   border-color: var(--border);
 }
 
@@ -388,8 +388,8 @@ a {
   gap: 16px;
   padding: 22px;
   background:
-    linear-gradient(120deg, rgba(102, 227, 255, 0.16), transparent 48%),
-    linear-gradient(180deg, rgba(20, 38, 63, 0.88), rgba(10, 23, 41, 0.74));
+    var(--grad-hero-tint),
+    var(--grad-hero);
 }
 
 .best-banner h3 {
@@ -423,8 +423,8 @@ a {
 }
 
 .field-group {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--film-1);
+  border: 1px solid var(--film-3);
 }
 
 .search-field {
@@ -473,7 +473,7 @@ a {
 .view-switch-button,
 .language-button {
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--film-1);
   color: var(--text-soft);
   border-radius: 999px;
   padding: 10px 14px;
@@ -485,8 +485,8 @@ a {
 .view-switch-button.active,
 .language-button.active {
   color: var(--text);
-  border-color: rgba(102, 227, 255, 0.4);
-  background: rgba(102, 227, 255, 0.14);
+  border-color: var(--accent-line);
+  background: var(--accent-wash-2);
 }
 
 .supporting-copy {
@@ -535,7 +535,7 @@ a {
   /* A shrunken avatar reads as a rendering glitch — it's a fixed badge, not filler space. */
   flex-shrink: 0;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(102, 227, 255, 0.24), rgba(45, 124, 255, 0.3));
+  background: var(--grad-accent-mid);
   color: var(--accent);
   font-weight: 800;
 }
@@ -568,7 +568,7 @@ a {
   border: 1px solid var(--border);
   border-radius: 14px;
   color: var(--text-soft);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--film-2);
 }
 
 .favorite-toggle.active,
@@ -585,8 +585,8 @@ a {
 .rate-column {
   padding: 14px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--film-1);
+  border: 1px solid var(--film-2);
 }
 
 .rate-column-head {
@@ -650,17 +650,17 @@ a {
   border-radius: 999px;
   font-size: 0.82rem;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--film-4);
 }
 
 .stat-pill.success {
   color: var(--success);
-  background: rgba(59, 247, 193, 0.12);
+  background: var(--good-wash-2);
 }
 
 .stat-pill.warning {
   color: var(--warning);
-  background: rgba(255, 209, 102, 0.12);
+  background: var(--warn-wash);
 }
 
 /* Label on the left, the bank's own figure on the right: these are sentences the bank wrote, not
@@ -706,7 +706,7 @@ a {
 .limit-footnote {
   padding: 14px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--film-1);
 }
 
 .limit-footnote {
@@ -742,15 +742,15 @@ a {
   border: 1px solid var(--border);
   border-radius: 16px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--film-1);
 }
 
 .converter-result-panel {
   padding: 20px;
   border-radius: 22px;
   background:
-    linear-gradient(135deg, rgba(102, 227, 255, 0.18), rgba(45, 124, 255, 0.08)),
-    rgba(255, 255, 255, 0.04);
+    var(--grad-accent-tint),
+    var(--film-1);
 }
 
 .converter-result-panel h3 {
@@ -784,7 +784,7 @@ a {
 .rates-table td {
   padding: 14px 12px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--film-4);
 }
 
 .rates-table th {
@@ -836,8 +836,8 @@ a {
 .admin-health > div {
   padding: 14px 16px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--film-1);
+  border: 1px solid var(--film-3);
 }
 
 .admin-health span {
@@ -898,7 +898,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 .admin-table td {
   padding: 10px 12px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--film-4);
   white-space: nowrap;
 }
 
@@ -913,7 +913,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
   padding: 7px 9px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--film-1);
   color: var(--text);
 }
 
@@ -966,7 +966,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 .empty-visual span {
   position: absolute;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(102, 227, 255, 0.82), rgba(45, 124, 255, 0.82));
+  background: var(--grad-accent-strong);
 }
 
 .empty-visual span:nth-child(1) {
@@ -1020,7 +1020,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 
 .bottom-nav-link.active {
   color: var(--text);
-  background: rgba(102, 227, 255, 0.12);
+  background: var(--accent-wash-4);
 }
 
 .skeleton-card {
@@ -1031,7 +1031,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
   height: 12px;
   margin-bottom: 12px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  background: var(--shimmer);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -1198,7 +1198,7 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 
 .others-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.45);
+  border-color: var(--sky-line);
 }
 
 .others-head {
@@ -1255,8 +1255,8 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 .type-chip {
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid var(--chip-edge);
+  background: var(--chip-bg);
   color: inherit;
   font: inherit;
   font-size: 0.85rem;
@@ -1265,12 +1265,12 @@ details.admin-runs:not([open]) > .admin-runs-scroll {
 }
 
 .type-chip:hover {
-  border-color: rgba(56, 189, 248, 0.5);
+  border-color: var(--sky-line);
 }
 
 .type-chip.active {
-  border-color: rgba(56, 189, 248, 0.85);
-  background: rgba(56, 189, 248, 0.16);
+  border-color: var(--sky-line-on);
+  background: var(--sky-wash);
 }
 
 /* Touch targets. Measured on a 375px screen: the language buttons came out at 36px and the
@@ -1386,8 +1386,8 @@ td[class*="value"],
   border-radius: 999px;
   font-size: 0.72rem;
   color: var(--warning);
-  background: rgba(255, 209, 102, 0.12);
-  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.3);
+  background: var(--warn-wash);
+  box-shadow: 0 0 0 1px var(--warn-edge-soft);
 }
 
 /* The offer to switch to the phone build. Reuses the offline banner's amber, because both say the

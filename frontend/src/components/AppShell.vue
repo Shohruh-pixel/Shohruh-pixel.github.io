@@ -25,6 +25,7 @@
         </RouterLink>
       </nav>
 
+      <ThemeSwitcher />
       <LanguageSwitcher />
     </header>
 
@@ -66,6 +67,7 @@ import { RouterLink, RouterView, useRoute } from "vue-router";
 import { WifiOff } from "lucide-vue-next";
 import BottomNav from "./BottomNav.vue";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
+import ThemeSwitcher from "./ThemeSwitcher.vue";
 import { navigationItems } from "../router";
 import { useBanksStore } from "../stores/banks";
 import { useRatesStore } from "../stores/rates";

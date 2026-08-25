@@ -9,7 +9,13 @@ const path = require("node:path");
 // times, and each time the page still served, still returned 200, and simply rendered nothing.
 // These assertions are the only thing between that mistake and the published site.
 
-const HTML = fs.readFileSync(path.join(__dirname, "../../frontend/mobile/index.html"), "utf8");
+// Переводы строк нормализуются при чтении. Git на Windows переписывает рабочую копию в CRLF, и
+// многострочные шаблоны ниже перестают совпадать — не потому, что код изменился, а потому, что его
+// закоммитили. Один раз это уже стоило трёх упавших проверок на ровном месте.
+const HTML = fs
+  .readFileSync(path.join(__dirname, "../../frontend/mobile/index.html"), "utf8")
+  .split("\r\n")
+  .join("\n");
 
 function inlineScript() {
   const start = HTML.lastIndexOf("<script>");
