@@ -559,3 +559,51 @@ test("the clock is stamped where the rates actually arrive", () => {
   const body = load.slice(0, load.indexOf("\n}"));
   assert.ok(body.indexOf("S.rates =") < body.indexOf("lastLoad = Date.now()"), "время ставится раньше данных");
 });
+
+// Откуда берётся курс у одиннадцати банков из двадцати двух. Источник — таблица Национального
+// банка kurs_kommer_bank.php, куда банки сдают СВОИ курсы; это видно и по данным: будь это один
+// справочный курс государства, все одиннадцать были бы одинаковые, а они разные.
+//
+// Приложение утверждало обратное — «банк не публикует свой курс, показан официальный курс НБТ».
+// Половина списка описывалась неверно, и в том числе банк, который в этот момент давал лучший курс
+// покупки на главном экране: открыв его карточку, человек читал, что это не курс банка.
+
+test("the rate taken through the National Bank is not called the state's own", () => {
+  const script = inlineScript();
+  const notes = script.match(/officialNote:\s*'[^']*'/g) || [];
+  assert.equal(notes.length, 3, "заметок об источнике не три — по одной на язык");
+
+  for (const note of notes) {
+    assert.doesNotMatch(
+      note,
+      /не публикует свой курс|нашр намекунад|e'lon qilmaydi/,
+      "сказано, что банк не публикует свой курс: " + note.slice(0, 60)
+    );
+  }
+  assert.ok(
+    notes.some((n) => n.includes("куда банки сдают свои курсы")),
+    "не сказано, что в таблицу банки сдают собственные курсы"
+  );
+});
+
+test("the filter says what it filters by, not what banks lack", () => {
+  // «Свой курс» утверждало, что у остальных своего курса нет. Отбирает же он тех, чей курс читается
+  // с их собственного сайта, — это про источник, а не про банк.
+  const script = inlineScript();
+  const labels = script.match(/ownOnly:\s*'[^']*'/g) || [];
+  assert.equal(labels.length, 3, "названий фильтра не три");
+  for (const label of labels) {
+    assert.doesNotMatch(label, /Свой курс|Қурби худӣ|O..z kursi/, "фильтр всё ещё назван «свой курс»: " + label);
+  }
+});
+
+test("the scraper's label and the app's explanation describe the same source", () => {
+  // Если источник когда-нибудь сменится на настоящий справочный курс, объяснение станет неверным
+  // молча — цифры продолжат приходить, и никто не заметит.
+  const scraper = fs.readFileSync(
+    path.join(__dirname, "../src/services/scraper.service.js"),
+    "utf8"
+  );
+  assert.match(scraper, /kurs_kommer_bank\.php/, "источник больше не таблица коммерческих банков");
+  assert.match(scraper, /SOURCE_LABEL = "НБТ \(курсы коммерческих банков\)"/, "подпись источника изменилась");
+});
