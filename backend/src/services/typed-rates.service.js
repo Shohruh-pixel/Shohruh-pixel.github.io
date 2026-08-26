@@ -64,6 +64,25 @@ function buildHeadline(byCurrency) {
   return null;
 }
 
+// Заглушка, а не курс. Банки ставят в неиспользуемые поля что попало: Амонатбанк отдаёт по рублю
+// наличными 0,0010 при переводном 0,1085 — не ноль, поэтому проверка на ноль такое пропускает, и
+// оно доходит до экрана как курс. Тысяча рублей за один сомони.
+//
+// Мерой служит сам банк, а не рынок: виды курса у одного банка расходятся сильно (у Алифа рубль в
+// кассе на четверть ниже переводного), но не в сто раз. Половина от наибольшего — граница с большим
+// запасом: самый низкий настоящий кассовый курс, встреченный 26.08.2026, составлял 74% от
+// безналичного.
+const PLAUSIBLE_SHARE = 0.5;
+
+function isPlausible(value, perType) {
+  const peak = Object.values(perType)
+    .filter((other) => other && typeof other.buy === "number")
+    .reduce((max, other) => Math.max(max, other.buy), 0);
+
+  // Единственный вид у этого банка — сравнивать не с чем, и отбрасывать не за что.
+  return peak <= 0 || value.buy >= peak * PLAUSIBLE_SHARE;
+}
+
 // Rows are written one at a time rather than deleted and re-inserted: a failed run part-way through
 // would otherwise leave a bank with no rates at all, which is worse than a few stale ones.
 async function storeTypedRates(bankId, byCurrency, sourceLabel) {
@@ -72,6 +91,13 @@ async function storeTypedRates(bankId, byCurrency, sourceLabel) {
   for (const [currency, perType] of Object.entries(byCurrency)) {
     for (const [type, value] of Object.entries(perType)) {
       if (!value) {
+        continue;
+      }
+
+      if (!isPlausible(value, perType)) {
+        console.log(
+          `[rates] ${sourceLabel}: ${currency} ${type} ${value.buy} отброшен как заглушка`
+        );
         continue;
       }
 
@@ -94,4 +120,4 @@ async function getRatesForBank(bankId) {
   });
 }
 
-module.exports = { typesPresent, buildHeadline, storeTypedRates, getRatesForBank, CURRENCY_FIELDS };
+module.exports = { typesPresent, buildHeadline, storeTypedRates, getRatesForBank, isPlausible, CURRENCY_FIELDS };
