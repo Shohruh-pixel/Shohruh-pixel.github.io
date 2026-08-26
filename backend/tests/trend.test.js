@@ -214,3 +214,42 @@ test("deleting a bank takes its history with it", async () => {
     "history must not outlive the bank it belongs to"
   );
 });
+
+// Стрелка выводится из двух записей истории, но встаёт не рядом с историей — рядом с числом на
+// карточке. Проверки, что две записи одного рода, довольно лишь пока показанное число того же рода,
+// что они, а это не всегда так.
+//
+// Наблюдалось 26.08.2026, когда сменился читаемый столбец таблицы НБТ: у ФИНКА две последние записи
+// были кассовыми — 0,0965 и 0,0985, разница настоящая, стрелка законная, — а на карточке к тому
+// времени стоял безналичный курс 0,11. Стрелка сообщала о росте, которого с этим числом не было.
+// Так у одиннадцати банков сразу.
+
+test("no arrow when the card shows a different kind of rate than the history behind it", async () => {
+  const bank = await seedBank("switched", { ...BASE, rubBuy: 0.11, rateType: "noncash" });
+  await addHistory(bank.id, { rubBuy: 0.0965, rateType: "transfer" }, 120);
+  await addHistory(bank.id, { rubBuy: 0.0985, rateType: "transfer" }, 30);
+
+  const [rate] = await rateService.getRates();
+  assert.equal(rate.trend, null, "движение кассового курса приклеено к безналичному");
+});
+
+test("a change of source is treated the same as a change of type", async () => {
+  // Тот же разлад, другой повод: банк начал публиковать курс сам, и цифра сменилась вместе с
+  // источником. Разница между двумя источниками — не движение рынка.
+  const bank = await seedBank("resourced", { ...BASE, rubBuy: 0.11 });
+  await addHistory(bank.id, { rubBuy: 0.0965, sourceLabel: "НБТ (курсы коммерческих банков)" }, 120);
+  await addHistory(bank.id, { rubBuy: 0.0985, sourceLabel: "НБТ (курсы коммерческих банков)" }, 30);
+
+  const [rate] = await rateService.getRates();
+  assert.equal(rate.trend, null, "разница между источниками показана как движение");
+});
+
+test("the arrow returns once history is of the kind the card shows", async () => {
+  const bank = await seedBank("caught-up", { ...BASE, rubBuy: 0.11, rateType: "noncash" });
+  await addHistory(bank.id, { rubBuy: 0.108, rateType: "noncash" }, 120);
+  await addHistory(bank.id, { rubBuy: 0.11, rateType: "noncash" }, 30);
+
+  const [rate] = await rateService.getRates();
+  assert.equal(rate.trend.changes.rubBuy.direction, "up");
+  assert.equal(rate.trend.changes.rubBuy.previous, 0.108);
+});

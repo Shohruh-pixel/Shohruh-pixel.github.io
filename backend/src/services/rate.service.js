@@ -110,6 +110,14 @@ async function getTrendsByBankId() {
     })
   );
 
+  // Что показано на карточке прямо сейчас. История сравнивается сама с собой, но стрелка встаёт не
+  // рядом с историей — рядом с этой цифрой, и описывать она должна её.
+  const live = new Map(
+    (await prisma.exchangeRate.findMany({ select: { bankId: true, rateType: true, sourceLabel: true } })).map(
+      (row) => [row.bankId, row]
+    )
+  );
+
   const trends = {};
   for (const [bankId, [current, previous]] of byBank.entries()) {
     // A single record means the rate has been seen once and never moved — there is nothing to
@@ -124,6 +132,22 @@ async function getTrendsByBankId() {
     // replaces the National Bank's table as the source, the headline can switch type and the
     // figures jump by a fifth. Saying nothing is the only honest output.
     if ((current.rateType || null) !== (previous.rateType || null)) {
+      trends[bankId] = null;
+      continue;
+    }
+
+    // И то же самое между историей и тем, что на экране. Проверки выше довольно, только пока
+    // показанная цифра того же рода, что записи, из которых выведена стрелка, — а это не всегда так.
+    //
+    // Наблюдалось 26.08.2026: у ФИНКА две последние записи истории — 0,0965 и 0,0985, обе кассовые,
+    // разница настоящая, стрелка «вверх» законная. Но на карточке к этому времени стоял безналичный
+    // курс 0,11, и стрелка вставала рядом с ним — сообщая о росте, которого с этим числом не
+    // происходило. Так у одиннадцати банков сразу, когда сменился читаемый столбец.
+    const shown = live.get(bankId);
+    if (
+      shown &&
+      ((shown.rateType || null) !== (current.rateType || null) || shown.sourceLabel !== current.sourceLabel)
+    ) {
       trends[bankId] = null;
       continue;
     }
