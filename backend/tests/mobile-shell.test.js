@@ -511,3 +511,51 @@ test("banks that do not publish this rate are skipped, not counted as zero", () 
   assert.match(html, /Банк 2/, "лучшим назван банк без курса");
   assert.match(html, /70/);
 });
+
+// Возвращение в приложение. Telegram держит мини-апп в памяти после закрытия — вместе с курсами,
+// которые пришли при первом открытии. Приложение, открытое неделю назад, открывается снова с
+// недельными цифрами, и 'online' здесь не срабатывает: связь не пропадала, спало приложение.
+// Замечено по жалобе: «7 дн назад» на телефоне при данных двухминутной свежести на сервере.
+
+test("coming back to the app fetches the rates again", () => {
+  const script = inlineScript();
+  // Поиск подстроки, а не выражением: скобки здесь — часть искомого кода, и в регулярном выражении
+  // они молча становятся группой захвата, которая совпадает совсем с другим.
+  assert.ok(script.includes("function refreshOnReturn()"), "нечему сработать при возвращении");
+  assert.ok(
+    script.includes("document.addEventListener('visibilitychange', refreshOnReturn)"),
+    "возвращение к приложению ничего не обновляет"
+  );
+  assert.ok(
+    script.includes("window.addEventListener('pageshow', refreshOnReturn)"),
+    "возврат страницы из bfcache ничего не обновляет"
+  );
+});
+
+test("flipping between apps does not refetch on every blink", () => {
+  // Курсы обновляются раз в три часа, а переключение между приложениями туда-обратно — обычное
+  // дело. Запрос по каждому морганию тратит чужой трафик и ничего не показывает нового.
+  const script = inlineScript();
+  const fn = script.slice(script.indexOf("function refreshOnReturn"));
+  const body = fn.slice(0, fn.indexOf("\n}"));
+  assert.match(body, /document\.hidden/, "обновление идёт и когда приложения не видно");
+  assert.match(body, /lastLoad < REFRESH_AFTER_MS/, "нет порога — запрос на каждое переключение");
+});
+
+test("a refresh does not take away the bank the reader picked", () => {
+  // load() зовётся теперь не только при запуске. Строка, ставившая первый банк по списку
+  // безусловно, отбирала бы выбор при каждом возвращении в приложение.
+  const script = inlineScript();
+  const load = script.slice(script.indexOf("async function load()"));
+  const body = load.slice(0, load.indexOf("\n}"));
+  assert.match(body, /if\(S\.bank == null \|\| !S\.rates\.some/, "выбранный банк сбрасывается при обновлении");
+});
+
+test("the clock is stamped where the rates actually arrive", () => {
+  // Отметка до запроса означала бы, что неудачная попытка считается обновлением и следующая
+  // случится только через пять минут — при том что показано по-прежнему старое.
+  const script = inlineScript();
+  const load = script.slice(script.indexOf("async function load()"));
+  const body = load.slice(0, load.indexOf("\n}"));
+  assert.ok(body.indexOf("S.rates =") < body.indexOf("lastLoad = Date.now()"), "время ставится раньше данных");
+});

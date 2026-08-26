@@ -349,6 +349,12 @@ const el = h => { const d = document.createElement('div'); d.innerHTML = h; retu
 
 const S = { online: navigator.onLine, about:false, write:null, theme: localStorage.getItem('bankrate-m-theme') || 'auto', openBank:null, sort:'name', typed:{}, sheetType:null, ownOnly:false, favs: JSON.parse(localStorage.getItem('bankrate-m-favs') || '[]'), lang: localStorage.getItem('bankrate-m-lang') || 'ru', sheet:null, compareMode:false, compare:[], tab:'home', cur:'USD', q:'', amount:'1000', amountFresh:true, from:'USD', dir:'buy', bank:null, rates:[], limits:[] };
 
+// Когда курсы были загружены. Telegram не выгружает мини-апп, когда его закрывают: он остаётся в
+// памяти вместе с цифрами, которые пришли при первом открытии. Через неделю приложение открывается
+// с недельными курсами, и событие 'online' тут не спасает — связь не пропадала, спало приложение.
+let lastLoad = 0;
+const REFRESH_AFTER_MS = 5 * 60 * 1000;
+
 async function load(){
   const [r,l,ty] = await Promise.all([
     fetch('/data/rates.json').then(x=>x.json()),
@@ -360,8 +366,20 @@ async function load(){
   S.rates = r.data || [];
   S.limits = l.data || [];
   S.typed = ty.data || {};
-  S.bank = S.rates[0]?.bankId ?? null;
+  // Выбранный банк переживает обновление. load() зовётся не только при запуске, и сбрасывать выбор
+  // на первый по списку каждый раз значило бы отбирать его у человека при каждом возвращении.
+  if(S.bank == null || !S.rates.some(x => x.bankId === S.bank)) S.bank = S.rates[0]?.bankId ?? null;
+
+  lastLoad = Date.now();
   render();
+}
+
+// Единственный надёжный признак возвращения — что страницу снова видно. Порог в пять минут нужен
+// потому, что переключение между приложениями туда-обратно — обычное дело, а курсы обновляются раз
+// в три часа: перезапрашивать по каждому морганию значит тратить чужой трафик впустую.
+function refreshOnReturn(){
+  if(document.hidden || Date.now() - lastLoad < REFRESH_AFTER_MS) return;
+  load().catch(() => render());
 }
 
 function ago(iso){
@@ -442,6 +460,7 @@ function initTelegram(){
   // сама тема — из настройки Telegram, если человек не выбрал иначе.
   applyTheme();
   try { tg.onEvent('themeChanged', () => { if(S.theme === 'auto') applyTheme(); }); } catch(e){}
+  try { tg.onEvent('activated', refreshOnReturn); } catch(e){}
   // Newer clients only: without it a scroll that starts at the top drags the app closed.
   try { tg.disableVerticalSwipes(); } catch(e){}
   try { tg.BackButton.onClick(() => { S.sheet = null; S.about = false; S.write = null; render(); }); } catch(e){}
@@ -1250,6 +1269,10 @@ document.addEventListener('change', e => {
 });
 
 window.addEventListener('online', () => { S.online = true; load().catch(() => render()); });
+document.addEventListener('visibilitychange', refreshOnReturn);
+// bfcache возвращает страницу целиком, не выполняя ничего заново, и visibilitychange при этом не
+// всегда приходит.
+window.addEventListener('pageshow', refreshOnReturn);
 window.addEventListener('offline', () => { S.online = false; render(); });
 
 // The manifest starts at /m/, so this is the copy that lands on a home screen — and until now it was
