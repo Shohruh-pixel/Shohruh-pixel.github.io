@@ -575,6 +575,7 @@ async function collectFromApi(source) {
 //   1/2 межбанк · 3/4 наличные · 5/6 безналичные · 7/8 эл.кошелёк · 9/10 карты · 11/12 НПЦДП
 const NBT_NONCASH = [5, 6];
 const NBT_CASH = [3, 4];
+const NBT_CARD = [9, 10];
 
 // Раньше отсюда брались наличные, и это было ошибкой, стоившей банкам четверти курса. Проверено по
 // одиннадцати банкам, которые есть и в таблице, и на своих сайтах: их собственный курс сходится с
@@ -614,8 +615,20 @@ function findBankRate(rows, matchText) {
   // безналичном 0,1085, то есть 74%.
   const cash = nbtPair(row, NBT_CASH);
   const cashLooksReal = cash && cash.buy >= noncash.buy / 2;
+  const card = nbtPair(row, NBT_CARD);
 
-  return { ...noncash, cash: cashLooksReal ? cash : null };
+  // Виды курса, а не один: человек с наличными в руке получит в кассе не тот курс, что стоит в
+  // заголовке. У Ориёнбонка рубль безналичным 0,1085, а в кассе 0,0800 — разница в четверть, и
+  // узнать о ней у окошка хуже, чем прочитать заранее.
+  return {
+    ...noncash,
+    cash: cashLooksReal ? cash : null,
+    types: {
+      [RATE_TYPES.NONCASH]: noncash,
+      ...(cashLooksReal ? { [RATE_TYPES.CASH]: cash } : {}),
+      ...(card ? { [RATE_TYPES.CARD]: card } : {})
+    }
+  };
 }
 
 function ratesDiffer(existing, next) {
@@ -793,17 +806,40 @@ async function performScrape() {
   }
 
   if (nbtRows) {
+    // У кого есть собственный источник — тем виды курса приходят оттуда, полнее и свежее. Записать
+    // им ещё и карточный курс из таблицы НБТ значило бы оставить на карточке цифру, которую никто
+    // не обновит, когда банк поменяет свою, — и рядом с курсами с сайта банка она выглядела бы
+    // такой же свежей.
+    const hasOwnSource = new Set([...API_SOURCES.map((source) => source.slug), SPITAMEN_SLUG, DC_SLUG]);
+
     for (const bank of BANK_MAP) {
-      await applyFromSource(
-        bank.slug,
-        {
-          USD: findBankRate(nbtRows.USD, bank.match),
-          RUB: findBankRate(nbtRows.RUB, bank.match),
-          EUR: findBankRate(nbtRows.EUR, bank.match)
-        },
-        SOURCE_LABEL,
-        RATE_TYPES.NONCASH
-      );
+      const perCurrency = {
+        USD: findBankRate(nbtRows.USD, bank.match),
+        RUB: findBankRate(nbtRows.RUB, bank.match),
+        EUR: findBankRate(nbtRows.EUR, bank.match)
+      };
+
+      await applyFromSource(bank.slug, perCurrency, SOURCE_LABEL, RATE_TYPES.NONCASH);
+
+      if (hasOwnSource.has(bank.slug)) {
+        continue;
+      }
+
+      const dbBank = await prisma.bank.findUnique({ where: { slug: bank.slug }, select: { id: true } });
+      if (!dbBank) {
+        continue;
+      }
+
+      const byCurrency = {};
+      for (const [currency, found] of Object.entries(perCurrency)) {
+        if (found && found.types) {
+          byCurrency[currency] = found.types;
+        }
+      }
+
+      if (Object.keys(byCurrency).length) {
+        await storeTypedRates(dbBank.id, byCurrency, SOURCE_LABEL);
+      }
     }
   }
 

@@ -147,6 +147,27 @@ test("a placeholder in the cash column is not passed off as a rate", () => {
   assert.equal(amonat.cash, null, "заглушка 0,0010 принята за кассовый курс");
 });
 
+test("every rate type the table carries is kept, not just the headline one", () => {
+  // Человек с наличными в руке получит в кассе не тот курс, что стоит в заголовке карточки. У
+  // Ориёнбонка рубль безналичным 0,1085, а в кассе 0,0800 — узнать об этой четверти у окошка хуже,
+  // чем прочитать заранее. Таблица несёт оба, и выбрасывать один значит показывать половину правды.
+  const alif = findBankRate(parseTable(NBT_HTML), "Алиф Банк");
+
+  assert.deepEqual(Object.keys(alif.types).sort(), ["card", "cash", "noncash"]);
+  assert.deepEqual(alif.types.noncash, { buy: 9.22, sell: 9.27 });
+  assert.deepEqual(alif.types.cash, { buy: 9.2, sell: 9.28 });
+  assert.deepEqual(alif.types.card, { buy: 9.22, sell: 9.27 });
+});
+
+test("a type the bank does not offer is absent, not zero", () => {
+  // НБТ заполняет нулями то, чего у банка нет. Нулевой курс на карточке — это не «бесплатно».
+  const alif = findBankRate(parseTable(NBT_HTML), "Алиф Банк");
+  assert.ok(!("wallet" in alif.types), "пустой столбец превратился в вид курса");
+
+  const amonat = findBankRate(parseTable(NBT_HTML), "Амонатбанк");
+  assert.ok(!("cash" in amonat.types), "заглушка 0,0010 сохранена как кассовый курс");
+});
+
 test("a missing bank yields null rather than a wrong row", () => {
   assert.equal(findBankRate(parseTable(NBT_HTML), "Несуществующий Банк"), null);
 });

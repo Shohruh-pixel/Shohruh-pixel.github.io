@@ -201,6 +201,10 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
    «обратите внимание», а нужно «не опирайтесь на это». */
 .stale.hard{color:var(--down);background:var(--bad-wash);box-shadow:0 0 0 1px var(--bad-edge)}
 .stale b{display:block;margin-top:4px;font-weight:400;line-height:1.45}
+/* Не янтарным: янтарь здесь значит «курс пришёл через таблицу НБТ», а это про другое — про то,
+   какую операцию описывает цифра. Одинаковый вид у двух разных предупреждений читается как одно. */
+.tbadge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;
+  color:var(--dim);background:var(--control);box-shadow:var(--control-edge)}
 .nbtbadge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;
   color:var(--warn);background:var(--warn-wash);box-shadow:0 0 0 1px var(--warn-edge)}
 /* A marked bank keeps its place in the list rather than jumping to the top. On a list of eight the
@@ -401,6 +405,20 @@ function ago(iso){
 // менять деньги по недельному курсу, должен узнать об этом прямо, а не догадаться сам.
 const STALE_MS = 4 * 3600 * 1000;
 const DEAD_MS = 24 * 3600 * 1000;
+
+// Курс в списке должен быть сопоставим со строкой выше и ниже, иначе список сравнивает не банки, а
+// операции. Переводной и безналичный сопоставимы — оба про счета. Кассовый — нет: он ниже
+// систематически, на 10–25%, и банк с ним выглядит худшим, не будучи им.
+//
+// Двум банкам мы читаем именно кассовый курс, потому что другого они не публикуют. Убрать их из
+// списка нельзя, подменить чужой цифрой — тем более; остаётся сказать, что это за цифра.
+const COMPARABLE = ['transfer', 'noncash'];
+
+function typeBadge(r){
+  if(!r.rateType || COMPARABLE.includes(r.rateType)) return '';
+  const name = (T.types && T.types[r.rateType]) || r.rateType;
+  return `<span class="tbadge">${name}</span>`;
+}
 
 function bannerHtml(){
   const newest = S.rates.reduce((a,r) => Math.max(a, new Date(r.updatedAt).getTime()), 0);
@@ -791,7 +809,7 @@ function screenHome(){
     </div>
     ${[...S.rates].sort((a,b) => (val(b,S.cur,'buy') || 0) - (val(a,S.cur,'buy') || 0)).slice(0, HOME_ROWS).map(r=>`
       <button class="brow" data-bank="${r.bankId}">
-        <div style="flex:1;min-width:0;font-size:14.5px">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div>
+        <div style="flex:1;min-width:0;font-size:14.5px">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}${typeBadge(r)}</div>
         <div class="n ${r.bankId===b.sell.bankId?'best':''}" style="flex:0 0 73px;text-align:right">${arrow(r, S.cur.toLowerCase()+'Buy')}${fmt(val(r,S.cur,'buy'),S.cur)}</div>
         <div class="n ${r.bankId===b.buy.bankId?'best':''}" style="flex:0 0 73px;text-align:right">${arrow(r, S.cur.toLowerCase()+'Sell')}${fmt(val(r,S.cur,'sell'),S.cur)}</div>
       </button>`).join('')}
@@ -861,7 +879,7 @@ function screenRates(){
     </div>`}
   ${list.map(r=>`
     <button class="bank" data-bank="${r.bankId}" style="${S.compareMode && S.compare.includes(r.bankId) ? 'box-shadow:var(--acc-edge)' : ''}">
-      <div><div class="nm">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}</div></div>
+      <div><div class="nm">${bankName(r.bank)}${S.favs.includes(r.bankId)?'<span class="fav"></span>':''}</div><div class="lbl">${r.sourceLabel}${r.sourceLabel.startsWith('НБТ')?`<span class="nbtbadge">${T.official}</span>`:''}${typeBadge(r)}</div></div>
       <div class="v n ${b && r.bankId===b.sell.bankId?'best':''}">${arrow(r, S.cur.toLowerCase()+'Buy')}${fmt(val(r,S.cur,'buy'),S.cur)}</div>
       <div class="v n ${b && r.bankId===b.buy.bankId?'best':''}">${arrow(r, S.cur.toLowerCase()+'Sell')}${fmt(val(r,S.cur,'sell'),S.cur)}</div>
     </button>`).join('')}`;
