@@ -4,7 +4,7 @@
     {
       "slug": "alif-bank",
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.571Z",
+      "updatedAt": "2026-08-26T16:00:14.612Z",
       "usdBuy": 9.22,
       "usdSell": 9.27,
       "rubBuy": 0.1085,
@@ -15,7 +15,7 @@
     {
       "slug": "orienbank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.679Z",
+      "updatedAt": "2026-08-26T16:00:13.967Z",
       "usdBuy": 9.2,
       "usdSell": 9.28,
       "rubBuy": 0.08,
@@ -26,7 +26,7 @@
     {
       "slug": "amonatbank",
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.682Z",
+      "updatedAt": "2026-08-26T16:00:32.721Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1085,
@@ -37,7 +37,7 @@
     {
       "slug": "eskhata-bank",
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.669Z",
+      "updatedAt": "2026-08-26T16:00:55.323Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1085,
@@ -48,7 +48,7 @@
     {
       "slug": "spitamen-bank",
       "sourceLabel": "Сайт банка (spitamenbank.tj)",
-      "updatedAt": "2026-08-26T14:46:26.260Z",
+      "updatedAt": "2026-08-26T16:00:56.780Z",
       "usdBuy": 9.2,
       "usdSell": 9.27,
       "rubBuy": 0.1,
@@ -59,7 +59,7 @@
     {
       "slug": "dushanbe-city-bank",
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.441Z",
+      "updatedAt": "2026-08-26T16:00:20.555Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1089,
@@ -70,7 +70,7 @@
     {
       "slug": "imon-international",
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.638Z",
+      "updatedAt": "2026-08-26T16:00:33.960Z",
       "usdBuy": 9.19,
       "usdSell": 9.27,
       "rubBuy": 0.1085,
@@ -81,7 +81,7 @@
     {
       "slug": "humo",
       "sourceLabel": "Сайт банка (humo.tj)",
-      "updatedAt": "2026-08-26T14:46:24.646Z",
+      "updatedAt": "2026-08-26T16:00:56.073Z",
       "usdBuy": 9.2,
       "usdSell": 9.27,
       "rubBuy": 0.1093,
@@ -92,7 +92,7 @@
     {
       "slug": "arvand",
       "sourceLabel": "Сайт банка (arvand.tj)",
-      "updatedAt": "2026-08-26T14:45:22.110Z",
+      "updatedAt": "2026-08-26T16:00:07.479Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.108,
@@ -103,7 +103,7 @@
     {
       "slug": "tawhidbank",
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.266Z",
+      "updatedAt": "2026-08-26T16:00:34.262Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1085,
@@ -114,7 +114,7 @@
     {
       "slug": "mbt",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.693Z",
+      "updatedAt": "2026-08-26T16:00:13.993Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1,
@@ -125,7 +125,7 @@
     {
       "slug": "ikb-tajikistan",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.701Z",
+      "updatedAt": "2026-08-26T16:00:14.002Z",
       "usdBuy": 9.2,
       "usdSell": 9.26,
       "rubBuy": 0.1,
@@ -136,7 +136,7 @@
     {
       "slug": "aktiv-bank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.706Z",
+      "updatedAt": "2026-08-26T16:00:14.010Z",
       "usdBuy": 9.2,
       "usdSell": 9.27,
       "rubBuy": 0.08,
@@ -147,7 +147,7 @@
     {
       "slug": "sanoatsodirotbonk",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.710Z",
+      "updatedAt": "2026-08-26T16:00:14.018Z",
       "usdBuy": 9.17,
       "usdSell": 9.26,
       "rubBuy": 0.1,
@@ -158,7 +158,7 @@
     {
       "slug": "freedom-bank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.716Z",
+      "updatedAt": "2026-08-26T16:00:14.027Z",
       "usdBuy": 9.16,
       "usdSell": 9.27,
       "rubBuy": 0.101,
@@ -169,7 +169,7 @@
     {
       "slug": "vasl-bank",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.719Z",
+      "updatedAt": "2026-08-26T16:00:14.035Z",
       "usdBuy": 9.22,
       "usdSell": 9.28,
       "rubBuy": 0.1,
@@ -180,7 +180,7 @@
     {
       "slug": "finca",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.722Z",
+      "updatedAt": "2026-08-26T16:00:14.043Z",
       "usdBuy": 9.22,
       "usdSell": 9.28,
       "rubBuy": 0.0985,
@@ -191,7 +191,7 @@
     {
       "slug": "matin",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.734Z",
+      "updatedAt": "2026-08-26T16:00:14.058Z",
       "usdBuy": 9.2,
       "usdSell": 9.28,
       "rubBuy": 0.107,
@@ -202,7 +202,7 @@
     {
       "slug": "lols-moliya",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.737Z",
+      "updatedAt": "2026-08-26T16:00:14.066Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.098,
@@ -213,7 +213,7 @@
     {
       "slug": "shukr-moliya",
       "sourceLabel": "Сайт банка (shukr.tj)",
-      "updatedAt": "2026-08-26T14:46:13.756Z",
+      "updatedAt": "2026-08-26T16:00:45.691Z",
       "usdBuy": 9.2,
       "usdSell": 9.29,
       "rubBuy": 0.0977,
@@ -224,7 +224,7 @@
     {
       "slug": "sunduk",
       "sourceLabel": "НБТ (курсы коммерческих банков)",
-      "updatedAt": "2026-08-26T14:45:31.744Z",
+      "updatedAt": "2026-08-26T16:00:14.084Z",
       "usdBuy": 9.22,
       "usdSell": 9.28,
       "rubBuy": 0.103,
@@ -235,7 +235,7 @@
     {
       "slug": "zudamal",
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.960Z",
+      "updatedAt": "2026-08-26T16:00:44.872Z",
       "usdBuy": 9.18,
       "usdSell": 9.27,
       "rubBuy": 0.1089,
@@ -252,7 +252,7 @@
       "buy": 9.22,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:33.385Z"
+      "updatedAt": "2026-08-26T16:00:14.498Z"
     },
     {
       "slug": "alif-bank",
@@ -261,7 +261,7 @@
       "buy": 9.22,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:33.647Z"
+      "updatedAt": "2026-08-26T16:00:14.515Z"
     },
     {
       "slug": "alif-bank",
@@ -270,7 +270,7 @@
       "buy": 9.22,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:33.762Z"
+      "updatedAt": "2026-08-26T16:00:14.523Z"
     },
     {
       "slug": "alif-bank",
@@ -279,7 +279,7 @@
       "buy": 9.22,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:34.391Z"
+      "updatedAt": "2026-08-26T16:00:14.530Z"
     },
     {
       "slug": "alif-bank",
@@ -288,7 +288,7 @@
       "buy": 9.2489,
       "sell": null,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.084Z"
+      "updatedAt": "2026-08-26T16:00:14.536Z"
     },
     {
       "slug": "alif-bank",
@@ -297,7 +297,7 @@
       "buy": 10.61,
       "sell": 10.81,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.087Z"
+      "updatedAt": "2026-08-26T16:00:14.542Z"
     },
     {
       "slug": "alif-bank",
@@ -306,7 +306,7 @@
       "buy": 10.61,
       "sell": 10.81,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.089Z"
+      "updatedAt": "2026-08-26T16:00:14.549Z"
     },
     {
       "slug": "alif-bank",
@@ -315,7 +315,7 @@
       "buy": 10.61,
       "sell": 10.61,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.093Z"
+      "updatedAt": "2026-08-26T16:00:14.556Z"
     },
     {
       "slug": "alif-bank",
@@ -324,7 +324,7 @@
       "buy": 10.54,
       "sell": 10.74,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.095Z"
+      "updatedAt": "2026-08-26T16:00:14.562Z"
     },
     {
       "slug": "alif-bank",
@@ -333,7 +333,7 @@
       "buy": 10.787,
       "sell": null,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.097Z"
+      "updatedAt": "2026-08-26T16:00:14.568Z"
     },
     {
       "slug": "alif-bank",
@@ -342,7 +342,7 @@
       "buy": 0.1085,
       "sell": 0.1106,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.099Z"
+      "updatedAt": "2026-08-26T16:00:14.575Z"
     },
     {
       "slug": "alif-bank",
@@ -351,7 +351,7 @@
       "buy": 0.1089,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.101Z"
+      "updatedAt": "2026-08-26T16:00:14.585Z"
     },
     {
       "slug": "alif-bank",
@@ -360,7 +360,7 @@
       "buy": 0.1089,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.225Z"
+      "updatedAt": "2026-08-26T16:00:14.592Z"
     },
     {
       "slug": "alif-bank",
@@ -369,7 +369,7 @@
       "buy": 0.09,
       "sell": 0.107,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.398Z"
+      "updatedAt": "2026-08-26T16:00:14.598Z"
     },
     {
       "slug": "alif-bank",
@@ -378,7 +378,7 @@
       "buy": 0.1093,
       "sell": null,
       "sourceLabel": "Сайт банка (alif.tj)",
-      "updatedAt": "2026-08-26T14:45:35.430Z"
+      "updatedAt": "2026-08-26T16:00:14.604Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -387,7 +387,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.057Z"
+      "updatedAt": "2026-08-26T16:00:20.426Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -396,7 +396,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.417Z"
+      "updatedAt": "2026-08-26T16:00:20.479Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -405,7 +405,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.420Z"
+      "updatedAt": "2026-08-26T16:00:20.486Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -414,7 +414,7 @@
       "buy": 9.2592,
       "sell": null,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.422Z"
+      "updatedAt": "2026-08-26T16:00:20.493Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -423,7 +423,7 @@
       "buy": 10.26,
       "sell": 10.46,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.424Z"
+      "updatedAt": "2026-08-26T16:00:20.499Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -432,7 +432,7 @@
       "buy": 10.64,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.426Z"
+      "updatedAt": "2026-08-26T16:00:20.507Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -441,7 +441,7 @@
       "buy": 10.64,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.429Z"
+      "updatedAt": "2026-08-26T16:00:20.513Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -450,7 +450,7 @@
       "buy": 10.7453,
       "sell": null,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.431Z"
+      "updatedAt": "2026-08-26T16:00:20.520Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -459,7 +459,7 @@
       "buy": 0.105,
       "sell": 0.107,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.432Z"
+      "updatedAt": "2026-08-26T16:00:20.528Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -468,7 +468,7 @@
       "buy": 0.1089,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.434Z"
+      "updatedAt": "2026-08-26T16:00:20.534Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -477,7 +477,7 @@
       "buy": 0.1089,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.436Z"
+      "updatedAt": "2026-08-26T16:00:20.540Z"
     },
     {
       "slug": "dushanbe-city-bank",
@@ -486,7 +486,7 @@
       "buy": 0.1086,
       "sell": null,
       "sourceLabel": "Сайт банка (dc.tj)",
-      "updatedAt": "2026-08-26T14:45:45.438Z"
+      "updatedAt": "2026-08-26T16:00:20.548Z"
     },
     {
       "slug": "imon-international",
@@ -495,7 +495,7 @@
       "buy": 9.19,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.595Z"
+      "updatedAt": "2026-08-26T16:00:33.795Z"
     },
     {
       "slug": "imon-international",
@@ -504,7 +504,7 @@
       "buy": 9.19,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.603Z"
+      "updatedAt": "2026-08-26T16:00:33.848Z"
     },
     {
       "slug": "imon-international",
@@ -513,7 +513,7 @@
       "buy": 9.2489,
       "sell": null,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.609Z"
+      "updatedAt": "2026-08-26T16:00:33.857Z"
     },
     {
       "slug": "imon-international",
@@ -522,7 +522,7 @@
       "buy": 9.19,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.611Z"
+      "updatedAt": "2026-08-26T16:00:33.866Z"
     },
     {
       "slug": "imon-international",
@@ -531,7 +531,7 @@
       "buy": 9.19,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.612Z"
+      "updatedAt": "2026-08-26T16:00:33.875Z"
     },
     {
       "slug": "imon-international",
@@ -540,7 +540,7 @@
       "buy": 0.1,
       "sell": 0.106,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.615Z"
+      "updatedAt": "2026-08-26T16:00:33.882Z"
     },
     {
       "slug": "imon-international",
@@ -549,7 +549,7 @@
       "buy": 0.1085,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.616Z"
+      "updatedAt": "2026-08-26T16:00:33.889Z"
     },
     {
       "slug": "imon-international",
@@ -558,7 +558,7 @@
       "buy": 0.1093,
       "sell": null,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.618Z"
+      "updatedAt": "2026-08-26T16:00:33.897Z"
     },
     {
       "slug": "imon-international",
@@ -567,7 +567,7 @@
       "buy": 0.1085,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.620Z"
+      "updatedAt": "2026-08-26T16:00:33.906Z"
     },
     {
       "slug": "imon-international",
@@ -576,7 +576,7 @@
       "buy": 0.1,
       "sell": 0.106,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.622Z"
+      "updatedAt": "2026-08-26T16:00:33.915Z"
     },
     {
       "slug": "imon-international",
@@ -585,7 +585,7 @@
       "buy": 10.1,
       "sell": 10.5,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.624Z"
+      "updatedAt": "2026-08-26T16:00:33.922Z"
     },
     {
       "slug": "imon-international",
@@ -594,7 +594,7 @@
       "buy": 10.6,
       "sell": 10.81,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.626Z"
+      "updatedAt": "2026-08-26T16:00:33.929Z"
     },
     {
       "slug": "imon-international",
@@ -603,7 +603,7 @@
       "buy": 10.787,
       "sell": null,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.628Z"
+      "updatedAt": "2026-08-26T16:00:33.936Z"
     },
     {
       "slug": "imon-international",
@@ -612,7 +612,7 @@
       "buy": 10.6,
       "sell": 10.81,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.630Z"
+      "updatedAt": "2026-08-26T16:00:33.942Z"
     },
     {
       "slug": "imon-international",
@@ -621,7 +621,7 @@
       "buy": 10.1,
       "sell": 10.5,
       "sourceLabel": "Сайт банка (imon.tj)",
-      "updatedAt": "2026-08-26T14:45:51.633Z"
+      "updatedAt": "2026-08-26T16:00:33.949Z"
     },
     {
       "slug": "eskhata-bank",
@@ -630,7 +630,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.463Z"
+      "updatedAt": "2026-08-26T16:00:55.152Z"
     },
     {
       "slug": "eskhata-bank",
@@ -639,7 +639,7 @@
       "buy": 9.27,
       "sell": null,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.465Z"
+      "updatedAt": "2026-08-26T16:00:55.206Z"
     },
     {
       "slug": "eskhata-bank",
@@ -648,7 +648,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.558Z"
+      "updatedAt": "2026-08-26T16:00:55.216Z"
     },
     {
       "slug": "eskhata-bank",
@@ -657,7 +657,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.609Z"
+      "updatedAt": "2026-08-26T16:00:55.226Z"
     },
     {
       "slug": "eskhata-bank",
@@ -666,7 +666,7 @@
       "buy": 10.5,
       "sell": 10.7,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.612Z"
+      "updatedAt": "2026-08-26T16:00:55.234Z"
     },
     {
       "slug": "eskhata-bank",
@@ -675,7 +675,7 @@
       "buy": 10.85,
       "sell": null,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.626Z"
+      "updatedAt": "2026-08-26T16:00:55.241Z"
     },
     {
       "slug": "eskhata-bank",
@@ -684,7 +684,7 @@
       "buy": 10.64,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.628Z"
+      "updatedAt": "2026-08-26T16:00:55.250Z"
     },
     {
       "slug": "eskhata-bank",
@@ -693,7 +693,7 @@
       "buy": 10.64,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.630Z"
+      "updatedAt": "2026-08-26T16:00:55.257Z"
     },
     {
       "slug": "eskhata-bank",
@@ -702,7 +702,7 @@
       "buy": 0.101,
       "sell": 0.103,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.632Z"
+      "updatedAt": "2026-08-26T16:00:55.264Z"
     },
     {
       "slug": "eskhata-bank",
@@ -711,7 +711,7 @@
       "buy": 0.1106,
       "sell": null,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.634Z"
+      "updatedAt": "2026-08-26T16:00:55.272Z"
     },
     {
       "slug": "eskhata-bank",
@@ -720,7 +720,7 @@
       "buy": 0.1085,
       "sell": 0.1106,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.636Z"
+      "updatedAt": "2026-08-26T16:00:55.278Z"
     },
     {
       "slug": "eskhata-bank",
@@ -729,7 +729,7 @@
       "buy": 0.1085,
       "sell": 0.1105,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.638Z"
+      "updatedAt": "2026-08-26T16:00:55.284Z"
     },
     {
       "slug": "eskhata-bank",
@@ -738,7 +738,7 @@
       "buy": 1.35,
       "sell": 1.39,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.643Z"
+      "updatedAt": "2026-08-26T16:00:55.293Z"
     },
     {
       "slug": "eskhata-bank",
@@ -747,7 +747,7 @@
       "buy": 0.2,
       "sell": 0.205,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.645Z"
+      "updatedAt": "2026-08-26T16:00:55.300Z"
     },
     {
       "slug": "eskhata-bank",
@@ -756,7 +756,7 @@
       "buy": 2.48,
       "sell": 2.53,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.663Z"
+      "updatedAt": "2026-08-26T16:00:55.308Z"
     },
     {
       "slug": "eskhata-bank",
@@ -765,7 +765,7 @@
       "buy": 0.18,
       "sell": 0.21,
       "sourceLabel": "Сайт банка (eskhata.com)",
-      "updatedAt": "2026-08-26T14:46:23.666Z"
+      "updatedAt": "2026-08-26T16:00:55.314Z"
     },
     {
       "slug": "amonatbank",
@@ -774,7 +774,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.675Z"
+      "updatedAt": "2026-08-26T16:00:32.701Z"
     },
     {
       "slug": "amonatbank",
@@ -783,7 +783,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.677Z"
+      "updatedAt": "2026-08-26T16:00:32.708Z"
     },
     {
       "slug": "amonatbank",
@@ -792,7 +792,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.679Z"
+      "updatedAt": "2026-08-26T16:00:32.714Z"
     },
     {
       "slug": "amonatbank",
@@ -801,7 +801,7 @@
       "buy": 10.4,
       "sell": 10.55,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.198Z"
+      "updatedAt": "2026-08-26T16:00:32.678Z"
     },
     {
       "slug": "amonatbank",
@@ -810,7 +810,7 @@
       "buy": 10.65,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.235Z"
+      "updatedAt": "2026-08-26T16:00:32.685Z"
     },
     {
       "slug": "amonatbank",
@@ -819,7 +819,7 @@
       "buy": 10.65,
       "sell": 10.85,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.672Z"
+      "updatedAt": "2026-08-26T16:00:32.692Z"
     },
     {
       "slug": "amonatbank",
@@ -828,7 +828,7 @@
       "buy": 0.001,
       "sell": 0.002,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.149Z"
+      "updatedAt": "2026-08-26T16:00:32.654Z"
     },
     {
       "slug": "amonatbank",
@@ -837,7 +837,7 @@
       "buy": 0.1089,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.174Z"
+      "updatedAt": "2026-08-26T16:00:32.665Z"
     },
     {
       "slug": "amonatbank",
@@ -846,7 +846,7 @@
       "buy": 0.1085,
       "sell": 0.111,
       "sourceLabel": "Сайт банка (amonatbonk.tj)",
-      "updatedAt": "2026-08-26T14:45:50.176Z"
+      "updatedAt": "2026-08-26T16:00:32.672Z"
     },
     {
       "slug": "tawhidbank",
@@ -855,7 +855,7 @@
       "buy": 0.09,
       "sell": 0.1093,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.121Z"
+      "updatedAt": "2026-08-26T16:00:34.150Z"
     },
     {
       "slug": "tawhidbank",
@@ -864,7 +864,7 @@
       "buy": 0.1085,
       "sell": 0.1107,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.146Z"
+      "updatedAt": "2026-08-26T16:00:34.203Z"
     },
     {
       "slug": "tawhidbank",
@@ -873,7 +873,7 @@
       "buy": 0.1085,
       "sell": 0.1107,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.250Z"
+      "updatedAt": "2026-08-26T16:00:34.211Z"
     },
     {
       "slug": "tawhidbank",
@@ -882,7 +882,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.253Z"
+      "updatedAt": "2026-08-26T16:00:34.218Z"
     },
     {
       "slug": "tawhidbank",
@@ -891,7 +891,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.256Z"
+      "updatedAt": "2026-08-26T16:00:34.225Z"
     },
     {
       "slug": "tawhidbank",
@@ -900,7 +900,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.258Z"
+      "updatedAt": "2026-08-26T16:00:34.233Z"
     },
     {
       "slug": "tawhidbank",
@@ -909,7 +909,7 @@
       "buy": 10.5,
       "sell": 10.76,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.260Z"
+      "updatedAt": "2026-08-26T16:00:34.241Z"
     },
     {
       "slug": "tawhidbank",
@@ -918,7 +918,7 @@
       "buy": 10.62,
       "sell": 10.83,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.262Z"
+      "updatedAt": "2026-08-26T16:00:34.248Z"
     },
     {
       "slug": "tawhidbank",
@@ -927,7 +927,7 @@
       "buy": 10.62,
       "sell": 10.83,
       "sourceLabel": "Сайт банка (tawhidbank.tj)",
-      "updatedAt": "2026-08-26T14:45:53.263Z"
+      "updatedAt": "2026-08-26T16:00:34.254Z"
     },
     {
       "slug": "zudamal",
@@ -936,7 +936,7 @@
       "buy": 9.18,
       "sell": 9.26,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.936Z"
+      "updatedAt": "2026-08-26T16:00:44.757Z"
     },
     {
       "slug": "zudamal",
@@ -945,7 +945,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.943Z"
+      "updatedAt": "2026-08-26T16:00:44.809Z"
     },
     {
       "slug": "zudamal",
@@ -954,7 +954,7 @@
       "buy": 9.18,
       "sell": 9.27,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.945Z"
+      "updatedAt": "2026-08-26T16:00:44.816Z"
     },
     {
       "slug": "zudamal",
@@ -963,7 +963,7 @@
       "buy": 10.59,
       "sell": 10.79,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.946Z"
+      "updatedAt": "2026-08-26T16:00:44.824Z"
     },
     {
       "slug": "zudamal",
@@ -972,7 +972,7 @@
       "buy": 10.59,
       "sell": 10.79,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.949Z"
+      "updatedAt": "2026-08-26T16:00:44.832Z"
     },
     {
       "slug": "zudamal",
@@ -981,7 +981,7 @@
       "buy": 10.59,
       "sell": 10.79,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.951Z"
+      "updatedAt": "2026-08-26T16:00:44.842Z"
     },
     {
       "slug": "zudamal",
@@ -990,7 +990,7 @@
       "buy": 0.102,
       "sell": 0.104,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.953Z"
+      "updatedAt": "2026-08-26T16:00:44.850Z"
     },
     {
       "slug": "zudamal",
@@ -999,7 +999,7 @@
       "buy": 0.1089,
       "sell": 0.1109,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.954Z"
+      "updatedAt": "2026-08-26T16:00:44.857Z"
     },
     {
       "slug": "zudamal",
@@ -1008,7 +1008,7 @@
       "buy": 0.1089,
       "sell": 0.1108,
       "sourceLabel": "Сайт банка (zudamal.tj)",
-      "updatedAt": "2026-08-26T14:46:10.957Z"
+      "updatedAt": "2026-08-26T16:00:44.864Z"
     },
     {
       "slug": "shukr-moliya",
@@ -1017,7 +1017,7 @@
       "buy": 9.2,
       "sell": 9.29,
       "sourceLabel": "Сайт банка (shukr.tj)",
-      "updatedAt": "2026-08-26T14:46:13.537Z"
+      "updatedAt": "2026-08-26T16:00:45.623Z"
     },
     {
       "slug": "shukr-moliya",
@@ -1026,7 +1026,7 @@
       "buy": 0.0977,
       "sell": 0.1031,
       "sourceLabel": "Сайт банка (shukr.tj)",
-      "updatedAt": "2026-08-26T14:46:13.573Z"
+      "updatedAt": "2026-08-26T16:00:45.671Z"
     },
     {
       "slug": "shukr-moliya",
@@ -1035,7 +1035,7 @@
       "buy": 10.36,
       "sell": 10.84,
       "sourceLabel": "Сайт банка (shukr.tj)",
-      "updatedAt": "2026-08-26T14:46:13.753Z"
+      "updatedAt": "2026-08-26T16:00:45.679Z"
     },
     {
       "slug": "mbt",
