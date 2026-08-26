@@ -442,3 +442,72 @@ test("offline with fresh figures does not cry stale", () => {
   assert.match(html, /Нет связи/);
   assert.doesNotMatch(html, /Обновление остановилось/);
 });
+
+// Цена выбора. За месяц лучший курс прошёл 9,22 → 9,24 и вернулся — 20 сомони на тысяче долларов.
+// Разница между банками в один и тот же день — 70. То есть выбор банка стоит втрое дороже выбора
+// дня, и именно его приложение должно помогать сделать. Курс 9,22 против 9,16 этого не сообщает;
+// «на 60 сомони меньше» сообщает.
+
+function costLineWith(outcomes, chosen, unit = "сомони") {
+  const script = inlineScript();
+  const from = script.indexOf("function bestOutcome");
+  assert.ok(from !== -1, "расчёта лучшего исхода нет");
+  const to = script.indexOf("\n}", script.indexOf("function costLine"));
+  assert.ok(to !== -1, "не видно, где заканчивается costLine");
+
+  const S = { rates: outcomes.map((out, i) => ({ out, bank: { nameRu: "Банк " + i } })) };
+  const T = {
+    costBest: "Лучший курс сегодня",
+    costWorse: "В «{bank}» получите на {diff} {unit} больше"
+  };
+
+  const build = new Function(
+    "S", "T", "money", "bankName",
+    script.slice(from, to + 2) + "\nreturn costLine;"
+  );
+
+  const line = build(
+    S,
+    T,
+    (n, d = 2) => n.toFixed(d).replace(".", ","),
+    (b) => b.nameRu
+  );
+
+  return line(S.rates[chosen], "USD", unit, outcomes[chosen], (x) => x.out);
+}
+
+test("the best bank is told it is the best, not shown a difference of zero", () => {
+  const html = costLineWith([9160, 9230, 9200], 1);
+  assert.match(html, /Лучший курс сегодня/);
+  assert.match(html, /class="cost win"/, "лучший подан тем же тоном, что проигравший");
+});
+
+test("a worse bank is quoted in money, and told where to go instead", () => {
+  const html = costLineWith([9160, 9230, 9200], 0);
+  assert.match(html, /Банк 1/, "не сказано, какой банк лучше");
+  assert.match(html, /70/, "разница не названа в деньгах");
+  assert.doesNotMatch(html, /win/, "проигрыш подан как выигрыш");
+});
+
+test("the unit follows the direction of the exchange", () => {
+  // «Счёт» считает и в сомони, и в валюту: при обмене сомони на доллары выигрыш измеряется в
+  // долларах, и подписать его словом «сомони» значит соврать втрое.
+  const html = costLineWith([108.5, 108.73], 0, "USD");
+  assert.match(html, /USD/);
+  assert.doesNotMatch(html, /сомони/);
+});
+
+test("a difference too small to be paid out is not promised", () => {
+  // Разница в сотую долю единицы существует в арифметике, но не на кассе. Обещать выигрыш, которого
+  // не выдадут, хуже, чем промолчать.
+  const html = costLineWith([9229.999, 9230], 0);
+  assert.match(html, /Лучший курс сегодня/);
+});
+
+test("banks that do not publish this rate are skipped, not counted as zero", () => {
+  // Ноль как «нет курса» сделал бы любой банк лучшим по сравнению с ним и напечатал бы разницу в
+  // размере всей суммы.
+  const html = costLineWith([9160, null, 9230, 0], 0);
+  assert.match(html, /Банк 2/, "лучшим назван банк без курса");
+  assert.match(html, /70/);
+});

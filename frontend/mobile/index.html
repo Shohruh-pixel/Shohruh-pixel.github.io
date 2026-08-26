@@ -168,6 +168,12 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .hide{display:none}
 .note{font-size:12.5px;color:var(--faint);margin-top:12px}
 /* Sits between the best-rate cards and the list, where the question "so what" is asked. */
+/* Та же форма, что у строки выгоды на главной: это одно и то же утверждение, сказанное про один
+   банк вместо всего рынка. Разные рамки для одной мысли читаются как две разные мысли. */
+.cost{font-size:13px;line-height:1.45;border-radius:16px;padding:10px 14px;margin:12px 0 0;
+  color:var(--dim);background:var(--glass-soft);box-shadow:var(--edge)}
+.cost.win{color:var(--acc);background:var(--acc-wash);box-shadow:var(--acc-edge)}
+.cost b{color:var(--text);font-family:var(--mono);font-weight:600}
 .gain{display:block;width:100%;text-align:left;border:0;font:inherit;font-size:13px;line-height:1.5;
   color:var(--dim);background:var(--acc-wash);box-shadow:var(--acc-edge);border-radius:16px;
   padding:11px 14px;margin:0 0 10px;cursor:pointer}
@@ -295,7 +301,7 @@ const D = {
     bestBuy:'Лучше всего продать',bestSell:'Дешевле всего купить',
     buy:'Покупка',sell:'Продажа',bank:'Банк',allBanks:'Все банки',more:'Все {all}',search:'Найти банк',
     compare:'Сравнить',clear:'Убрать сравнение',pickTwo:'Отметьте два банка — покажу их рядом',
-    iGive:'Отдаю',iGet:'Получаю',rateUsed:'Курс банка',pickBank:'Банк для расчёта',
+    iGive:'Отдаю',iGet:'Получаю',rateUsed:'Курс банка',pickBank:'Банк для расчёта',costBest:'Лучший курс сегодня',costWorse:'В «{bank}» получите на {diff} {unit} больше',costSame:'Столько же, сколько в лучшем',
     perDay:'В день',perMonth:'В месяц',fee:'Комиссия',card:'Карта',
     updated:'Курс обновлён',currency:'Валюта',convertHere:'Считать по этому банку',close:'Закрыть',
     noData:'Нет данных',cards:'карт',fav:'В избранное',unfav:'Убрать из избранного',
@@ -307,7 +313,7 @@ const D = {
     bestBuy:'Беҳтарин ҷой барои фурӯш',bestSell:'Арзонтарин харид',
     buy:'Харид',sell:'Фурӯш',bank:'Бонк',allBanks:'Ҳама бонкҳо',more:'Ҳамаи {all}',search:'Бонкро ёбед',
     compare:'Муқоиса',clear:'Муқоисаро тоза кунед',pickTwo:'Ду бонкро интихоб кунед — паҳлӯи ҳам нишон медиҳам',
-    iGive:'Медиҳам',iGet:'Мегирам',rateUsed:'Қурби бонк',pickBank:'Бонк барои ҳисоб',
+    iGive:'Медиҳам',iGet:'Мегирам',rateUsed:'Қурби бонк',pickBank:'Бонк барои ҳисоб',costBest:'Имрӯз беҳтарин қурб',costWorse:'Дар «{bank}» {diff} {unit} бештар мегиред',costSame:'Ҳамон қадар, ки дар беҳтарин',
     perDay:'Дар як рӯз',perMonth:'Дар як моҳ',fee:'Комиссия',card:'Корт',
     updated:'Қурб нав шуд',currency:'Асъор',convertHere:'Бо ин бонк ҳисоб кардан',close:'Пӯшидан',
     noData:'Маълумот нест',cards:'корт',fav:'Ба баргузидаҳо',unfav:'Аз баргузидаҳо гирифтан',
@@ -319,7 +325,7 @@ const D = {
     bestBuy:'Sotish uchun eng yaxshi joy',bestSell:'Eng arzon xarid',
     buy:'Xarid',sell:'Sotuv',bank:'Bank',allBanks:'Barcha banklar',more:'Barchasi {all}',search:'Bankni toping',
     compare:'Solishtirish',clear:'Solishtirishni olib tashlash',pickTwo:'Ikkita bankni belgilang — yonma-yon ko\'rsataman',
-    iGive:'Beraman',iGet:'Olaman',rateUsed:'Bank kursi',pickBank:'Hisob uchun bank',
+    iGive:'Beraman',iGet:'Olaman',rateUsed:'Bank kursi',pickBank:'Hisob uchun bank',costBest:"Bugungi eng yaxshi kurs",costWorse:"«{bank}»da {diff} {unit} ko'proq olasiz",costSame:"Eng yaxshisidagi bilan bir xil",
     perDay:'Kuniga',perMonth:'Oyiga',fee:'Komissiya',card:'Karta',
     updated:'Kurs yangilandi',currency:'Valyuta',convertHere:'Shu bank bo\'yicha hisoblash',close:'Yopish',
     noData:'Ma\'lumot yo\'q',cards:'karta',fav:'Saralanganlarga',unfav:'Saralanganlardan olib tashlash',
@@ -840,6 +846,40 @@ function screenRates(){
     </button>`).join('')}`;
 }
 
+// Курс — это не то, что человек получает; получает он сумму. Разница 9,22 против 9,16 ничего не
+// говорит, а «на 60 сомони меньше» говорит всё, и именно это решение здесь принимается.
+//
+// Считается не по курсу, а по результату: у «Счёта» два независимых переключателя — что на что и в
+// какую сторону, — и «лучший курс» при их сочетаниях означает то больший, то меньший. Перебор всех
+// банков с той же формулой, по которой посчитан выбранный, верен при любом сочетании и не требует
+// помнить, какое из них какое.
+function bestOutcome(currency, compute){
+  let best = null;
+  for(const x of S.rates){
+    const out = compute(x);
+    if(out == null || !isFinite(out) || out <= 0) continue;
+    if(!best || out > best.out) best = { out, bank: x };
+  }
+  return best;
+}
+
+function costLine(chosen, currency, unit, out, compute){
+  const best = bestOutcome(currency, compute);
+  if(!best || !out || !isFinite(out)) return '';
+
+  const diff = best.out - out;
+  // Порог в сотую единицы вывода: ниже этого разница существует только в арифметике, а на кассе её
+  // не будет. Обещать выигрыш, которого не выдадут, — хуже, чем промолчать.
+  if(diff < 0.01) return `<div class="cost win">${T.costBest}</div>`;
+
+  const shown = money(diff, diff < 10 ? 2 : 0);
+  const text = T.costWorse
+    .replace('{bank}', bankName(best.bank.bank))
+    .replace('{diff}', '<b>' + shown + '</b>')
+    .replace('{unit}', unit);
+  return `<div class="cost">${text}</div>`;
+}
+
 function screenConv(){
   if(!S.rates.length) return `<div class="card">${T.noData}</div>`;
   return (() => {
@@ -847,7 +887,12 @@ function screenConv(){
     const other = S.from === 'TJS' ? S.cur : S.from;
     const rate = val(r, other, S.dir);
     const amt = parseFloat(String(S.amount || '0').replace(',','.')) || 0;
-    const out = S.from === 'TJS' ? (rate ? amt / rate : 0) : amt * rate;
+    const compute = x => {
+      const v = val(x, other, S.dir);
+      if(v == null) return null;
+      return S.from === 'TJS' ? (v ? amt / v : 0) : amt * v;
+    };
+    const out = compute(r) || 0;
     const grp = n => money(n);
     return `
     <div class="card">
@@ -866,6 +911,7 @@ function screenConv(){
         </div>
         <div class="chip" style="pointer-events:none">${S.from === 'TJS' ? other : 'TJS'}</div>
       </div>
+      ${costLine(r, other, S.from === 'TJS' ? other : T.somoni, out, compute)}
     </div>
 
     <div class="lbl" style="margin:14px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px">
