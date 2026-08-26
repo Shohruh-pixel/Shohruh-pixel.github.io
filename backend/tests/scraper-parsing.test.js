@@ -14,28 +14,66 @@ const {
 // site quietly changes its markup and the scraper keeps "succeeding" while writing nothing, or
 // worse, writing garbage. Fixed HTML samples let these run with no network and no database.
 
+// Форма таблицы НБТ, снятая с живой страницы 26.08.2026. Прежняя заглушка обрывалась на четвёртом
+// столбце и заполняла нулями всё дальше — из-за чего проверки годами подтверждали чтение наличных,
+// не замечая, что рядом лежат ещё четыре вида курса.
+//
+//   0 банк · 1/2 межбанк · 3/4 наличные · 5/6 безналичные · 7/8 эл.кошелёк · 9/10 карты
+//   11/12 НПЦДП · 13 дата
+//
+// Значения — настоящие ловушки этой таблицы, а не круглые числа: у Ориёнбонка наличные много ниже
+// безналичных, у Амонатбанка в наличных заглушка 0,0010, у Саноатсодиротбонка часть столбцов
+// заполнена нулями.
 const NBT_HTML = `<html><body><table>
-  <tr><th>Банк</th><th>Межбанк покупка</th><th>Межбанк продажа</th><th>Наличные покупка</th><th>Наличные продажа</th></tr>
+  <tr>
+    <th>Кредитные финансовые организации</th>
+    <th>Межбанк покупка</th><th>Межбанк продажа</th>
+    <th>Наличные покупка</th><th>Наличные продажа</th>
+    <th>Безналичные покупка</th><th>Безналичные продажа</th>
+    <th>Эл.кошелек покупка</th><th>Эл.кошелек продажа</th>
+    <th>Карты покупка</th><th>Карты продажа</th>
+    <th>НПЦДП покупка</th><th>НПЦДП продажа</th>
+    <th>Дата</th>
+  </tr>
   <tr>
     <td>OАО &quot;Алиф Банк&quot;</td>
     <td>9.2200</td><td>9.2700</td>
-    <td>9.2200</td><td>9.2800</td>
-    <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-    <td>25.07.2026 09:00</td>
+    <td>9.2000</td><td>9.2800</td>
+    <td><span class="green">9.2200</span></td><td><span class="green">9.2700</span></td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>9.2200</td><td>9.2700</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>26.08.2026 09:00</td>
   </tr>
   <tr>
     <td>ОАО &quot;Ориёнбонк&quot;</td>
     <td>9.1800</td><td>9.2600</td>
-    <td>9.1800</td><td>9.2800</td>
-    <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-    <td>25.07.2026 09:00</td>
+    <td>9.0000</td><td>9.2800</td>
+    <td>9.1800</td><td>9.2600</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>9.1900</td><td>9.2700</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>26.08.2026 09:00</td>
+  </tr>
+  <tr>
+    <td>ГУП СБ РТ &quot;Амонатбанк&quot;</td>
+    <td>9.1900</td><td>9.2700</td>
+    <td>0.0010</td><td>9.2700</td>
+    <td>9.1900</td><td>9.2700</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>9.1900</td><td>9.2700</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>26.08.2026 09:00</td>
   </tr>
   <tr>
     <td>ГУП ПЭБТ &quot;Саноатсодиротбонк&quot;</td>
-    <td><span class="green">0.0000</span></td><td><span class="green">0.0000</span></td>
-    <td><span class="green">0.0000</span></td><td><span class="green">0.0000</span></td>
-    <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-    <td>25.07.2026 09:00</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>9.1000</td><td>9.2900</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>0.0000</td><td>0.0000</td>
+    <td>26.08.2026 09:00</td>
   </tr>
 </table></body></html>`;
 
@@ -64,19 +102,49 @@ test("a bank is matched on a substring, because NBT uses different legal spellin
 
   assert.ok(found, "Orienbank should be found by substring");
   assert.equal(found.buy, 9.18);
-  assert.equal(found.sell, 9.28);
+  assert.equal(found.sell, 9.26);
 });
 
-test("NBT cash columns are used, not the interbank ones", () => {
-  // Columns 3/4 are the cash rate an ordinary customer actually gets. Alif's interbank sell is
-  // 9.27 while its cash sell is 9.28 — picking the wrong pair would understate what people pay.
+test("the non-cash column is read, because that is what the other banks' own figures are", () => {
+  // Это не вопрос вкуса. Одиннадцать банков читаются с собственных сайтов, и их курс сходится с
+  // безналичным столбцом НБТ, а не с наличным — рубль 26.08.2026: Алиф 0,1085 на сайте против
+  // 0,1089 безнал и 0,1050 наличными; Хумо 0,1093 против 0,1089 и 0,1000.
+  //
+  // Раньше отсюда брались наличные, и Ориёнбонк выходил на экран с 0,0800 при собственном
+  // безналичном 0,1085 — банк выглядел худшим оттого, что у него читали другой столбец.
   const rows = parseTable(NBT_HTML);
-  assert.equal(findBankRate(rows, "Алиф Банк").sell, 9.28);
+  const orienbank = findBankRate(rows, "Ориён");
+
+  assert.equal(orienbank.buy, 9.18, "взяты наличные вместо безналичных");
+  assert.notEqual(orienbank.buy, 9.0, "это наличный курс");
 });
 
-test("zero-filled rows are rejected — NBT writes 0.0000 for services a bank does not offer", () => {
+test("a row whose non-cash pair is zero-filled yields nothing", () => {
+  // НБТ заполняет нулями то, чего банк не предлагает. Ноль как курс — это не «бесплатно», это
+  // «данных нет», и опубликовать его значит показать курс 0,00.
   const rows = parseTable(NBT_HTML);
   assert.equal(findBankRate(rows, "Саноатсодиротбонк"), null);
+});
+
+test("the cash pair travels alongside, never mixed into the headline", () => {
+  // Оба вида нужны — наличный человеку в кассе, безналичный для сравнения, — но перепутать их
+  // значит ошибиться на четверть курса.
+  const rows = parseTable(NBT_HTML);
+  const alif = findBankRate(rows, "Алиф Банк");
+
+  assert.equal(alif.buy, 9.22, "в заголовок попали наличные");
+  assert.deepEqual(alif.cash, { buy: 9.2, sell: 9.28 }, "наличный курс потерян");
+});
+
+test("a placeholder in the cash column is not passed off as a rate", () => {
+  // У Амонатбанка в наличных стоит 0,0010 при безналичном 0,1093 — проверка на ноль такое
+  // пропускает, и оно уехало бы на сайт как курс. Ни один настоящий кассовый курс не опускается
+  // ниже половины безналичного: самый низкий на 26.08.2026 — 0,0800 при 0,1085, то есть 74%.
+  const rows = parseTable(NBT_HTML);
+  const amonat = findBankRate(rows, "Амонатбанк");
+
+  assert.equal(amonat.buy, 9.19, "безналичный курс не прочитан");
+  assert.equal(amonat.cash, null, "заглушка 0,0010 принята за кассовый курс");
 });
 
 test("a missing bank yields null rather than a wrong row", () => {

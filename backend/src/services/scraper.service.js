@@ -568,6 +568,33 @@ async function collectFromApi(source) {
   return { headline, stored, currencies };
 }
 
+// Столбцы таблицы НБТ. На банк там шесть видов курса, и какой из них взять — не вопрос вкуса:
+// взятый столбец должен быть сопоставим с тем, что читается с сайтов остальных одиннадцати банков,
+// иначе список сравнивает не банки, а виды операций.
+//
+//   1/2 межбанк · 3/4 наличные · 5/6 безналичные · 7/8 эл.кошелёк · 9/10 карты · 11/12 НПЦДП
+const NBT_NONCASH = [5, 6];
+const NBT_CASH = [3, 4];
+
+// Раньше отсюда брались наличные, и это было ошибкой, стоившей банкам четверти курса. Проверено по
+// одиннадцати банкам, которые есть и в таблице, и на своих сайтах: их собственный курс сходится с
+// безналичным столбцом, а не с наличным. Рубль 26.08.2026 — Алиф 0,1085 на сайте против 0,1089
+// безнал и 0,1050 наличными; Хумо 0,1093 против 0,1089 и 0,1000; Зудамал 0,1089 против 0,1089 и
+// 0,1020.
+//
+// Что это стоило: Ориёнбонк показывался с 0,0800, тогда как его безналичный курс 0,1085 — ровно как
+// у Эсхаты. Банк выглядел худшим на экране, потому что у него читали другой столбец.
+function nbtPair(row, [buyAt, sellAt]) {
+  const buy = Number(row[buyAt]);
+  const sell = Number(row[sellAt]);
+
+  if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell <= 0) {
+    return null;
+  }
+
+  return { buy, sell };
+}
+
 function findBankRate(rows, matchText) {
   const row = rows.find((cells) => cells[0].includes(matchText));
 
@@ -575,17 +602,20 @@ function findBankRate(rows, matchText) {
     return null;
   }
 
-  // Columns 3/4 are the cash ("Наличные") buy/sell pair — the rate a walk-in customer
-  // actually gets, which is what this product is about. NBT zero-fills services a bank
-  // does not offer, so a zero here means "no data", not "free".
-  const buy = Number(row[3]);
-  const sell = Number(row[4]);
-
-  if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell <= 0) {
+  const noncash = nbtPair(row, NBT_NONCASH);
+  if (!noncash) {
     return null;
   }
 
-  return { buy, sell };
+  // Заглушки. НБТ заполняет нулями услуги, которых у банка нет, но встречается и другое: у
+  // Амонатбанка в столбце наличных стоит 0,0010 при безналичном 0,1093. Ноль отсеивается проверкой
+  // выше, а 0,0010 прошло бы её и уехало на сайт как курс. Половина безналичного — граница, ниже
+  // которой ни один настоящий кассовый курс не опускается: самый низкий на 26.08.2026 — 0,0800 при
+  // безналичном 0,1085, то есть 74%.
+  const cash = nbtPair(row, NBT_CASH);
+  const cashLooksReal = cash && cash.buy >= noncash.buy / 2;
+
+  return { ...noncash, cash: cashLooksReal ? cash : null };
 }
 
 function ratesDiffer(existing, next) {
@@ -771,7 +801,8 @@ async function performScrape() {
           RUB: findBankRate(nbtRows.RUB, bank.match),
           EUR: findBankRate(nbtRows.EUR, bank.match)
         },
-        SOURCE_LABEL
+        SOURCE_LABEL,
+        RATE_TYPES.NONCASH
       );
     }
   }
