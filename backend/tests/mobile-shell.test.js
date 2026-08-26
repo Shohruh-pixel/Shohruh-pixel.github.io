@@ -607,3 +607,33 @@ test("the scraper's label and the app's explanation describe the same source", (
   assert.match(scraper, /kurs_kommer_bank\.php/, "источник больше не таблица коммерческих банков");
   assert.match(scraper, /SOURCE_LABEL = "НБТ \(курсы коммерческих банков\)"/, "подпись источника изменилась");
 });
+
+// Обмен без похода в банк. Три банка из двадцати двух пишут об этом сами; у остальных раздел просто
+// не показывался, и пустое место читалось как «нечего сказать». Сказать есть что: неизвестно — а
+// это не то же самое, что «нельзя», и для решающего, идти ли в отделение, это ответ.
+
+test("silence about online exchange is shown as silence, not as nothing", () => {
+  const script = inlineScript();
+  const at = script.indexOf("onlineUnknown");
+  assert.ok(at !== -1, "нет текста про молчание банка");
+
+  const block = script.slice(script.indexOf("const note = S.lang === 'tj'"));
+  const body = block.slice(0, block.indexOf("})()"));
+  assert.ok(body.includes("online dunno"), "у банка без ответа раздел по-прежнему пропадает");
+  assert.ok(!/return note ?/.test(body), "остался прежний тернарник, прячущий блок");
+});
+
+test("an unknown is not dressed up as a published promise", () => {
+  // Акцентная рамка означает «банк это обещает». Неизвестность в ней выглядела бы обещанием.
+  // Подстрокой, а не выражением: скобки здесь — часть искомого CSS, а в регулярном выражении они
+  // молча становятся группой захвата и проверка начинает искать совсем другое.
+  assert.ok(
+    HTML.includes(".online.dunno{background:var(--glass-soft)"),
+    "неизвестность подана как подтверждённая возможность"
+  );
+});
+
+test("every language says what is unknown", () => {
+  const notes = inlineScript().match(/onlineUnknown:s*['"][^'"]*['"]/g) || [];
+  assert.equal(notes.length, 3, "текст про неизвестность есть не на всех языках");
+});
